@@ -123,6 +123,7 @@ public final class MicCapture {
             try {
                 int len = encoder.encode(pcm, opusOut);
                 sink.onFrame(sequence++, opusOut, len);
+                MicGate.markTransmitted();
             } catch (RuntimeException e) {
                 ProxyChat.LOG.warn("Mic frame encode failed", e);
             }

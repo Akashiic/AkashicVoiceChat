@@ -6,6 +6,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import dev.jm.proxychat.voice.client.ClientVoiceBootstrap;
 import dev.jm.proxychat.voice.client.keybinds.ProxyChatKeybinds;
+import dev.jm.proxychat.voice.client.render.MicHudOverlay;
 import dev.jm.proxychat.voice.client.render.SpeakerOverlay;
 
 public class ClientProxy extends CommonProxy {
@@ -16,6 +17,7 @@ public class ClientProxy extends CommonProxy {
         ProxyChatKeybinds.register();
         ClientVoiceBootstrap.install();
         MinecraftForge.EVENT_BUS.register(new SpeakerOverlay());
+        MinecraftForge.EVENT_BUS.register(new MicHudOverlay());
         FMLCommonHandler.instance()
             .bus()
             .register(new ClientEvents());

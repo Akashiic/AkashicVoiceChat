@@ -15,6 +15,7 @@ public final class MicGate {
     private static volatile boolean pttPressed = false;
     private static volatile boolean muted = false;
     private static volatile boolean deafened = false;
+    private static volatile long lastTransmitMillis = 0L;
 
     private MicGate() {}
 
@@ -56,6 +57,14 @@ public final class MicGate {
 
     public static boolean isDeafened() {
         return deafened;
+    }
+
+    public static void markTransmitted() {
+        lastTransmitMillis = System.currentTimeMillis();
+    }
+
+    public static long lastTransmitMillis() {
+        return lastTransmitMillis;
     }
 
     public static boolean shouldTransmit(short[] pcm) {

@@ -20,6 +20,7 @@ proxychat.gui.set.disableMicTest=Mikrofon-Test deaktivieren
 proxychat.gui.set.audio3d=3D-Audio
 proxychat.gui.set.audio3d.normal=Normal
 proxychat.gui.set.audio3d.off=Aus
+proxychat.gui.set.indicators=Sprech-Indikator über Köpfen
 proxychat.gui.set.selectMic=Mikrofon wählen
 proxychat.gui.set.selectSpeaker=Lautsprecher wählen
 proxychat.gui.set.speakerNote1=Auswahl des Ausgabegeräts wird in dieser Version nicht unterstützt.
