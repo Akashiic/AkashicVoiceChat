@@ -36,5 +36,5 @@
 dependencies {
     // Concentus: pure-Java Opus codec (MIT). Used as the default encoder/decoder.
     // A native opus4j path can be added later behind the same OpusCodec interface.
-    api("com.github.lostromb.concentus:Concentus:3885c4e465")
+    shadowImplementation("com.github.lostromb.concentus:Concentus:3885c4e465")
 }
