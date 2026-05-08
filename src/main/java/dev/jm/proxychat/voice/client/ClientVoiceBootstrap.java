@@ -15,8 +15,8 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import dev.jm.proxychat.ProxyChat;
-import dev.jm.proxychat.client.gui.GuiProxyChatSettings;
 import dev.jm.proxychat.client.gui.GuiSetupWizard;
+import dev.jm.proxychat.client.gui.GuiVoiceChatHub;
 import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.net.PacketRequestSecret;
 import dev.jm.proxychat.net.ProxyChatChannel;
@@ -115,7 +115,7 @@ public final class ClientVoiceBootstrap {
         // Settings hotkey: edge-triggered, only when no GUI is up.
         while (ProxyChatKeybinds.OPEN_SETTINGS.isPressed()) {
             if (mc.currentScreen == null) {
-                mc.displayGuiScreen(new GuiProxyChatSettings());
+                mc.displayGuiScreen(new GuiVoiceChatHub());
                 return;
             }
         }
@@ -161,7 +161,9 @@ public final class ClientVoiceBootstrap {
         if (p == null) return;
         p.setMaxDistance(ProxyChatConfig.voiceRadius());
         p.setReferenceDistance((float) ProxyChatConfig.referenceDistance());
-        p.setListenerGain((float) ProxyChatConfig.playbackVolume());
+        float gain = MicGate.isDeafened() ? 0f : (float) ProxyChatConfig.playbackVolume();
+        p.setListenerGain(gain);
+        p.setSpatial("normal".equals(ProxyChatConfig.audio3dMode()));
         float pitchRad = (float) Math.toRadians(player.rotationPitch);
         float yawRad = (float) Math.toRadians(player.rotationYaw);
         p.updateListener((float) player.posX, (float) player.posY, (float) player.posZ, pitchRad, yawRad);

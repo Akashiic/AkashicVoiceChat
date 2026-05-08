@@ -34,6 +34,17 @@ public final class PlaybackChannel {
         AL10.alSourcef(sourceId, AL10.AL_MAX_DISTANCE, maxDistance);
     }
 
+    /**
+     * Toggle 3D positional audio. When false, the source plays as if at the listener's
+     * head — flat, no falloff. Useful for non-spatial mode (e.g. group chat).
+     */
+    public void setSpatial(boolean spatial) {
+        AL10.alSourcei(sourceId, AL10.AL_SOURCE_RELATIVE, spatial ? AL10.AL_FALSE : AL10.AL_TRUE);
+        if (!spatial) {
+            AL10.alSource3f(sourceId, AL10.AL_POSITION, 0f, 0f, 0f);
+        }
+    }
+
     public void setPosition(float x, float y, float z) {
         if (x != this.x || y != this.y || z != this.z) {
             this.x = x;

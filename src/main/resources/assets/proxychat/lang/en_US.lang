@@ -1,20 +1,45 @@
 key.proxychat.category=ProxyChat
 key.proxychat.ptt=Push-to-Talk
 key.proxychat.mute=Toggle Mute
-key.proxychat.openSettings=Open ProxyChat Settings
+key.proxychat.openSettings=Open Voice Chat
 
 proxychat.gui.done=Done
-proxychat.gui.settings.title=ProxyChat Settings
-proxychat.gui.wizard.title=Welcome to ProxyChat
+
+proxychat.gui.hub.title=Voice Chat
+proxychat.gui.hub.settings=Settings
+proxychat.gui.hub.group=Group
+
+proxychat.gui.set.title=Voice Chat Settings
+proxychat.gui.set.volume=Voice chat volume
+proxychat.gui.set.micAmp=Microphone amplification
+proxychat.gui.set.noise=Noise suppression
+proxychat.gui.set.activation=Activation type
+proxychat.gui.set.threshold=Voice activation threshold
+proxychat.gui.set.enableMicTest=Enable microphone testing
+proxychat.gui.set.disableMicTest=Disable microphone testing
+proxychat.gui.set.audio3d=3D audio
+proxychat.gui.set.audio3d.normal=Normal
+proxychat.gui.set.audio3d.off=Off
+proxychat.gui.set.selectMic=Select microphone
+proxychat.gui.set.selectSpeaker=Select speaker
+proxychat.gui.set.speakerNote1=Output device selection is not supported in this build.
+proxychat.gui.set.speakerNote2=ProxyChat plays through your system default speaker.
+
+proxychat.gui.group.title=Group
+proxychat.gui.group.comingSoon1=Group voice chat is coming in the next release.
+proxychat.gui.group.comingSoon2=Proximity chat works for everyone in the meantime.
+
+proxychat.gui.wizard.title=Welcome to Voice Chat
 proxychat.gui.wizard.subtitle=Pick a microphone and check the level meter while you speak.
 proxychat.gui.wizard.device=Microphone
 proxychat.gui.wizard.testHint=Speak now — the bar should move.
 proxychat.gui.wizard.noMics=No microphone detected
+
 proxychat.gui.runWizard=Run setup wizard again
 proxychat.gui.mode=Mode
 proxychat.gui.mode.ptt=Push-to-Talk
-proxychat.gui.mode.voice=Voice Activation
-proxychat.gui.mode.always=Always On
+proxychat.gui.mode.voice=Voice
+proxychat.gui.mode.always=Always on
 proxychat.gui.mic=Microphone
 proxychat.gui.muted=Muted
 proxychat.gui.unmuted=Unmuted

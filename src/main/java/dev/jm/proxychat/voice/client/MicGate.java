@@ -14,6 +14,7 @@ public final class MicGate {
     private static volatile Mode mode = Mode.PTT;
     private static volatile boolean pttPressed = false;
     private static volatile boolean muted = false;
+    private static volatile boolean deafened = false;
 
     private MicGate() {}
 
@@ -45,6 +46,18 @@ public final class MicGate {
         return muted;
     }
 
+    public static void toggleDeafened() {
+        deafened = !deafened;
+    }
+
+    public static void setDeafened(boolean d) {
+        deafened = d;
+    }
+
+    public static boolean isDeafened() {
+        return deafened;
+    }
+
     public static boolean shouldTransmit(short[] pcm) {
         if (muted) return false;
         switch (mode) {
@@ -53,7 +66,7 @@ public final class MicGate {
             case PTT:
                 return pttPressed;
             case VOICE:
-                return computeRms(pcm) >= ProxyChatConfig.vadThreshold();
+                return computeRms(pcm) >= ProxyChatConfig.thresholdRms();
             default:
                 return false;
         }
@@ -62,10 +75,11 @@ public final class MicGate {
     public static double computeRms(short[] pcm) {
         if (pcm.length == 0) return 0.0;
         double sum = 0.0;
-        for (int i = 0; i < AudioFormatSpec.FRAME_SAMPLES && i < pcm.length; i++) {
+        int n = Math.min(AudioFormatSpec.FRAME_SAMPLES, pcm.length);
+        for (int i = 0; i < n; i++) {
             double s = pcm[i] / 32768.0;
             sum += s * s;
         }
-        return Math.sqrt(sum / AudioFormatSpec.FRAME_SAMPLES);
+        return Math.sqrt(sum / n);
     }
 }

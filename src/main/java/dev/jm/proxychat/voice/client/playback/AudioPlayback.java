@@ -24,7 +24,8 @@ public final class AudioPlayback {
     private volatile boolean running;
     private volatile float maxDistance = 48f;
     private volatile float referenceDistance = 4f;
-    private volatile float listenerGain = 3f;
+    private volatile float listenerGain = 1f;
+    private volatile boolean spatial = true;
     private boolean weCreatedAl;
 
     private AudioPlayback() {}
@@ -63,6 +64,18 @@ public final class AudioPlayback {
         }
     }
 
+    public void setSpatial(boolean spatial) {
+        if (spatial == this.spatial) return;
+        this.spatial = spatial;
+        if (running) {
+            tasks.offer(() -> {
+                for (PlaybackChannel ch : channels.values()) {
+                    ch.setSpatial(spatial);
+                }
+            });
+        }
+    }
+
     public void submitFrame(UUID senderId, float x, float y, float z, short[] pcm) {
         if (!running) return;
         tasks.offer(() -> {
@@ -70,6 +83,7 @@ public final class AudioPlayback {
             if (ch == null) {
                 ch = new PlaybackChannel(referenceDistance);
                 ch.setMaxDistance(maxDistance);
+                ch.setSpatial(spatial);
                 channels.put(senderId, ch);
             }
             ch.setPosition(x, y, z);

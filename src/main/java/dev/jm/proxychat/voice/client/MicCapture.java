@@ -8,6 +8,7 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
 import dev.jm.proxychat.ProxyChat;
+import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.voice.common.codec.AudioFormatSpec;
 import dev.jm.proxychat.voice.common.codec.OpusCodecFactory;
 import dev.jm.proxychat.voice.common.codec.OpusEncoder;
@@ -25,6 +26,10 @@ public final class MicCapture {
     private OpusEncoder encoder;
     private Thread thread;
     private volatile boolean running;
+
+    // Single-pole high-pass state for the basic noise gate.
+    private double hpPrevX;
+    private double hpPrevY;
 
     public MicCapture(FrameSink sink) {
         this(sink, null);
@@ -108,6 +113,11 @@ public final class MicCapture {
                 pcm[i] = (short) ((hi << 8) | lo);
             }
 
+            applyAmplification(pcm, ProxyChatConfig.micAmplification());
+            if (ProxyChatConfig.noiseSuppression()) {
+                applyHighPass(pcm);
+            }
+
             if (!MicGate.shouldTransmit(pcm)) continue;
 
             try {
@@ -116,6 +126,34 @@ public final class MicCapture {
             } catch (RuntimeException e) {
                 ProxyChat.LOG.warn("Mic frame encode failed", e);
             }
+        }
+    }
+
+    private static void applyAmplification(short[] pcm, double gain) {
+        if (Math.abs(gain - 1.0) < 1e-4) return;
+        for (int i = 0; i < pcm.length; i++) {
+            int v = (int) Math.round(pcm[i] * gain);
+            if (v > Short.MAX_VALUE) v = Short.MAX_VALUE;
+            else if (v < Short.MIN_VALUE) v = Short.MIN_VALUE;
+            pcm[i] = (short) v;
+        }
+    }
+
+    /**
+     * Single-pole high-pass at ~120 Hz. Removes DC bias and low-frequency rumble — the
+     * cheap-but-noticeable kind of "noise suppression". Not RNNoise.
+     */
+    private void applyHighPass(short[] pcm) {
+        final double a = 0.985;
+        for (int i = 0; i < pcm.length; i++) {
+            double x = pcm[i];
+            double y = a * (hpPrevY + x - hpPrevX);
+            hpPrevX = x;
+            hpPrevY = y;
+            int iy = (int) Math.round(y);
+            if (iy > Short.MAX_VALUE) iy = Short.MAX_VALUE;
+            else if (iy < Short.MIN_VALUE) iy = Short.MIN_VALUE;
+            pcm[i] = (short) iy;
         }
     }
 }
