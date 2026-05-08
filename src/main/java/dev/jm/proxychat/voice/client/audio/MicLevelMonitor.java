@@ -5,6 +5,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
 import dev.jm.proxychat.ProxyChat;
@@ -12,21 +13,32 @@ import dev.jm.proxychat.voice.client.MicGate;
 import dev.jm.proxychat.voice.common.codec.AudioFormatSpec;
 
 /**
- * Test-only mic capture: opens a TargetDataLine on the configured mixer, computes RMS over each
- * 20 ms frame, and exposes the latest value via {@link #latestRms()}. Does not transmit anything
- * over the network. Used by the setup wizard / settings GUI to drive a live level meter.
+ * Test-only mic capture with optional self-loopback.
+ *
+ * - Always: opens a TargetDataLine, computes 20 ms RMS, exposes via {@link #latestRms()}.
+ * - With {@code loopback=true}: also opens a SourceDataLine and writes the captured
+ * PCM straight to it, so the user hears their own voice while testing — the standard
+ * "is my mic working" loop. Bypasses the OpenAL voice path entirely.
  */
 public final class MicLevelMonitor {
 
     private final Mixer.Info mixerInfo;
+    private final boolean loopback;
+
     private TargetDataLine line;
+    private SourceDataLine outLine;
     private Thread thread;
     private volatile boolean running;
     private volatile double latestRms = 0.0;
     private volatile String error = null;
 
     public MicLevelMonitor(Mixer.Info mixerInfo) {
+        this(mixerInfo, false);
+    }
+
+    public MicLevelMonitor(Mixer.Info mixerInfo, boolean loopback) {
         this.mixerInfo = mixerInfo;
+        this.loopback = loopback;
     }
 
     public synchronized void start() {
@@ -38,15 +50,29 @@ public final class MicLevelMonitor {
                 AudioFormatSpec.CHANNELS,
                 true,
                 false);
-            DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+
+            DataLine.Info inInfo = new DataLine.Info(TargetDataLine.class, format);
             if (mixerInfo != null) {
                 Mixer mixer = AudioSystem.getMixer(mixerInfo);
-                line = (TargetDataLine) mixer.getLine(info);
+                line = (TargetDataLine) mixer.getLine(inInfo);
             } else {
-                line = (TargetDataLine) AudioSystem.getLine(info);
+                line = (TargetDataLine) AudioSystem.getLine(inInfo);
             }
             line.open(format, AudioFormatSpec.FRAME_BYTES_PCM_S16 * 4);
             line.start();
+
+            if (loopback) {
+                try {
+                    DataLine.Info outInfo = new DataLine.Info(SourceDataLine.class, format);
+                    outLine = (SourceDataLine) AudioSystem.getLine(outInfo);
+                    outLine.open(format, AudioFormatSpec.FRAME_BYTES_PCM_S16 * 8);
+                    outLine.start();
+                } catch (Throwable t) {
+                    ProxyChat.LOG.warn("Mic test loopback unavailable: {}", t.getMessage());
+                    outLine = null;
+                }
+            }
+
             running = true;
             thread = new Thread(this::loop, "ProxyChat-MicTest");
             thread.setDaemon(true);
@@ -71,6 +97,16 @@ public final class MicLevelMonitor {
                 // ignored
             }
             line = null;
+        }
+        if (outLine != null) {
+            try {
+                outLine.drain();
+                outLine.stop();
+                outLine.close();
+            } catch (Throwable ignored) {
+                // ignored
+            }
+            outLine = null;
         }
         latestRms = 0.0;
     }
@@ -103,6 +139,14 @@ public final class MicLevelMonitor {
                 pcm[i] = (short) ((hi << 8) | lo);
             }
             latestRms = MicGate.computeRms(pcm);
+
+            if (outLine != null) {
+                try {
+                    outLine.write(pcmBytes, 0, pcmBytes.length);
+                } catch (Throwable t) {
+                    ProxyChat.LOG.debug("Loopback write failed", t);
+                }
+            }
         }
     }
 }

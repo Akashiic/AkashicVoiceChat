@@ -51,14 +51,20 @@ public class PercentSlider extends GuiButton {
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
         if (!visible) return;
         if (dragging) updateFromMouse(mouseX);
+        // Render the vanilla button background WITHOUT the label (we'll draw the
+        // label ourselves on top of the knob so it doesn't get duplicated).
+        String label = displayString;
+        displayString = "";
         super.drawButton(mc, mouseX, mouseY);
-        // Knob
+        displayString = label;
+
         int knobX = xPosition + (int) ((value - min) / (max - min) * (width - 8));
         drawRect(knobX, yPosition, knobX + 8, yPosition + height, 0xFFFFFFFF);
         drawRect(knobX + 1, yPosition + 1, knobX + 7, yPosition + height - 1, 0xFF7F7F7F);
+
         mc.fontRenderer.drawStringWithShadow(
-            displayString,
-            xPosition + width / 2 - mc.fontRenderer.getStringWidth(displayString) / 2,
+            label,
+            xPosition + width / 2 - mc.fontRenderer.getStringWidth(label) / 2,
             yPosition + (height - 8) / 2,
             0xFFFFFF);
     }

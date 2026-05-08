@@ -38,3 +38,4 @@ layout.json
 
 # Claude scheduling lockfile
 .claude/
+assets/

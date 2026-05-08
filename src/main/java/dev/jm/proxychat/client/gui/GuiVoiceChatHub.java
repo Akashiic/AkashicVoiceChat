@@ -6,6 +6,7 @@ import net.minecraft.client.resources.I18n;
 
 import dev.jm.proxychat.client.gui.widget.IconButton;
 import dev.jm.proxychat.client.gui.widget.IconRenderer;
+import dev.jm.proxychat.client.gui.widget.TextureIcon;
 import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.voice.client.MicGate;
 
@@ -42,13 +43,13 @@ public class GuiVoiceChatHub extends GuiScreen {
             cx - 110,
             iconY,
             iconSize,
-            (px, py, sz) -> IconRenderer.drawMic(px, py, sz, MicGate.isMuted()));
+            (px, py, sz) -> TextureIcon.drawMic(px, py, sz, MicGate.isMuted()));
         speakerBtn = new IconButton(
             BTN_SPEAKER,
             cx - 84,
             iconY,
             iconSize,
-            (px, py, sz) -> IconRenderer.drawSpeaker(px, py, sz, MicGate.isDeafened()));
+            (px, py, sz) -> TextureIcon.drawSpeaker(px, py, sz, MicGate.isDeafened()));
         indicatorsBtn = new IconButton(
             BTN_INDICATORS,
             cx + 88,

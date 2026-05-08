@@ -207,7 +207,8 @@ public class GuiVoiceChatSettings extends GuiScreen {
         stopMonitor();
         javax.sound.sampled.Mixer.Info info = dev.jm.proxychat.voice.client.audio.MicDeviceRegistry
             .findByName(ProxyChatConfig.selectedMicMixer());
-        monitor = new MicLevelMonitor(info);
+        // loopback=true so the user actually hears their mic during testing
+        monitor = new MicLevelMonitor(info, true);
         monitor.start();
     }
 
@@ -238,16 +239,17 @@ public class GuiVoiceChatSettings extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         drawCenteredString(fontRendererObj, I18n.format("proxychat.gui.set.title"), width / 2, 8, 0xFFFFFFFF);
+        super.drawScreen(mouseX, mouseY, partialTicks);
 
-        // Live level overlay on the threshold slider (if testing).
+        // Live level overlay drawn AFTER the buttons so it sits on top of the slider track.
+        // Anchored just below the threshold slider for visibility.
         if (micTesting && monitor != null && thresholdSlider != null) {
-            LevelMeterWidget bar = new LevelMeterWidget(
-                thresholdSlider.xPosition + 1,
-                thresholdSlider.yPosition + thresholdSlider.height - 4,
-                thresholdSlider.width - 2,
-                3);
+            int barX = thresholdSlider.xPosition;
+            int barY = thresholdSlider.yPosition + thresholdSlider.height + 1;
+            int barW = thresholdSlider.width;
+            int barH = 4;
+            LevelMeterWidget bar = new LevelMeterWidget(barX, barY, barW, barH);
             bar.draw(monitor.latestRms());
         }
-        super.drawScreen(mouseX, mouseY, partialTicks);
     }
 }

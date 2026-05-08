@@ -1,6 +1,6 @@
 key.proxychat.category=ProxyChat
 key.proxychat.ptt=Push-to-Talk
-key.proxychat.mute=Toggle Mute
+key.proxychat.mute=Toggle microphone
 key.proxychat.openSettings=Open Voice Chat
 
 proxychat.gui.done=Done

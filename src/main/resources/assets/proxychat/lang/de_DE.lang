@@ -1,6 +1,6 @@
 key.proxychat.category=ProxyChat
 key.proxychat.ptt=Sprechen (PTT)
-key.proxychat.mute=Mikrofon stummschalten
+key.proxychat.mute=Mikrofon ein-/ausschalten
 key.proxychat.openSettings=Voice Chat öffnen
 
 proxychat.gui.done=Fertig
