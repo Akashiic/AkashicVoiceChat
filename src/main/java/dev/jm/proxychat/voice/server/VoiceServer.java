@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dev.jm.proxychat.ProxyChat;
+import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.voice.common.AuthAckPacket;
 import dev.jm.proxychat.voice.common.AuthenticatePacket;
 import dev.jm.proxychat.voice.common.KeepAlivePacket;
@@ -67,6 +68,13 @@ public final class VoiceServer {
 
     public int connectionCount() {
         return connections.size();
+    }
+
+    public void disconnectPlayer(UUID playerId) {
+        VoiceConnection conn = connections.remove(playerId);
+        if (conn != null) {
+            connectionsByAddress.remove(conn.remoteAddress);
+        }
     }
 
     private void receiveLoop() {
@@ -166,16 +174,51 @@ public final class VoiceServer {
     }
 
     private void handleMicFrame(MicFramePacket pkt, SocketAddress remote) {
-        UUID playerId = connectionsByAddress.get(remote);
-        if (playerId == null) return;
-        VoiceConnection conn = connections.get(playerId);
-        if (conn == null) return;
-        conn.touch();
+        UUID senderId = connectionsByAddress.get(remote);
+        if (senderId == null) return;
+        VoiceConnection senderConn = connections.get(senderId);
+        if (senderConn == null) return;
+        senderConn.touch();
 
-        // Echo mode: bounce the frame back as a SoundFrame from the sender at the
-        // position they reported. Real spatial distribution to other players lands in Phase 5.
-        SoundFramePacket echo = new SoundFramePacket(playerId, pkt.x, pkt.y, pkt.z, pkt.sequence, pkt.opusPayload);
-        sendSoundFrame(remote, echo);
+        PlayerStateRegistry.PlayerState senderState = PlayerStateRegistry.get(senderId);
+        // Prefer authoritative server-tracked position; fall back to client-reported
+        // if registry has no entry yet (e.g., during the first tick after login).
+        float sx;
+        float sy;
+        float sz;
+        int senderDim;
+        if (senderState != null) {
+            sx = (float) senderState.x;
+            sy = (float) senderState.y;
+            sz = (float) senderState.z;
+            senderDim = senderState.dimension;
+        } else {
+            sx = pkt.x;
+            sy = pkt.y;
+            sz = pkt.z;
+            senderDim = Integer.MIN_VALUE; // unknown — only sender hears themselves below
+        }
+
+        int radius = ProxyChatConfig.voiceRadius();
+        long radiusSq = (long) radius * radius;
+
+        SoundFramePacket out = new SoundFramePacket(senderId, sx, sy, sz, pkt.sequence, pkt.opusPayload);
+
+        for (Map.Entry<UUID, VoiceConnection> entry : connections.entrySet()) {
+            UUID receiverId = entry.getKey();
+            if (receiverId.equals(senderId)) continue; // never echo to self
+
+            PlayerStateRegistry.PlayerState recv = PlayerStateRegistry.get(receiverId);
+            if (recv == null) continue;
+            if (senderState == null || recv.dimension != senderDim) continue;
+
+            double dx = recv.x - sx;
+            double dy = recv.y - sy;
+            double dz = recv.z - sz;
+            if (dx * dx + dy * dy + dz * dz > radiusSq) continue;
+
+            sendSoundFrame(entry.getValue().remoteAddress, out);
+        }
     }
 
     private void handleDisconnect(SocketAddress remote) {
