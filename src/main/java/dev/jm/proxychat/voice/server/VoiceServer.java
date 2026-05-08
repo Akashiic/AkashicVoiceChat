@@ -19,6 +19,8 @@ import dev.jm.proxychat.voice.common.KeepAlivePacket;
 import dev.jm.proxychat.voice.common.MicFramePacket;
 import dev.jm.proxychat.voice.common.SoundFramePacket;
 import dev.jm.proxychat.voice.common.WirePacketType;
+import dev.jm.proxychat.voice.server.groups.GroupRegistry;
+import dev.jm.proxychat.voice.server.groups.GroupRegistryHolder;
 
 public final class VoiceServer {
 
@@ -205,12 +207,19 @@ public final class VoiceServer {
         SoundFramePacket out = new SoundFramePacket(senderId, sx, sy, sz, pkt.sequence, pkt.opusPayload);
 
         boolean selfEcho = ProxyChatConfig.debugSelfEcho();
+        GroupRegistry groups = GroupRegistryHolder.get();
         for (Map.Entry<UUID, VoiceConnection> entry : connections.entrySet()) {
             UUID receiverId = entry.getKey();
             if (receiverId.equals(senderId) && !selfEcho) continue;
 
             if (receiverId.equals(senderId)) {
-                // self-echo path: skip distance/dimension checks
+                // self-echo path: skip distance/dimension/group checks
+                sendSoundFrame(entry.getValue().remoteAddress, out);
+                continue;
+            }
+
+            // Group bypass: same group → always send, no distance/dimension check.
+            if (groups != null && groups.haveCommonGroup(senderId, receiverId)) {
                 sendSoundFrame(entry.getValue().remoteAddress, out);
                 continue;
             }

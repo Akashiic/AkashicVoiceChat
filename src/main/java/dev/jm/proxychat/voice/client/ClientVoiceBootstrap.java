@@ -15,11 +15,16 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import dev.jm.proxychat.ProxyChat;
+import dev.jm.proxychat.client.gui.GuiGroupInviteBanner;
 import dev.jm.proxychat.client.gui.GuiSetupWizard;
 import dev.jm.proxychat.client.gui.GuiVoiceChatHub;
 import dev.jm.proxychat.config.ProxyChatConfig;
+import dev.jm.proxychat.net.PacketInviteNotify;
 import dev.jm.proxychat.net.PacketRequestSecret;
 import dev.jm.proxychat.net.ProxyChatChannel;
+import dev.jm.proxychat.voice.client.groups.ClientGroupCache;
+import dev.jm.proxychat.voice.client.groups.ClientPlayerRoster;
+import dev.jm.proxychat.voice.client.groups.PendingInviteQueue;
 import dev.jm.proxychat.voice.client.keybinds.ProxyChatKeybinds;
 import dev.jm.proxychat.voice.client.playback.AudioPlayback;
 
@@ -100,9 +105,21 @@ public final class ClientVoiceBootstrap {
                 secretRequested = false;
                 wizardShown = false;
                 ClientSecretCache.clear();
+                ClientGroupCache.clear();
+                ClientPlayerRoster.clear();
+                PendingInviteQueue.clear();
                 VoiceClientHolder.stop();
             }
             return;
+        }
+
+        // Pending group invites: pop one and show the banner if no other GUI is up.
+        if (mc.currentScreen == null && !PendingInviteQueue.isEmpty()) {
+            PacketInviteNotify n = PendingInviteQueue.pop();
+            if (n != null) {
+                mc.displayGuiScreen(new GuiGroupInviteBanner(n));
+                return;
+            }
         }
 
         // First-run setup wizard: show once after first world join, only if no other GUI is up.

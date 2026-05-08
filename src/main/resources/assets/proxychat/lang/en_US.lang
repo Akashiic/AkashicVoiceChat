@@ -27,8 +27,18 @@ proxychat.gui.set.speakerNote1=Output device selection is not supported in this 
 proxychat.gui.set.speakerNote2=ProxyChat plays through your system default speaker.
 
 proxychat.gui.group.title=Group
-proxychat.gui.group.comingSoon1=Group voice chat is coming in the next release.
-proxychat.gui.group.comingSoon2=Proximity chat works for everyone in the meantime.
+proxychat.gui.group.notInOne=You are not in a group yet.
+proxychat.gui.group.create=Create group
+proxychat.gui.group.invite=Invite player
+proxychat.gui.group.leave=Leave group
+proxychat.gui.group.invitePicker=Invite a player
+proxychat.gui.group.noOne=No other players online with the mod.
+proxychat.gui.group.invited=Invited %s.
+proxychat.gui.group.owner=owner
+proxychat.gui.invite.title=Group invite
+proxychat.gui.invite.body=%s invited you to '%s'.
+proxychat.gui.invite.accept=Accept
+proxychat.gui.invite.decline=Decline
 
 proxychat.gui.wizard.title=Welcome to Voice Chat
 proxychat.gui.wizard.subtitle=Pick a microphone and check the level meter while you speak.

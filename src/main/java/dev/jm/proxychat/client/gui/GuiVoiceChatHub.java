@@ -53,7 +53,7 @@ public class GuiVoiceChatHub extends GuiScreen {
                 mc.displayGuiScreen(new GuiVoiceChatSettings());
                 return;
             case BTN_GROUP:
-                mc.displayGuiScreen(new GuiGroupPlaceholder());
+                mc.displayGuiScreen(new GuiGroup());
                 return;
             case BTN_MIC:
                 MicGate.toggleMute();

@@ -12,8 +12,20 @@ import dev.jm.proxychat.voice.server.PlayerStateRegistry;
 import dev.jm.proxychat.voice.server.SecretRegistry;
 import dev.jm.proxychat.voice.server.VoiceServer;
 import dev.jm.proxychat.voice.server.VoiceServerHolder;
+import dev.jm.proxychat.voice.server.groups.GroupRegistry;
+import dev.jm.proxychat.voice.server.groups.GroupRegistryHolder;
 
 public class CommonEvents {
+
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.player instanceof EntityPlayerMP)) return;
+        GroupRegistry registry = GroupRegistryHolder.get();
+        if (registry != null) {
+            registry.sendStateTo(event.player.getUniqueID());
+            registry.broadcastRoster();
+        }
+    }
 
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -22,6 +34,12 @@ public class CommonEvents {
         VoiceServer server = VoiceServerHolder.get();
         if (server != null) {
             server.disconnectPlayer(event.player.getUniqueID());
+        }
+        GroupRegistry registry = GroupRegistryHolder.get();
+        if (registry != null) {
+            registry.onPlayerLogout(event.player.getUniqueID());
+            // Broadcast updated roster (one fewer name).
+            registry.broadcastRoster();
         }
         ProxyChat.LOG.info("Cleaned up voice state for {}", event.player.getCommandSenderName());
     }
