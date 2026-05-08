@@ -5,9 +5,11 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import dev.jm.proxychat.command.PcDebugCommand;
 import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.net.ProxyChatChannel;
+import dev.jm.proxychat.voice.server.VoiceServerHolder;
 
 public class CommonProxy {
 
@@ -27,5 +29,10 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new PcDebugCommand());
+        VoiceServerHolder.start(ProxyChatConfig.voicePort());
+    }
+
+    public void serverStopping(FMLServerStoppingEvent event) {
+        VoiceServerHolder.stop();
     }
 }
