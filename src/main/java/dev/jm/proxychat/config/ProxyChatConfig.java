@@ -14,6 +14,10 @@ public final class ProxyChatConfig {
     public static final boolean DEFAULT_DEBUG_SELF_ECHO = false;
     public static final double DEFAULT_PLAYBACK_VOLUME = 3.0;
     public static final double DEFAULT_REFERENCE_DISTANCE = 4.0;
+    public static final String DEFAULT_SELECTED_MIC_MIXER = "";
+    public static final boolean DEFAULT_FIRST_RUN_COMPLETE = false;
+
+    private static Configuration cfg;
 
     private static int voicePort = DEFAULT_VOICE_PORT;
     private static int voiceRadius = DEFAULT_VOICE_RADIUS;
@@ -23,11 +27,13 @@ public final class ProxyChatConfig {
     private static boolean debugSelfEcho = DEFAULT_DEBUG_SELF_ECHO;
     private static double playbackVolume = DEFAULT_PLAYBACK_VOLUME;
     private static double referenceDistance = DEFAULT_REFERENCE_DISTANCE;
+    private static String selectedMicMixer = DEFAULT_SELECTED_MIC_MIXER;
+    private static boolean firstRunComplete = DEFAULT_FIRST_RUN_COMPLETE;
 
     private ProxyChatConfig() {}
 
-    public static void load(File configFile) {
-        Configuration cfg = new Configuration(configFile);
+    public static synchronized void load(File configFile) {
+        cfg = new Configuration(configFile);
         cfg.load();
 
         voicePort = cfg
@@ -88,9 +94,47 @@ public final class ProxyChatConfig {
                 64.0)
             .getDouble();
 
+        selectedMicMixer = cfg.getString(
+            "selectedMicMixer",
+            "client",
+            DEFAULT_SELECTED_MIC_MIXER,
+            "Name of the audio Mixer used for microphone input. Empty = system default.");
+
+        firstRunComplete = cfg.getBoolean(
+            "firstRunComplete",
+            "client",
+            DEFAULT_FIRST_RUN_COMPLETE,
+            "Set automatically once the user finishes the first-run setup wizard. Reset to false to re-show the wizard.");
+
         if (cfg.hasChanged()) {
             cfg.save();
         }
+    }
+
+    public static synchronized void save() {
+        if (cfg == null) return;
+        cfg.get("voice", "voicePort", DEFAULT_VOICE_PORT)
+            .set(voicePort);
+        cfg.get("voice", "voiceRadius", DEFAULT_VOICE_RADIUS)
+            .set(voiceRadius);
+        cfg.get("voice", "opusBitrate", DEFAULT_OPUS_BITRATE)
+            .set(opusBitrate);
+        cfg.get("voice", "debugSelfEcho", DEFAULT_DEBUG_SELF_ECHO)
+            .set(debugSelfEcho);
+
+        cfg.get("client", "activationMode", DEFAULT_ACTIVATION_MODE)
+            .set(activationMode);
+        cfg.get("client", "vadThreshold", DEFAULT_VAD_THRESHOLD)
+            .set(vadThreshold);
+        cfg.get("client", "playbackVolume", DEFAULT_PLAYBACK_VOLUME)
+            .set(playbackVolume);
+        cfg.get("client", "referenceDistance", DEFAULT_REFERENCE_DISTANCE)
+            .set(referenceDistance);
+        cfg.get("client", "selectedMicMixer", DEFAULT_SELECTED_MIC_MIXER)
+            .set(selectedMicMixer);
+        cfg.get("client", "firstRunComplete", DEFAULT_FIRST_RUN_COMPLETE)
+            .set(firstRunComplete);
+        cfg.save();
     }
 
     public static int voicePort() {
@@ -109,8 +153,16 @@ public final class ProxyChatConfig {
         return activationMode;
     }
 
+    public static void setActivationMode(String mode) {
+        activationMode = mode;
+    }
+
     public static double vadThreshold() {
         return vadThreshold;
+    }
+
+    public static void setVadThreshold(double v) {
+        vadThreshold = v;
     }
 
     public static boolean debugSelfEcho() {
@@ -121,7 +173,27 @@ public final class ProxyChatConfig {
         return playbackVolume;
     }
 
+    public static void setPlaybackVolume(double v) {
+        playbackVolume = v;
+    }
+
     public static double referenceDistance() {
         return referenceDistance;
+    }
+
+    public static String selectedMicMixer() {
+        return selectedMicMixer;
+    }
+
+    public static void setSelectedMicMixer(String name) {
+        selectedMicMixer = name == null ? "" : name;
+    }
+
+    public static boolean firstRunComplete() {
+        return firstRunComplete;
+    }
+
+    public static void setFirstRunComplete(boolean v) {
+        firstRunComplete = v;
     }
 }

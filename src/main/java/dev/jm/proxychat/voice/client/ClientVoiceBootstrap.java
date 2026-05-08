@@ -15,6 +15,8 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import dev.jm.proxychat.ProxyChat;
+import dev.jm.proxychat.client.gui.GuiProxyChatSettings;
+import dev.jm.proxychat.client.gui.GuiSetupWizard;
 import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.net.PacketRequestSecret;
 import dev.jm.proxychat.net.ProxyChatChannel;
@@ -45,6 +47,7 @@ public final class ClientVoiceBootstrap {
     };
 
     private volatile boolean secretRequested = false;
+    private volatile boolean wizardShown = false;
 
     private ClientVoiceBootstrap() {}
 
@@ -95,10 +98,26 @@ public final class ClientVoiceBootstrap {
             // Left world (or not in one yet). Reset so next join re-requests.
             if (secretRequested) {
                 secretRequested = false;
+                wizardShown = false;
                 ClientSecretCache.clear();
                 VoiceClientHolder.stop();
             }
             return;
+        }
+
+        // First-run setup wizard: show once after first world join, only if no other GUI is up.
+        if (!ProxyChatConfig.firstRunComplete() && !wizardShown && mc.currentScreen == null) {
+            wizardShown = true;
+            mc.displayGuiScreen(new GuiSetupWizard());
+            return;
+        }
+
+        // Settings hotkey: edge-triggered, only when no GUI is up.
+        while (ProxyChatKeybinds.OPEN_SETTINGS.isPressed()) {
+            if (mc.currentScreen == null) {
+                mc.displayGuiScreen(new GuiProxyChatSettings());
+                return;
+            }
         }
 
         // In a world. Step 1: request the secret if we haven't yet.

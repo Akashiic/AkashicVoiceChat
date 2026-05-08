@@ -1,3 +1,21 @@
 key.proxychat.category=ProxyChat
 key.proxychat.ptt=Push-to-Talk
 key.proxychat.mute=Toggle Mute
+key.proxychat.openSettings=Open ProxyChat Settings
+
+proxychat.gui.done=Done
+proxychat.gui.settings.title=ProxyChat Settings
+proxychat.gui.wizard.title=Welcome to ProxyChat
+proxychat.gui.wizard.subtitle=Pick a microphone and check the level meter while you speak.
+proxychat.gui.wizard.device=Microphone
+proxychat.gui.wizard.testHint=Speak now — the bar should move.
+proxychat.gui.wizard.noMics=No microphone detected
+proxychat.gui.runWizard=Run setup wizard again
+proxychat.gui.mode=Mode
+proxychat.gui.mode.ptt=Push-to-Talk
+proxychat.gui.mode.voice=Voice Activation
+proxychat.gui.mode.always=Always On
+proxychat.gui.mic=Microphone
+proxychat.gui.muted=Muted
+proxychat.gui.unmuted=Unmuted
+proxychat.gui.volume=Volume

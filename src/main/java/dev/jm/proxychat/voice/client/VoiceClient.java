@@ -102,6 +102,15 @@ public final class VoiceClient {
         return authenticated;
     }
 
+    public synchronized void restartMicCapture() {
+        if (!running || !authenticated) return;
+        if (micCapture != null) {
+            micCapture.stop();
+            micCapture = null;
+        }
+        startMicCapture();
+    }
+
     public long receivedFrameCount() {
         return receivedFrames.get();
     }
@@ -173,7 +182,9 @@ public final class VoiceClient {
 
     private void startMicCapture() {
         try {
-            micCapture = new MicCapture(this::onMicFrame);
+            javax.sound.sampled.Mixer.Info mixer = dev.jm.proxychat.voice.client.audio.MicDeviceRegistry
+                .findByName(dev.jm.proxychat.config.ProxyChatConfig.selectedMicMixer());
+            micCapture = new MicCapture(this::onMicFrame, mixer);
             micCapture.start();
         } catch (LineUnavailableException e) {
             ProxyChat.LOG.warn("Microphone unavailable: {}", e.getMessage());

@@ -33,4 +33,9 @@ public final class VoiceClientHolder {
     public static VoiceClient get() {
         return instance;
     }
+
+    public static synchronized void notifyMicChanged() {
+        VoiceClient v = instance;
+        if (v != null) v.restartMicCapture();
+    }
 }

@@ -4,6 +4,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
 import dev.jm.proxychat.ProxyChat;
@@ -19,23 +20,39 @@ public final class MicCapture {
     }
 
     private final FrameSink sink;
+    private final Mixer.Info mixerInfo;
     private TargetDataLine line;
     private OpusEncoder encoder;
     private Thread thread;
     private volatile boolean running;
 
     public MicCapture(FrameSink sink) {
+        this(sink, null);
+    }
+
+    public MicCapture(FrameSink sink, Mixer.Info mixerInfo) {
         this.sink = sink;
+        this.mixerInfo = mixerInfo;
     }
 
     public synchronized void start() throws LineUnavailableException {
         if (running) return;
         AudioFormat format = new AudioFormat(AudioFormatSpec.SAMPLE_RATE, 16, AudioFormatSpec.CHANNELS, true, false);
         DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-        if (!AudioSystem.isLineSupported(info)) {
-            throw new LineUnavailableException("No microphone line supports " + format);
+
+        if (mixerInfo != null) {
+            Mixer mixer = AudioSystem.getMixer(mixerInfo);
+            if (!mixer.isLineSupported(info)) {
+                throw new LineUnavailableException("Mixer '" + mixerInfo.getName() + "' does not support " + format);
+            }
+            line = (TargetDataLine) mixer.getLine(info);
+        } else {
+            if (!AudioSystem.isLineSupported(info)) {
+                throw new LineUnavailableException("No microphone line supports " + format);
+            }
+            line = (TargetDataLine) AudioSystem.getLine(info);
         }
-        line = (TargetDataLine) AudioSystem.getLine(info);
+
         line.open(format, AudioFormatSpec.FRAME_BYTES_PCM_S16 * 4);
         line.start();
 
@@ -45,9 +62,10 @@ public final class MicCapture {
         thread.setDaemon(true);
         thread.start();
         ProxyChat.LOG.info(
-            "Microphone capture started ({} Hz, {}-sample frames)",
+            "Microphone capture started ({} Hz, {}-sample frames, mixer={})",
             AudioFormatSpec.SAMPLE_RATE,
-            AudioFormatSpec.FRAME_SAMPLES);
+            AudioFormatSpec.FRAME_SAMPLES,
+            mixerInfo != null ? mixerInfo.getName() : "<system default>");
     }
 
     public synchronized void stop() {
