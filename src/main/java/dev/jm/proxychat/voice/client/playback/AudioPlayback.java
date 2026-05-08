@@ -23,6 +23,8 @@ public final class AudioPlayback {
     private Thread thread;
     private volatile boolean running;
     private volatile float maxDistance = 48f;
+    private volatile float referenceDistance = 4f;
+    private volatile float listenerGain = 3f;
     private boolean weCreatedAl;
 
     private AudioPlayback() {}
@@ -49,12 +51,24 @@ public final class AudioPlayback {
         this.maxDistance = maxDistance;
     }
 
+    public void setReferenceDistance(float referenceDistance) {
+        this.referenceDistance = referenceDistance;
+    }
+
+    public void setListenerGain(float gain) {
+        if (gain == this.listenerGain) return;
+        this.listenerGain = gain;
+        if (running) {
+            tasks.offer(() -> AL10.alListenerf(AL10.AL_GAIN, gain));
+        }
+    }
+
     public void submitFrame(UUID senderId, float x, float y, float z, short[] pcm) {
         if (!running) return;
         tasks.offer(() -> {
             PlaybackChannel ch = channels.get(senderId);
             if (ch == null) {
-                ch = new PlaybackChannel();
+                ch = new PlaybackChannel(referenceDistance);
                 ch.setMaxDistance(maxDistance);
                 channels.put(senderId, ch);
             }
@@ -140,6 +154,7 @@ public final class AudioPlayback {
             ProxyChat.LOG.info("OpenAL already initialized; reusing existing context");
         }
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
+        AL10.alListenerf(AL10.AL_GAIN, listenerGain);
     }
 
     private void shutdownOpenAl() {

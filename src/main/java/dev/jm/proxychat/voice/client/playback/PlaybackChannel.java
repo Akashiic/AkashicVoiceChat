@@ -20,12 +20,12 @@ public final class PlaybackChannel {
     private float y;
     private float z;
 
-    public PlaybackChannel() {
+    public PlaybackChannel(float referenceDistance) {
         IntBuffer src = BufferUtils.createIntBuffer(1);
         AL10.alGenSources(src);
         this.sourceId = src.get(0);
 
-        AL10.alSourcef(sourceId, AL10.AL_REFERENCE_DISTANCE, 1.0f);
+        AL10.alSourcef(sourceId, AL10.AL_REFERENCE_DISTANCE, referenceDistance);
         AL10.alSourcef(sourceId, AL10.AL_ROLLOFF_FACTOR, 1.0f);
         AL10.alSourcei(sourceId, AL10.AL_SOURCE_RELATIVE, AL10.AL_FALSE);
     }

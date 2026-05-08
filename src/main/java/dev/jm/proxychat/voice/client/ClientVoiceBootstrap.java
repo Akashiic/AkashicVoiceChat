@@ -137,10 +137,12 @@ public final class ClientVoiceBootstrap {
             MicGate.setPttPressed(pttDown);
         }
 
-        // Listener position update.
+        // Listener position + audio config update.
         AudioPlayback p = AudioPlayback.get();
         if (p == null) return;
         p.setMaxDistance(ProxyChatConfig.voiceRadius());
+        p.setReferenceDistance((float) ProxyChatConfig.referenceDistance());
+        p.setListenerGain((float) ProxyChatConfig.playbackVolume());
         float pitchRad = (float) Math.toRadians(player.rotationPitch);
         float yawRad = (float) Math.toRadians(player.rotationYaw);
         p.updateListener((float) player.posX, (float) player.posY, (float) player.posZ, pitchRad, yawRad);

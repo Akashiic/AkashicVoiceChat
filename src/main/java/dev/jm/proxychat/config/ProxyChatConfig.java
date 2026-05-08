@@ -12,6 +12,8 @@ public final class ProxyChatConfig {
     public static final String DEFAULT_ACTIVATION_MODE = "ptt";
     public static final double DEFAULT_VAD_THRESHOLD = 0.02;
     public static final boolean DEFAULT_DEBUG_SELF_ECHO = false;
+    public static final double DEFAULT_PLAYBACK_VOLUME = 3.0;
+    public static final double DEFAULT_REFERENCE_DISTANCE = 4.0;
 
     private static int voicePort = DEFAULT_VOICE_PORT;
     private static int voiceRadius = DEFAULT_VOICE_RADIUS;
@@ -19,6 +21,8 @@ public final class ProxyChatConfig {
     private static String activationMode = DEFAULT_ACTIVATION_MODE;
     private static double vadThreshold = DEFAULT_VAD_THRESHOLD;
     private static boolean debugSelfEcho = DEFAULT_DEBUG_SELF_ECHO;
+    private static double playbackVolume = DEFAULT_PLAYBACK_VOLUME;
+    private static double referenceDistance = DEFAULT_REFERENCE_DISTANCE;
 
     private ProxyChatConfig() {}
 
@@ -65,6 +69,25 @@ public final class ProxyChatConfig {
             DEFAULT_DEBUG_SELF_ECHO,
             "If true, the server also echoes mic frames back to the sender. Solo-testing only — turn off in production.");
 
+        playbackVolume = cfg.get(
+            "client",
+            "playbackVolume",
+            DEFAULT_PLAYBACK_VOLUME,
+            "OpenAL listener gain applied to all incoming voices. 1.0 = normal, 3.0 = +9 dB (default). Raise if voices sound too quiet.",
+            0.0,
+            10.0)
+            .getDouble();
+
+        referenceDistance = cfg
+            .get(
+                "client",
+                "referenceDistance",
+                DEFAULT_REFERENCE_DISTANCE,
+                "Distance in blocks within which a voice plays at full volume before attenuation begins.",
+                1.0,
+                64.0)
+            .getDouble();
+
         if (cfg.hasChanged()) {
             cfg.save();
         }
@@ -92,5 +115,13 @@ public final class ProxyChatConfig {
 
     public static boolean debugSelfEcho() {
         return debugSelfEcho;
+    }
+
+    public static double playbackVolume() {
+        return playbackVolume;
+    }
+
+    public static double referenceDistance() {
+        return referenceDistance;
     }
 }
