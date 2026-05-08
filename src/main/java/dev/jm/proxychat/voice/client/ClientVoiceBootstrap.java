@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -17,6 +16,8 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import dev.jm.proxychat.ProxyChat;
 import dev.jm.proxychat.config.ProxyChatConfig;
+import dev.jm.proxychat.net.PacketRequestSecret;
+import dev.jm.proxychat.net.ProxyChatChannel;
 import dev.jm.proxychat.voice.client.keybinds.ProxyChatKeybinds;
 import dev.jm.proxychat.voice.client.playback.AudioPlayback;
 
@@ -43,10 +44,11 @@ public final class ClientVoiceBootstrap {
         }
     };
 
+    private volatile boolean secretRequested = false;
+
     private ClientVoiceBootstrap() {}
 
     public static void install() {
-        ClientSecretCache.setOnAvailable(ClientVoiceBootstrap::onSecretAvailable);
         applyConfigToGate();
         FMLCommonHandler.instance()
             .bus()
@@ -62,22 +64,6 @@ public final class ClientVoiceBootstrap {
         } else {
             MicGate.setMode(MicGate.Mode.PTT);
         }
-    }
-
-    private static void onSecretAvailable(UUID secret, Integer udpPort) {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc == null) return;
-        EntityPlayer player = mc.thePlayer;
-        if (player == null) {
-            ProxyChat.LOG.warn("Voice secret arrived but player is null; skipping connect");
-            return;
-        }
-        InetAddress host = resolveServerHost(mc);
-        if (host == null) {
-            ProxyChat.LOG.warn("Could not resolve voice server host; skipping connect");
-            return;
-        }
-        VoiceClientHolder.connect(player.getUniqueID(), secret, host, udpPort, PLAYER_POS);
     }
 
     private static InetAddress resolveServerHost(Minecraft mc) {
@@ -103,29 +89,57 @@ public final class ClientVoiceBootstrap {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc == null) return;
+        EntityPlayer player = mc.thePlayer;
 
-        // Mute toggle: edge-triggered via KeyBinding.isPressed() (true once per press).
-        while (ProxyChatKeybinds.MUTE_TOGGLE.isPressed()) {
-            MicGate.toggleMute();
-            EntityPlayer notifyTarget = mc.thePlayer;
-            if (notifyTarget != null) {
-                notifyTarget.addChatMessage(
-                    new ChatComponentText("ProxyChat: microphone " + (MicGate.isMuted() ? "muted" : "unmuted")));
+        if (player == null) {
+            // Left world (or not in one yet). Reset so next join re-requests.
+            if (secretRequested) {
+                secretRequested = false;
+                ClientSecretCache.clear();
+                VoiceClientHolder.stop();
+            }
+            return;
+        }
+
+        // In a world. Step 1: request the secret if we haven't yet.
+        if (!secretRequested) {
+            ClientSecretCache.clear();
+            VoiceClientHolder.stop();
+            ProxyChat.LOG.info("Requesting voice secret from server");
+            ProxyChatChannel.get()
+                .sendToServer(new PacketRequestSecret());
+            secretRequested = true;
+        }
+
+        // Step 2: once the secret arrives, open the UDP voice connection.
+        if (ClientSecretCache.hasSecret() && VoiceClientHolder.get() == null) {
+            InetAddress host = resolveServerHost(mc);
+            if (host != null) {
+                VoiceClientHolder.connect(
+                    player.getUniqueID(),
+                    ClientSecretCache.getSecret(),
+                    host,
+                    ClientSecretCache.getUdpPort(),
+                    PLAYER_POS);
             }
         }
 
-        // PTT: continuous state. Poll the keybind's bound key directly so it works
-        // even when a chat box has focus only when allowed by the user.
+        // Mute toggle (edge-triggered).
+        while (ProxyChatKeybinds.MUTE_TOGGLE.isPressed()) {
+            MicGate.toggleMute();
+            player.addChatMessage(
+                new ChatComponentText("ProxyChat: microphone " + (MicGate.isMuted() ? "muted" : "unmuted")));
+        }
+
+        // PTT (continuous state).
         boolean pttDown = isKeyDown(ProxyChatKeybinds.PTT);
         if (pttDown != MicGate.isPttPressed()) {
             MicGate.setPttPressed(pttDown);
         }
 
+        // Listener position update.
         AudioPlayback p = AudioPlayback.get();
         if (p == null) return;
-        EntityPlayer player = mc.thePlayer;
-        if (player == null) return;
-
         p.setMaxDistance(ProxyChatConfig.voiceRadius());
         float pitchRad = (float) Math.toRadians(player.rotationPitch);
         float yawRad = (float) Math.toRadians(player.rotationYaw);
@@ -137,7 +151,6 @@ public final class ClientVoiceBootstrap {
             int code = kb.getKeyCode();
             if (code == 0) return false;
             if (code < 0) {
-                // Mouse button — Mouse.isButtonDown takes 0..n
                 return org.lwjgl.input.Mouse.isButtonDown(code + 100);
             }
             return org.lwjgl.input.Keyboard.isKeyDown(code);
