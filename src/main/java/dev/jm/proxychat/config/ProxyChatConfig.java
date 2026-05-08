@@ -11,12 +11,14 @@ public final class ProxyChatConfig {
     public static final int DEFAULT_OPUS_BITRATE = 24_000;
     public static final String DEFAULT_ACTIVATION_MODE = "ptt";
     public static final double DEFAULT_VAD_THRESHOLD = 0.02;
+    public static final boolean DEFAULT_DEBUG_SELF_ECHO = false;
 
     private static int voicePort = DEFAULT_VOICE_PORT;
     private static int voiceRadius = DEFAULT_VOICE_RADIUS;
     private static int opusBitrate = DEFAULT_OPUS_BITRATE;
     private static String activationMode = DEFAULT_ACTIVATION_MODE;
     private static double vadThreshold = DEFAULT_VAD_THRESHOLD;
+    private static boolean debugSelfEcho = DEFAULT_DEBUG_SELF_ECHO;
 
     private ProxyChatConfig() {}
 
@@ -57,6 +59,12 @@ public final class ProxyChatConfig {
                 1.0)
             .getDouble();
 
+        debugSelfEcho = cfg.getBoolean(
+            "debugSelfEcho",
+            "voice",
+            DEFAULT_DEBUG_SELF_ECHO,
+            "If true, the server also echoes mic frames back to the sender. Solo-testing only — turn off in production.");
+
         if (cfg.hasChanged()) {
             cfg.save();
         }
@@ -80,5 +88,9 @@ public final class ProxyChatConfig {
 
     public static double vadThreshold() {
         return vadThreshold;
+    }
+
+    public static boolean debugSelfEcho() {
+        return debugSelfEcho;
     }
 }

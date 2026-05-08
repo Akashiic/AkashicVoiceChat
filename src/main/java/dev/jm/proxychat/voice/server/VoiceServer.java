@@ -204,9 +204,16 @@ public final class VoiceServer {
 
         SoundFramePacket out = new SoundFramePacket(senderId, sx, sy, sz, pkt.sequence, pkt.opusPayload);
 
+        boolean selfEcho = ProxyChatConfig.debugSelfEcho();
         for (Map.Entry<UUID, VoiceConnection> entry : connections.entrySet()) {
             UUID receiverId = entry.getKey();
-            if (receiverId.equals(senderId)) continue; // never echo to self
+            if (receiverId.equals(senderId) && !selfEcho) continue;
+
+            if (receiverId.equals(senderId)) {
+                // self-echo path: skip distance/dimension checks
+                sendSoundFrame(entry.getValue().remoteAddress, out);
+                continue;
+            }
 
             PlayerStateRegistry.PlayerState recv = PlayerStateRegistry.get(receiverId);
             if (recv == null) continue;
