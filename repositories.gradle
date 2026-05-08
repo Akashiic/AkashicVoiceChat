@@ -1,5 +1,11 @@
 // Add any additional repositories for your dependencies here.
 
 repositories {
-
+    maven {
+        name = "JitPack"
+        url = uri("https://jitpack.io")
+        content {
+            includeGroup("com.github.lostromb.concentus")
+        }
+    }
 }

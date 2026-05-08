@@ -5,6 +5,7 @@ import cpw.mods.fml.common.gameevent.PlayerEvent;
 import dev.jm.proxychat.net.PacketRequestSecret;
 import dev.jm.proxychat.net.ProxyChatChannel;
 import dev.jm.proxychat.voice.client.ClientSecretCache;
+import dev.jm.proxychat.voice.client.VoiceClientHolder;
 
 public class ClientEvents {
 
@@ -19,5 +20,6 @@ public class ClientEvents {
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         ClientSecretCache.clear();
+        VoiceClientHolder.stop();
     }
 }
