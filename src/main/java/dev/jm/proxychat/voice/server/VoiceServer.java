@@ -172,9 +172,9 @@ public final class VoiceServer {
         if (conn == null) return;
         conn.touch();
 
-        // Phase 2 echo: bounce the frame back as a SoundFrame from the sender themselves
-        // at origin. Real spatial distribution lands in Phase 5.
-        SoundFramePacket echo = new SoundFramePacket(playerId, 0f, 0f, 0f, pkt.sequence, pkt.opusPayload);
+        // Echo mode: bounce the frame back as a SoundFrame from the sender at the
+        // position they reported. Real spatial distribution to other players lands in Phase 5.
+        SoundFramePacket echo = new SoundFramePacket(playerId, pkt.x, pkt.y, pkt.z, pkt.sequence, pkt.opusPayload);
         sendSoundFrame(remote, echo);
     }
 

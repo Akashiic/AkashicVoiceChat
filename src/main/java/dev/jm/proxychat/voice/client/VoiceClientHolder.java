@@ -12,9 +12,10 @@ public final class VoiceClientHolder {
 
     private VoiceClientHolder() {}
 
-    public static synchronized void connect(UUID playerId, UUID secret, InetAddress host, int udpPort) {
+    public static synchronized void connect(UUID playerId, UUID secret, InetAddress host, int udpPort,
+        PositionSupplier positionSupplier) {
         stop();
-        VoiceClient client = new VoiceClient(playerId, secret, host, udpPort);
+        VoiceClient client = new VoiceClient(playerId, secret, host, udpPort, positionSupplier);
         try {
             client.start();
             instance = client;

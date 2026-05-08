@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.sound.sampled.LineUnavailableException;
 
 import dev.jm.proxychat.ProxyChat;
+import dev.jm.proxychat.voice.client.playback.AudioPlayback;
 import dev.jm.proxychat.voice.common.AuthAckPacket;
 import dev.jm.proxychat.voice.common.AuthenticatePacket;
 import dev.jm.proxychat.voice.common.KeepAlivePacket;
@@ -32,11 +33,13 @@ public final class VoiceClient {
     private final UUID secret;
     private final InetAddress serverHost;
     private final int serverPort;
+    private final PositionSupplier positionSupplier;
 
     private DatagramSocket socket;
     private SocketAddress serverAddress;
     private MicCapture micCapture;
     private OpusDecoder decoder;
+    private AudioPlayback playback;
 
     private Thread receiveThread;
     private Thread keepAliveThread;
@@ -44,11 +47,13 @@ public final class VoiceClient {
     private volatile boolean authenticated;
     private final AtomicLong receivedFrames = new AtomicLong();
 
-    public VoiceClient(UUID playerId, UUID secret, InetAddress serverHost, int serverPort) {
+    public VoiceClient(UUID playerId, UUID secret, InetAddress serverHost, int serverPort,
+        PositionSupplier positionSupplier) {
         this.playerId = playerId;
         this.secret = secret;
         this.serverHost = serverHost;
         this.serverPort = serverPort;
+        this.positionSupplier = positionSupplier != null ? positionSupplier : PositionSupplier.ZERO;
     }
 
     public synchronized void start() throws IOException {
@@ -58,6 +63,7 @@ public final class VoiceClient {
         running = true;
 
         decoder = OpusCodecFactory.createDecoder();
+        playback = AudioPlayback.start();
 
         receiveThread = new Thread(this::receiveLoop, "ProxyChat-Voice-Client-Recv");
         receiveThread.setDaemon(true);
@@ -86,6 +92,8 @@ public final class VoiceClient {
             decoder.close();
             decoder = null;
         }
+        AudioPlayback.stop();
+        playback = null;
         ProxyChat.LOG.info("VoiceClient stopped");
     }
 
@@ -141,7 +149,7 @@ public final class VoiceClient {
                 handleAuthAck(AuthAckPacket.read(buf));
                 break;
             case WirePacketType.KEEPALIVE:
-                // Server replies; nothing to do beyond noting RTT later.
+                // server reply; unused for now
                 break;
             case WirePacketType.SOUND_FRAME:
                 handleSoundFrame(SoundFramePacket.read(buf));
@@ -174,7 +182,12 @@ public final class VoiceClient {
     private void onMicFrame(int sequence, byte[] opusPayload, int payloadLength) {
         byte[] trimmed = new byte[payloadLength];
         System.arraycopy(opusPayload, 0, trimmed, 0, payloadLength);
-        MicFramePacket pkt = new MicFramePacket(sequence, trimmed);
+        MicFramePacket pkt = new MicFramePacket(
+            sequence,
+            positionSupplier.x(),
+            positionSupplier.y(),
+            positionSupplier.z(),
+            trimmed);
         ByteBuffer buf = ByteBuffer.allocate(pkt.byteSize());
         pkt.write(buf);
         sendBuffer(buf);
@@ -182,14 +195,16 @@ public final class VoiceClient {
 
     private void handleSoundFrame(SoundFramePacket pkt) {
         long count = receivedFrames.incrementAndGet();
-        // Decode for verification; playback lands in Phase 4.
         try {
             short[] pcm = new short[AudioFormatSpec.FRAME_SAMPLES];
-            decoder.decode(pkt.opusPayload, pkt.opusPayload.length, pcm);
+            int decoded = decoder.decode(pkt.opusPayload, pkt.opusPayload.length, pcm);
+            if (decoded > 0 && playback != null) {
+                playback.submitFrame(pkt.senderId, pkt.x, pkt.y, pkt.z, pcm);
+            }
         } catch (RuntimeException e) {
             ProxyChat.LOG.debug("Sound frame decode failed at seq {}", pkt.sequence, e);
         }
-        if (count == 1 || count % 50 == 0) {
+        if (count == 1 || count % 250 == 0) {
             ProxyChat.LOG.info("Decoded {} sound frames so far (last seq {})", count, pkt.sequence);
         }
     }
