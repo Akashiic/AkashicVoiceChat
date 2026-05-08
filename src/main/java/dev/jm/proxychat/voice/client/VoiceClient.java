@@ -14,6 +14,7 @@ import javax.sound.sampled.LineUnavailableException;
 
 import dev.jm.proxychat.ProxyChat;
 import dev.jm.proxychat.voice.client.playback.AudioPlayback;
+import dev.jm.proxychat.voice.client.talk.TalkCache;
 import dev.jm.proxychat.voice.common.AuthAckPacket;
 import dev.jm.proxychat.voice.common.AuthenticatePacket;
 import dev.jm.proxychat.voice.common.KeepAlivePacket;
@@ -200,6 +201,7 @@ public final class VoiceClient {
             int decoded = decoder.decode(pkt.opusPayload, pkt.opusPayload.length, pcm);
             if (decoded > 0 && playback != null) {
                 playback.submitFrame(pkt.senderId, pkt.x, pkt.y, pkt.z, pcm);
+                TalkCache.markSpeaking(pkt.senderId);
             }
         } catch (RuntimeException e) {
             ProxyChat.LOG.debug("Sound frame decode failed at seq {}", pkt.sequence, e);

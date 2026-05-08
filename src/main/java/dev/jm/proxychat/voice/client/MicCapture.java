@@ -90,6 +90,8 @@ public final class MicCapture {
                 pcm[i] = (short) ((hi << 8) | lo);
             }
 
+            if (!MicGate.shouldTransmit(pcm)) continue;
+
             try {
                 int len = encoder.encode(pcm, opusOut);
                 sink.onFrame(sequence++, opusOut, len);

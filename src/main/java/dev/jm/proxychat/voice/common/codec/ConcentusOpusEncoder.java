@@ -7,12 +7,13 @@ public final class ConcentusOpusEncoder implements OpusEncoder {
 
     private final org.concentus.OpusEncoder delegate;
 
-    public ConcentusOpusEncoder() {
+    public ConcentusOpusEncoder(int bitrate) {
         try {
             this.delegate = new org.concentus.OpusEncoder(
                 AudioFormatSpec.SAMPLE_RATE,
                 AudioFormatSpec.CHANNELS,
                 OpusApplication.OPUS_APPLICATION_VOIP);
+            this.delegate.setBitrate(bitrate);
         } catch (OpusException e) {
             throw new IllegalStateException("Failed to initialize Concentus encoder", e);
         }
