@@ -7,7 +7,6 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import dev.jm.proxychat.config.ProxyChatConfig;
 import dev.jm.proxychat.voice.client.talk.TalkCache;
 
 public final class SpeakerOverlay {
@@ -15,7 +14,6 @@ public final class SpeakerOverlay {
     @SubscribeEvent
     public void onRenderPlayer(RenderPlayerEvent.Specials.Post event) {
         if (event.entityPlayer == null) return;
-        if (!ProxyChatConfig.showSpeakerIndicators()) return;
         if (!TalkCache.isSpeaking(event.entityPlayer.getUniqueID())) return;
 
         float headOffset = event.entityPlayer.height + 0.5f;

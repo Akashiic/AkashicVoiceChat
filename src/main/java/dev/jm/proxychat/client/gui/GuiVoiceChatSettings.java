@@ -23,7 +23,6 @@ public class GuiVoiceChatSettings extends GuiScreen {
     private static final int BTN_3D_AUDIO = 103;
     private static final int BTN_SELECT_MIC = 104;
     private static final int BTN_SELECT_SPEAKER = 105;
-    private static final int BTN_INDICATORS = 107;
     private static final int BTN_DONE = 106;
 
     private PercentSlider volumeSlider;
@@ -33,7 +32,6 @@ public class GuiVoiceChatSettings extends GuiScreen {
     private GuiButton activationBtn;
     private GuiButton testMicBtn;
     private GuiButton audio3dBtn;
-    private GuiButton indicatorsBtn;
 
     private boolean micTesting;
     private MicLevelMonitor monitor;
@@ -90,10 +88,6 @@ public class GuiVoiceChatSettings extends GuiScreen {
 
         audio3dBtn = new GuiButton(BTN_3D_AUDIO, cx - btnW / 2, rowY, btnW, rowH, audio3dLabel());
         buttonList.add(audio3dBtn);
-        rowY += rowH + 3;
-
-        indicatorsBtn = new GuiButton(BTN_INDICATORS, cx - btnW / 2, rowY, btnW, rowH, indicatorsLabel());
-        buttonList.add(indicatorsBtn);
         rowY += rowH + 6;
 
         int halfW = (btnW - 4) / 2;
@@ -137,11 +131,6 @@ public class GuiVoiceChatSettings extends GuiScreen {
             + I18n.format("proxychat.gui.set.audio3d." + ProxyChatConfig.audio3dMode());
     }
 
-    private String indicatorsLabel() {
-        return I18n.format("proxychat.gui.set.indicators") + ": "
-            + I18n.format(ProxyChatConfig.showSpeakerIndicators() ? "options.on" : "options.off");
-    }
-
     @Override
     protected void actionPerformed(GuiButton btn) {
         if (btn == volumeSlider || btn == micAmpSlider || btn == thresholdSlider) return;
@@ -176,11 +165,6 @@ public class GuiVoiceChatSettings extends GuiScreen {
                 audio3dBtn.displayString = audio3dLabel();
                 break;
             }
-            case BTN_INDICATORS:
-                ProxyChatConfig.setShowSpeakerIndicators(!ProxyChatConfig.showSpeakerIndicators());
-                ProxyChatConfig.save();
-                indicatorsBtn.displayString = indicatorsLabel();
-                break;
             case BTN_SELECT_MIC:
                 stopMonitor();
                 mc.displayGuiScreen(new GuiSelectMicrophone(this));

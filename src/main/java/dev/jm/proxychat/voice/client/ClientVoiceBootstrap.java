@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.util.ChatComponentText;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -160,11 +159,9 @@ public final class ClientVoiceBootstrap {
             }
         }
 
-        // Mute toggle (edge-triggered).
+        // Mute toggle (edge-triggered). State change is shown by the HUD icon, no chat spam.
         while (ProxyChatKeybinds.MUTE_TOGGLE.isPressed()) {
             MicGate.toggleMute();
-            player.addChatMessage(
-                new ChatComponentText("ProxyChat: microphone " + (MicGate.isMuted() ? "muted" : "unmuted")));
         }
 
         // PTT (continuous state).
