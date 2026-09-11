@@ -38,4 +38,7 @@ layout.json
 
 # Claude scheduling lockfile
 .claude/
-assets/
+/assets/
+
+# Local engineering logs and one-off patch scripts
+/audit/

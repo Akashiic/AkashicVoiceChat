@@ -1,142 +1,98 @@
-# ProxyChat
+# Akashic Voice
 
-Proximity voice chat for **Minecraft 1.7.10**, designed for the **GregTech: New Horizons** modpack.
+High-quality spatial voice for Minecraft 1.7.10, engineered for legacy clients without forcing a legacy server stack.
 
-ProxyChat is an independent, clean-room implementation. It does not share code or assets
-with any other voice chat mod.
+Akashic Voice is derived from the MIT-licensed ProxyChat project and is being re-architected for the Rede Akashic / The End of The Forbidden environment. The client contract is deliberately conservative: Minecraft 1.7.10, Forge 10.13.4.1614, Java 8 bytecode and LWJGL2-compatible audio. The server may run on a modern JVM such as Java 21.
 
-**Current version:** 0.3.1
+## Current engineering status
 
-## Features
+This repository is under active development. The current foundation already includes:
 
-- Proximity-based 3D voice chat (OpenAL positional audio).
-- Push-to-talk, voice activation (dB threshold), and always-on modes.
-- Per-mod settings GUI with live microphone test (loopback + level meter on a dB scale).
-- First-run setup wizard for picking a microphone.
-- Microphone amplification slider, basic noise gate (high-pass), playback volume slider.
-- Persistent HUD indicator showing mic state (active / muted) bottom-right.
-- Connection-failed HUD indicator when the UDP voice link can't be established
-  (firewall, missing port forward, Docker mapping, etc.).
-- Speaker indicators above other players' heads while they speak.
-- Discord-style **groups** with invite/accept flow:
-  - One group per player at a time.
-  - Distance-independent audio between group members.
-  - Server-side persistence (NBT) — groups survive restarts.
-- Default UDP port **24454**, default voice radius **48 blocks** — both configurable.
-- Bundles [Concentus](https://github.com/lostromb/concentus) (MIT) for pure-Java Opus
-  encoding/decoding. No native libraries required.
+- 48 kHz mono Opus voice using bundled pure-Java Concentus;
+- 20 ms / 960-sample audio frames;
+- proximity-based OpenAL 3D playback;
+- push-to-talk, voice activation and always-on capture modes;
+- microphone selection/test UI and voice settings;
+- persistent groups with distance-independent group audio;
+- bounded UDP parsing and authenticated media endpoints;
+- server-authoritative player position for proximity routing;
+- server-authoritative voice identity for offline-mode compatibility;
+- one Opus decoder state per remote speaker;
+- bounded playback queues and reusable OpenAL scratch buffers;
+- JavaSound capture isolated behind an audio-capture SPI.
 
-## Requirements
+The Simple Voice Chat bridge, encrypted media protocol, adaptive jitter buffer and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
 
-| | |
+## Runtime contract
+
+| Component | Contract |
 |---|---|
 | Minecraft | 1.7.10 |
 | Forge | 10.13.4.1614 |
-| [UniMixins](https://github.com/LegacyModdingMC/UniMixins) | required |
-| [lwjgl3ify](https://github.com/GTNewHorizons/lwjgl3ify) | required, supplies LWJGL 3 / Java 17+ runtime |
-| Java | 17 / 21 / 25 (matches your lwjgl3ify-modernised setup) |
+| Client JVM | Java 8+; produced classes are major version 52 |
+| Server JVM | Java 8+; Java 21 is a supported target for Crucible deployments |
+| Client graphics/audio API | LWJGL2-compatible OpenAL |
+| Codec | Opus / Concentus, 48 kHz mono |
+| Default voice transport | UDP 24454 |
+| UniMixins | not required |
+| GTNHLib | not required |
+| lwjgl3ify | optional environment compatibility, not a dependency |
+| Angelica / Hodgepodge / ArchaicFix / CoreTweaks | compatible targets, not dependencies |
 
-Same .jar runs on the server and on the client.
+The same mod JAR is intended for client and Forge/Crucible server installation. Server-side gateway/bridge modules may later be split into dedicated Java 21 artifacts.
 
-## Install
+## Java 8 verification
 
-1. Drop `ProxyChat-<version>.jar` into the `mods/` folder of **both** the server and every
-   client that wants to use voice.
-2. Open **UDP port 24454** to the server (or whatever you set `voice.voicePort` to). On
-   Docker setups, expose the port in your compose / run command:
-   ```yaml
-   ports:
-     - "25565:25565/tcp"
-     - "24454:24454/udp"   # ← UDP, not TCP
-   ```
-3. Restart the server. The first launch generates `config/proxychat.cfg` with sensible
-   defaults.
-4. Connect with a client that has the .jar in its `mods/`. The first time you join, a
-   setup wizard opens to let you pick a microphone.
+Java 8 support is an audited requirement rather than a build flag. The current source tree has been:
 
-## Keybinds (configurable in Minecraft Controls)
+- built with modern Gradle while `enableModernJavaSyntax=false`;
+- inspected to confirm class major version 52;
+- smoke-tested for Opus encode/decode on JDK 1.8.0_411;
+- independently recompiled with the actual JDK 8 `javac` against the resolved Forge compile classpath.
 
-| Default | Action |
-|---|---|
-| `V` (hold) | Push-to-talk |
-| `N` (press) | Toggle microphone (mute / unmute) |
-| `O` (press) | Open the Voice Chat hub |
+## Offline-mode identity
 
-## In-game UI
+The original ProxyChat bootstrap could authenticate UDP with a client-local UUID that differed from the UUID used by an offline-mode server. Akashic Voice does not guess UUID mode on the client.
 
-Press `O` to open the **Voice Chat hub**. From there:
+The Minecraft-side bootstrap now returns the authoritative `EntityPlayerMP` UUID together with the voice secret and UDP port. The client uses exactly that server-issued identity for voice authentication. This design also prepares the protocol for proxy forwarding and future bridge identities.
 
-- **Settings** — microphone selection, volume sliders, activation mode, dB threshold,
-  microphone test (with self-loopback), 3D audio mode, mic amplification, noise gate.
-- **Group** — create a group, invite other voice users, leave.
+Live session secrets are credentials. Akashic Voice does not expose them through `/avdebug` or normal logs.
 
-The HUD bottom-right shows the mic state automatically:
-- **Mic-on icon** while you're transmitting.
-- **Mic-mute icon** persistently while muted.
-- **Plug icon** above the mic when ProxyChat can't reach the voice server (e.g. UDP
-  port not open).
+## Network model
 
-## Configuration
+The Minecraft connection bootstraps the voice session; audio then flows over UDP. Media is accepted only after the UDP endpoint authenticates against a server-issued session secret.
 
-All settings live in `config/proxychat.cfg`, generated on first run. Highlights:
+Proximity routing uses the server's tracked world/dimension/position. Client-reported coordinates are not trusted as an authority. Group audio deliberately bypasses distance/dimension checks and is marked non-spatial for playback.
 
-- `voice.voicePort` — UDP port (default `24454`).
-- `voice.voiceRadius` — audible distance in blocks (default `48`).
-- `voice.opusBitrate` — encoder bitrate (default `24000`).
-- `voice.debugSelfEcho` — server bounces your own frames back. Useful for solo
-  smoke-testing; keep `false` in production.
-- `client.activationMode` — `ptt` / `voice` / `always`.
-- `client.voiceActivationThresholdDb` — dB threshold for voice activation (default `-50`).
-- `client.microphoneAmplification`, `client.playbackVolume`, `client.noiseSuppression`,
-  `client.audio3dMode`, `client.referenceDistance`, `client.selectedMicMixer`.
+Malformed or oversized Opus payload declarations are rejected before payload allocation. The client UDP socket is connected to the expected voice endpoint and ignores unrelated datagrams.
 
-## Building from source
+Encryption, replay protection and rate limiting are still roadmap gates and must be completed before production-security approval.
 
-Requires JDK 21 (or higher) on `PATH` to drive the GTNHGradle build.
+## Building
 
-```sh
-./gradlew build
+The build tooling uses JDK 21. This does **not** raise the client runtime requirement; the produced mod targets Java 8 bytecode.
+
+```text
+./gradlew clean build
 ```
 
-Artifacts land in `build/libs/`. The plain `proxychat-<version>.jar` is the one you ship —
-the `-dev`, `-sources`, and `-preshadow` jars are build by-products.
+Artifacts are written to `build/libs/`. Quality-assurance helpers live under `tools/qa/`.
 
-To run the client/server in a development environment:
+## Development roadmap
 
-```sh
-./gradlew runClient   # dev MC client with the mod loaded
-./gradlew runServer   # dev dedicated server with the mod loaded
-```
+The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Major remaining work includes:
 
-## Solo smoke-test
+1. per-speaker jitter/reorder/PLC pipeline with bounded pooled storage;
+2. authenticated encryption, replay window and UDP abuse controls;
+3. low-allocation playback frame pool and performance benchmarks;
+4. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
+5. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
+6. cross-server groups/radio semantics and public addon API.
 
-If you want to verify the audio path on your own without a friend online, set
-`voice.debugSelfEcho=true` in `config/proxychat.cfg` on the server, restart, join, talk —
-the server echoes your frames back. Set `client.activationMode=always` and your own voice
-will reach you immediately. Turn both back to defaults for normal play.
+## Credits and license
 
-## Credits
+Akashic Voice is derived from **ProxyChat** by Julius Meinking, distributed under the MIT License in this repository. The original license notice is preserved.
 
-### Icons
+The bundled Concentus implementation is distributed under its upstream BSD-style license; its notice is included in `META-INF/licenses/Concentus-LICENSE.txt` inside the built JAR.
 
-The in-game icons are sourced from [Flaticon](https://www.flaticon.com/) under their
-free-use license, with attribution required. Credit:
-
-- Toggle icons created by [Vector Squad — Flaticon](https://www.flaticon.com/free-icons/toggle)
-- On icons created by [Amazona Adorada — Flaticon](https://www.flaticon.com/free-icons/on)
-- Mic icons created by [LAFS — Flaticon](https://www.flaticon.com/free-icons/mic)
-- Mic icons created by [Hight Quality Icons — Flaticon](https://www.flaticon.com/free-icons/mic)
-- Noise icons created by [meaicon — Flaticon](https://www.flaticon.com/free-icons/noise)
-- Plug icons created by [Freepik — Flaticon](https://www.flaticon.com/free-icons/plug)
-
-### Bundled libraries
-
-- [Concentus](https://github.com/lostromb/concentus) — pure-Java Opus codec, MIT license.
-  Shaded into the jar at `dev.jm.proxychat.shadow.org.concentus.*`.
-
-## License
-
-ProxyChat itself is released under the **MIT License** — see [LICENSE](LICENSE).
-
-Bundled / referenced third parties retain their original licenses (Concentus: MIT,
-Flaticon icons: Flaticon free-use license with attribution).
+Simple Voice Chat is used only as an interoperability/behavioral reference where permitted. Akashic Voice must not copy ARR Simple Voice Chat source code; bridge behavior is implemented independently against supported interfaces/protocol behavior.

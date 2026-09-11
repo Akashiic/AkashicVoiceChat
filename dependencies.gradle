@@ -34,7 +34,7 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
-    // Concentus: pure-Java Opus codec (MIT). Used as the default encoder/decoder.
+    // Concentus: pure-Java Opus codec (BSD-3-Clause). Used as the default encoder/decoder.
     // A native opus4j path can be added later behind the same OpusCodec interface.
-    shadowImplementation("com.github.lostromb.concentus:Concentus:3885c4e465")
+    shadowImplementation("com.plasmoverse:concentus:1.0.0")
 }

@@ -1,0 +1,40 @@
+package dev.akashic.voice.voice.client;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.UUID;
+
+import dev.akashic.voice.AkashicVoice;
+
+public final class VoiceClientHolder {
+
+    private static volatile VoiceClient instance;
+
+    private VoiceClientHolder() {}
+
+    public static synchronized void connect(UUID playerId, UUID secret, InetAddress host, int udpPort) {
+        stop();
+        VoiceClient client = new VoiceClient(playerId, secret, host, udpPort);
+        try {
+            client.start();
+            instance = client;
+        } catch (IOException e) {
+            AkashicVoice.LOG.warn("Failed to start VoiceClient", e);
+        }
+    }
+
+    public static synchronized void stop() {
+        if (instance == null) return;
+        instance.stop();
+        instance = null;
+    }
+
+    public static VoiceClient get() {
+        return instance;
+    }
+
+    public static synchronized void notifyMicChanged() {
+        VoiceClient v = instance;
+        if (v != null) v.restartMicCapture();
+    }
+}

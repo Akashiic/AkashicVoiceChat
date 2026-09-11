@@ -1,0 +1,57 @@
+key.akashicvoice.category=Akashic Voice
+key.akashicvoice.ptt=Push-to-Talk
+key.akashicvoice.mute=Toggle microphone
+key.akashicvoice.openSettings=Open Voice Chat
+
+akashicvoice.gui.done=Done
+
+akashicvoice.gui.hub.title=Voice Chat
+akashicvoice.gui.hub.settings=Settings
+akashicvoice.gui.hub.group=Group
+
+akashicvoice.gui.set.title=Voice Chat Settings
+akashicvoice.gui.set.volume=Voice chat volume
+akashicvoice.gui.set.micAmp=Microphone amplification
+akashicvoice.gui.set.noise=Noise suppression
+akashicvoice.gui.set.activation=Activation type
+akashicvoice.gui.set.threshold=Voice activation threshold
+akashicvoice.gui.set.enableMicTest=Enable microphone testing
+akashicvoice.gui.set.disableMicTest=Disable microphone testing
+akashicvoice.gui.set.audio3d=3D audio
+akashicvoice.gui.set.audio3d.normal=Normal
+akashicvoice.gui.set.audio3d.off=Off
+akashicvoice.gui.set.indicators=Speaking indicators
+akashicvoice.gui.set.selectMic=Select microphone
+akashicvoice.gui.set.selectSpeaker=Select speaker
+akashicvoice.gui.set.speakerNote1=Output device selection is not supported in this build.
+akashicvoice.gui.set.speakerNote2=Akashic Voice plays through your system default speaker.
+
+akashicvoice.gui.group.title=Group
+akashicvoice.gui.group.notInOne=You are not in a group yet.
+akashicvoice.gui.group.create=Create group
+akashicvoice.gui.group.invite=Invite player
+akashicvoice.gui.group.leave=Leave group
+akashicvoice.gui.group.invitePicker=Invite a player
+akashicvoice.gui.group.noOne=No other players online with the mod.
+akashicvoice.gui.group.invited=Invited %s.
+akashicvoice.gui.group.owner=owner
+akashicvoice.gui.invite.title=Group invite
+akashicvoice.gui.invite.body=%s invited you to '%s'.
+akashicvoice.gui.invite.accept=Accept
+akashicvoice.gui.invite.decline=Decline
+
+akashicvoice.gui.wizard.title=Welcome to Voice Chat
+akashicvoice.gui.wizard.subtitle=Pick a microphone and check the level meter while you speak.
+akashicvoice.gui.wizard.device=Microphone
+akashicvoice.gui.wizard.testHint=Speak now — the bar should move.
+akashicvoice.gui.wizard.noMics=No microphone detected
+
+akashicvoice.gui.runWizard=Run setup wizard again
+akashicvoice.gui.mode=Mode
+akashicvoice.gui.mode.ptt=Push-to-Talk
+akashicvoice.gui.mode.voice=Voice
+akashicvoice.gui.mode.always=Always on
+akashicvoice.gui.mic=Microphone
+akashicvoice.gui.muted=Muted
+akashicvoice.gui.unmuted=Unmuted
+akashicvoice.gui.volume=Volume

@@ -1,0 +1,57 @@
+key.akashicvoice.category=Akashic Voice
+key.akashicvoice.ptt=Sprechen (PTT)
+key.akashicvoice.mute=Mikrofon ein-/ausschalten
+key.akashicvoice.openSettings=Voice Chat öffnen
+
+akashicvoice.gui.done=Fertig
+
+akashicvoice.gui.hub.title=Voice Chat
+akashicvoice.gui.hub.settings=Einstellungen
+akashicvoice.gui.hub.group=Gruppe
+
+akashicvoice.gui.set.title=Voice-Chat-Einstellungen
+akashicvoice.gui.set.volume=Lautstärke
+akashicvoice.gui.set.micAmp=Mikrofon-Verstärkung
+akashicvoice.gui.set.noise=Rauschunterdrückung
+akashicvoice.gui.set.activation=Aktivierungstyp
+akashicvoice.gui.set.threshold=Aktivierungsschwelle
+akashicvoice.gui.set.enableMicTest=Mikrofon-Test aktivieren
+akashicvoice.gui.set.disableMicTest=Mikrofon-Test deaktivieren
+akashicvoice.gui.set.audio3d=3D-Audio
+akashicvoice.gui.set.audio3d.normal=Normal
+akashicvoice.gui.set.audio3d.off=Aus
+akashicvoice.gui.set.indicators=Sprech-Indikator über Köpfen
+akashicvoice.gui.set.selectMic=Mikrofon wählen
+akashicvoice.gui.set.selectSpeaker=Lautsprecher wählen
+akashicvoice.gui.set.speakerNote1=Auswahl des Ausgabegeräts wird in dieser Version nicht unterstützt.
+akashicvoice.gui.set.speakerNote2=Akashic Voice spielt über das System-Standardgerät ab.
+
+akashicvoice.gui.group.title=Gruppe
+akashicvoice.gui.group.notInOne=Du bist in keiner Gruppe.
+akashicvoice.gui.group.create=Gruppe erstellen
+akashicvoice.gui.group.invite=Spieler einladen
+akashicvoice.gui.group.leave=Gruppe verlassen
+akashicvoice.gui.group.invitePicker=Spieler einladen
+akashicvoice.gui.group.noOne=Keine anderen Spieler mit der Mod online.
+akashicvoice.gui.group.invited=%s eingeladen.
+akashicvoice.gui.group.owner=Besitzer
+akashicvoice.gui.invite.title=Gruppen-Einladung
+akashicvoice.gui.invite.body=%s lädt dich zu '%s' ein.
+akashicvoice.gui.invite.accept=Annehmen
+akashicvoice.gui.invite.decline=Ablehnen
+
+akashicvoice.gui.wizard.title=Willkommen beim Voice Chat
+akashicvoice.gui.wizard.subtitle=Wähle ein Mikrofon und schau auf den Pegel beim Sprechen.
+akashicvoice.gui.wizard.device=Mikrofon
+akashicvoice.gui.wizard.testHint=Sprich jetzt — der Balken sollte ausschlagen.
+akashicvoice.gui.wizard.noMics=Kein Mikrofon erkannt
+
+akashicvoice.gui.runWizard=Setup-Assistent erneut öffnen
+akashicvoice.gui.mode=Modus
+akashicvoice.gui.mode.ptt=Push-to-Talk
+akashicvoice.gui.mode.voice=Sprache
+akashicvoice.gui.mode.always=Immer an
+akashicvoice.gui.mic=Mikrofon
+akashicvoice.gui.muted=Stumm
+akashicvoice.gui.unmuted=Aktiv
+akashicvoice.gui.volume=Lautstärke

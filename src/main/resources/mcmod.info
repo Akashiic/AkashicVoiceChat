@@ -1,21 +1,21 @@
 {
-	"modListVersion": 2,
-	"modList": [{
-		"modid": "${modId}",
-		"name": "${modName}",
-		"description": "Proximity voice chat for Minecraft 1.7.10, designed for GregTech: New Horizons.",
-		"version": "${modVersion}",
-		"mcversion": "${minecraftVersion}",
-		"url": "",
-		"updateUrl": "",
-		"authorList": ["Julius Meinking"],
-		"credits": "",
-		"logoFile": "",
-		"screenshots": [],
-		"parent": "",
-		"requiredMods": [],
-		"dependencies": [],
-		"dependants": [],
-		"useDependencyInformation": false
-	}]
+  "modListVersion": 2,
+  "modList": [{
+    "modid": "${modId}",
+    "name": "${modName}",
+    "description": "Low-latency spatial Opus voice for Minecraft 1.7.10, built for Java 8 clients and modern Java servers.",
+    "version": "${modVersion}",
+    "mcversion": "${minecraftVersion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": ["Akashic Voice contributors", "Julius Meinking (ProxyChat upstream)"],
+    "credits": "Derived from ProxyChat under the MIT License. Opus codec provided by the Concentus project.",
+    "logoFile": "",
+    "screenshots": [],
+    "parent": "",
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "useDependencyInformation": false
+  }]
 }
