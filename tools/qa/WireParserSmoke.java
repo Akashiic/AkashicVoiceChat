@@ -2,7 +2,6 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import dev.akashic.voice.voice.common.AuthAckPacket;
-import dev.akashic.voice.voice.common.AuthenticatePacket;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
@@ -15,7 +14,12 @@ public final class WireParserSmoke {
     public static void main(String[] args) {
         require(AuthAckPacket.read(ByteBuffer.allocate(0)) == null, "short auth ack");
         require(KeepAlivePacket.read(ByteBuffer.allocate(7)) == null, "short keepalive");
-        require(AuthenticatePacket.read(ByteBuffer.allocate(31)) == null, "short authenticate");
+        ByteBuffer trailingAck = ByteBuffer.allocate(2);
+        trailingAck.put((byte) 0).put((byte) 1).flip();
+        require(AuthAckPacket.read(trailingAck) == null, "trailing auth ack");
+        ByteBuffer trailingKeepAlive = ByteBuffer.allocate(9);
+        trailingKeepAlive.putLong(1L).put((byte) 0).flip();
+        require(KeepAlivePacket.read(trailingKeepAlive) == null, "trailing keepalive");
 
         ByteBuffer oversizedMic = ByteBuffer.allocate(6);
         oversizedMic.putInt(1).putShort((short) 65535).flip();

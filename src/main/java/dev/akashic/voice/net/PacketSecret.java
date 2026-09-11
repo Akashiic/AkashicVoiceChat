@@ -1,5 +1,6 @@
 package dev.akashic.voice.net;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -7,19 +8,23 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import dev.akashic.voice.AkashicVoice;
 import dev.akashic.voice.voice.client.ClientSecretCache;
+import dev.akashic.voice.voice.common.crypto.SessionKeys;
 import io.netty.buffer.ByteBuf;
 
 public class PacketSecret implements IMessage {
 
     private UUID playerId;
-    private UUID secret;
+    private byte[] masterSecret;
     private int udpPort;
 
     public PacketSecret() {}
 
-    public PacketSecret(UUID playerId, UUID secret, int udpPort) {
+    public PacketSecret(UUID playerId, byte[] masterSecret, int udpPort) {
+        if (masterSecret == null || masterSecret.length != SessionKeys.MASTER_SECRET_BYTES) {
+            throw new IllegalArgumentException("invalid master secret");
+        }
         this.playerId = playerId;
-        this.secret = secret;
+        this.masterSecret = Arrays.copyOf(masterSecret, masterSecret.length);
         this.udpPort = udpPort;
     }
 
@@ -27,8 +32,8 @@ public class PacketSecret implements IMessage {
         return playerId;
     }
 
-    public UUID getSecret() {
-        return secret;
+    public byte[] getMasterSecret() {
+        return Arrays.copyOf(masterSecret, masterSecret.length);
     }
 
     public int getUdpPort() {
@@ -38,7 +43,8 @@ public class PacketSecret implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         playerId = new UUID(buf.readLong(), buf.readLong());
-        secret = new UUID(buf.readLong(), buf.readLong());
+        masterSecret = new byte[SessionKeys.MASTER_SECRET_BYTES];
+        buf.readBytes(masterSecret);
         udpPort = buf.readInt();
     }
 
@@ -46,8 +52,7 @@ public class PacketSecret implements IMessage {
     public void toBytes(ByteBuf buf) {
         buf.writeLong(playerId.getMostSignificantBits());
         buf.writeLong(playerId.getLeastSignificantBits());
-        buf.writeLong(secret.getMostSignificantBits());
-        buf.writeLong(secret.getLeastSignificantBits());
+        buf.writeBytes(masterSecret);
         buf.writeInt(udpPort);
     }
 
@@ -55,8 +60,13 @@ public class PacketSecret implements IMessage {
 
         @Override
         public IMessage onMessage(PacketSecret msg, MessageContext ctx) {
-            ClientSecretCache.store(msg.getPlayerId(), msg.getSecret(), msg.getUdpPort());
-            AkashicVoice.LOG.info("Received voice secret (port {})", msg.getUdpPort());
+            byte[] secret = msg.getMasterSecret();
+            try {
+                ClientSecretCache.store(msg.getPlayerId(), secret, msg.getUdpPort());
+            } finally {
+                Arrays.fill(secret, (byte) 0);
+            }
+            AkashicVoice.LOG.info("Received voice bootstrap (port {})", msg.getUdpPort());
             return null;
         }
     }

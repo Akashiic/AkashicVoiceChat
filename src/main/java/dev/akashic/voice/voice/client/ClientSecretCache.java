@@ -1,24 +1,31 @@
 package dev.akashic.voice.voice.client;
 
+import java.util.Arrays;
 import java.util.UUID;
+
+import dev.akashic.voice.voice.common.crypto.SessionKeys;
 
 public final class ClientSecretCache {
 
     private static volatile UUID playerId;
-    private static volatile UUID secret;
+    private static volatile byte[] masterSecret;
     private static volatile int udpPort;
 
     private ClientSecretCache() {}
 
-    public static synchronized void store(UUID playerId, UUID secret, int udpPort) {
+    public static synchronized void store(UUID playerId, byte[] secret, int udpPort) {
+        if (secret == null || secret.length != SessionKeys.MASTER_SECRET_BYTES) {
+            throw new IllegalArgumentException("invalid master secret");
+        }
+        clearSecret();
         ClientSecretCache.playerId = playerId;
-        ClientSecretCache.secret = secret;
+        ClientSecretCache.masterSecret = Arrays.copyOf(secret, secret.length);
         ClientSecretCache.udpPort = udpPort;
     }
 
     public static synchronized void clear() {
+        clearSecret();
         playerId = null;
-        secret = null;
         udpPort = 0;
     }
 
@@ -26,8 +33,8 @@ public final class ClientSecretCache {
         return playerId;
     }
 
-    public static UUID getSecret() {
-        return secret;
+    public static synchronized byte[] getMasterSecret() {
+        return masterSecret != null ? Arrays.copyOf(masterSecret, masterSecret.length) : null;
     }
 
     public static int getUdpPort() {
@@ -35,6 +42,11 @@ public final class ClientSecretCache {
     }
 
     public static boolean hasSecret() {
-        return playerId != null && secret != null;
+        return playerId != null && masterSecret != null;
+    }
+
+    private static void clearSecret() {
+        if (masterSecret != null) Arrays.fill(masterSecret, (byte) 0);
+        masterSecret = null;
     }
 }

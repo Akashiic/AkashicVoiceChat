@@ -15,13 +15,13 @@ The project advances by evidence gates, not by feature count.
 
 ## Phase B — Protocol v1 / 0.2.x
 
-1. Introduce explicit AV wire magic, protocol version and capability negotiation.
-2. Add session IDs, directional sequence numbers and bounded replay windows.
-3. Add AES-128-GCM media/control protection with deterministic unique nonces.
-4. Bind client UDP receive path to the expected endpoint.
-5. Add parser bounds checks, rate limiting and fuzz/property tests.
-6. Keep datagrams <=1200 bytes and enforce payload caps before decode.
-7. Add protocol metrics without per-frame log spam.
+1. **DONE:** explicit AV wire magic and protocol version; capability negotiation remains.
+2. **PARTIAL:** directional counters and bounded replay windows are done; explicit session IDs remain.
+3. **DONE:** AES-128-GCM media/control protection with deterministic unique nonces.
+4. **DONE:** client UDP receive path is bound to the expected endpoint.
+5. **DONE:** parser bounds checks, unauthenticated/authenticated rate limiting and fuzz tests.
+6. **PARTIAL:** payload caps are enforced; <=1200-byte transport target remains for MTU hardening.
+7. **PENDING:** protocol metrics without per-frame log spam.
 
 ## Phase C — Audio quality / 0.3.x
 

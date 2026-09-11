@@ -3,27 +3,39 @@ package dev.akashic.voice.voice.server;
 import java.net.SocketAddress;
 import java.util.UUID;
 
-public final class VoiceConnection {
+import dev.akashic.voice.voice.common.crypto.SessionCrypto;
+
+public final class VoiceConnection implements AutoCloseable {
 
     public final UUID playerId;
     public final SocketAddress remoteAddress;
-    private volatile long lastSeenMillis;
+    final SessionCrypto crypto;
+    private final MediaRateLimiter inboundRateLimiter = new MediaRateLimiter();
+    private volatile long lastSeenNanos;
 
-    public VoiceConnection(UUID playerId, SocketAddress remoteAddress) {
+    public VoiceConnection(UUID playerId, SocketAddress remoteAddress, SessionCrypto crypto) {
+        if (crypto == null) throw new IllegalArgumentException("crypto");
         this.playerId = playerId;
         this.remoteAddress = remoteAddress;
-        this.lastSeenMillis = System.currentTimeMillis();
+        this.crypto = crypto;
+        this.lastSeenNanos = System.nanoTime();
     }
 
     public void touch() {
-        lastSeenMillis = System.currentTimeMillis();
+        lastSeenNanos = System.nanoTime();
     }
 
-    public long lastSeenMillis() {
-        return lastSeenMillis;
+    boolean allowInboundDatagram(int bytes) {
+        return inboundRateLimiter.allow(bytes);
     }
 
     public boolean isIdle(long timeoutMillis) {
-        return System.currentTimeMillis() - lastSeenMillis > timeoutMillis;
+        long timeoutNanos = timeoutMillis * 1_000_000L;
+        return System.nanoTime() - lastSeenNanos > timeoutNanos;
+    }
+
+    @Override
+    public void close() {
+        crypto.close();
     }
 }

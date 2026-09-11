@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,58 +20,87 @@ import dev.akashic.voice.voice.client.jitter.DecoderStream;
 import dev.akashic.voice.voice.client.playback.AudioPlayback;
 import dev.akashic.voice.voice.client.talk.TalkCache;
 import dev.akashic.voice.voice.common.AuthAckPacket;
-import dev.akashic.voice.voice.common.AuthenticatePacket;
+import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
 import dev.akashic.voice.voice.common.WirePacketType;
+import dev.akashic.voice.voice.common.WireProtocol;
+import dev.akashic.voice.voice.common.crypto.HandshakeProof;
+import dev.akashic.voice.voice.common.crypto.SessionCrypto;
+import dev.akashic.voice.voice.common.crypto.SessionKeys;
 
 public final class VoiceClient {
 
+    private enum HandshakeStage {
+        HELLO,
+        AUTH_RESPONSE,
+        AUTHENTICATED
+    }
+
+    private static final SecureRandom RANDOM = new SecureRandom();
     private static final int MAX_DATAGRAM_BYTES = 1500;
-    private static final long AUTH_RETRY_INTERVAL_NANOS = 1_000_000_000L;
+    private static final long HANDSHAKE_RETRY_NANOS = 1_000_000_000L;
+    private static final long HANDSHAKE_TIMEOUT_NANOS = 12_000_000_000L;
     private static final long KEEPALIVE_INTERVAL_NANOS = 1_000_000_000L;
+    private static final long SERVER_TIMEOUT_NANOS = 8_000_000_000L;
     private static final long MAINTENANCE_SLEEP_MILLIS = 20L;
     private static final long STREAM_IDLE_NANOS = 30_000_000_000L;
 
     private final UUID playerId;
-    private final UUID secret;
+    private final byte[] masterSecret;
     private final InetAddress serverHost;
     private final int serverPort;
     private final Object sendLock = new Object();
-    private final ByteBuffer micSendBuffer = ByteBuffer.allocate(MAX_DATAGRAM_BYTES);
-    private final ByteBuffer controlSendBuffer = ByteBuffer.allocate(64);
-    private final DatagramPacket micOutboundPacket = new DatagramPacket(new byte[0], 0);
-    private final DatagramPacket controlOutboundPacket = new DatagramPacket(new byte[0], 0);
+    private final Object handshakeLock = new Object();
+    private final ByteBuffer innerSendBuffer = ByteBuffer.allocate(MAX_DATAGRAM_BYTES);
+    private final ByteBuffer encryptedSendBuffer = ByteBuffer.allocate(MAX_DATAGRAM_BYTES);
+    private final ByteBuffer handshakeSendBuffer = ByteBuffer.allocate(128);
+    private final ByteBuffer decryptBuffer = ByteBuffer.allocate(MAX_DATAGRAM_BYTES);
+    private final DatagramPacket outboundPacket = new DatagramPacket(new byte[0], 0);
+    private final Map<UUID, DecoderStream> decoderStreams = new ConcurrentHashMap<>();
+    private final AtomicLong receivedFrames = new AtomicLong();
 
     private DatagramSocket socket;
     private SocketAddress serverAddress;
     private MicCapture micCapture;
-    private final Map<UUID, DecoderStream> decoderStreams = new ConcurrentHashMap<>();
     private AudioPlayback playback;
-
     private Thread receiveThread;
-    private Thread keepAliveThread;
+    private Thread maintenanceThread;
+
     private volatile boolean running;
     private volatile boolean authenticated;
-    private final AtomicLong receivedFrames = new AtomicLong();
-    private volatile long lastAuthAttemptNanos;
+    private volatile boolean closed;
+    private volatile HandshakeStage handshakeStage = HandshakeStage.HELLO;
+    private volatile byte[] clientNonce;
+    private volatile byte[] serverNonce;
+    private volatile byte[] clientProof;
+    private volatile SessionCrypto crypto;
+    private volatile long stageSinceNanos;
+    private volatile long lastHandshakeAttemptNanos;
     private volatile long lastKeepAliveNanos;
+    private volatile long lastServerPacketNanos;
 
-    public VoiceClient(UUID playerId, UUID secret, InetAddress serverHost, int serverPort) {
+    public VoiceClient(UUID playerId, byte[] masterSecret, InetAddress serverHost, int serverPort) {
+        if (playerId == null || serverHost == null) throw new IllegalArgumentException("null voice client input");
+        if (masterSecret == null || masterSecret.length != SessionKeys.MASTER_SECRET_BYTES) {
+            throw new IllegalArgumentException("invalid master secret");
+        }
         this.playerId = playerId;
-        this.secret = secret;
+        this.masterSecret = Arrays.copyOf(masterSecret, masterSecret.length);
         this.serverHost = serverHost;
         this.serverPort = serverPort;
     }
 
     public synchronized void start() throws IOException {
-        if (running) return;
+        if (running || closed) return;
         socket = new DatagramSocket();
         serverAddress = new java.net.InetSocketAddress(serverHost, serverPort);
         socket.connect(serverAddress);
-        micOutboundPacket.setSocketAddress(serverAddress);
-        controlOutboundPacket.setSocketAddress(serverAddress);
+        outboundPacket.setSocketAddress(serverAddress);
+        clientNonce = newNonce();
+        handshakeStage = HandshakeStage.HELLO;
+        stageSinceNanos = System.nanoTime();
         running = true;
         playback = AudioPlayback.start();
 
@@ -77,25 +108,24 @@ public final class VoiceClient {
         receiveThread.setDaemon(true);
         receiveThread.start();
 
-        keepAliveThread = new Thread(this::keepAliveLoop, "AkashicVoice-Voice-Client-KeepAlive");
-        keepAliveThread.setDaemon(true);
-        keepAliveThread.start();
+        maintenanceThread = new Thread(this::maintenanceLoop, "AkashicVoice-Voice-Client-Maintenance");
+        maintenanceThread.setDaemon(true);
+        maintenanceThread.start();
 
-        sendAuthenticate();
-        AkashicVoice.LOG.info("VoiceClient started, server={}:{}", serverHost.getHostAddress(), serverPort);
+        sendHello();
+        AkashicVoice.LOG.info("Voice client started, server={}:{}", serverHost.getHostAddress(), serverPort);
     }
 
     public synchronized void stop() {
-        if (!running) return;
+        if (closed) return;
+        closed = true;
+        if (running && authenticated) sendDisconnect();
         running = false;
         authenticated = false;
-        if (micCapture != null) {
-            micCapture.stop();
-            micCapture = null;
-        }
+        stopMicCapture();
         if (socket != null) socket.close();
         if (receiveThread != null) receiveThread.interrupt();
-        if (keepAliveThread != null) keepAliveThread.interrupt();
+        if (maintenanceThread != null) maintenanceThread.interrupt();
         for (DecoderStream stream : decoderStreams.values()) {
             try {
                 stream.close();
@@ -104,9 +134,19 @@ public final class VoiceClient {
             }
         }
         decoderStreams.clear();
+        SessionCrypto currentCrypto = crypto;
+        crypto = null;
+        if (currentCrypto != null) currentCrypto.close();
+        clearArray(clientNonce);
+        clearArray(serverNonce);
+        clearArray(clientProof);
+        clientNonce = null;
+        serverNonce = null;
+        clientProof = null;
+        Arrays.fill(masterSecret, (byte) 0);
         AudioPlayback.stop();
         playback = null;
-        AkashicVoice.LOG.info("VoiceClient stopped");
+        AkashicVoice.LOG.info("Voice client stopped");
     }
 
     public boolean isAuthenticated() {
@@ -115,22 +155,12 @@ public final class VoiceClient {
 
     public synchronized void restartMicCapture() {
         if (!running || !authenticated) return;
-        if (micCapture != null) {
-            micCapture.stop();
-            micCapture = null;
-        }
+        stopMicCapture();
         startMicCapture();
     }
 
     public long receivedFrameCount() {
         return receivedFrames.get();
-    }
-
-    private void sendAuthenticate() {
-        lastAuthAttemptNanos = System.nanoTime();
-        controlSendBuffer.clear();
-        new AuthenticatePacket(playerId, secret).write(controlSendBuffer);
-        sendBuffer(controlSendBuffer, controlOutboundPacket);
     }
 
     private void receiveLoop() {
@@ -143,12 +173,12 @@ public final class VoiceClient {
             } catch (SocketException e) {
                 if (running) AkashicVoice.LOG.warn("Voice client socket error", e);
             } catch (Throwable t) {
-                AkashicVoice.LOG.warn("Voice client packet handling failed", t);
+                if (running) AkashicVoice.LOG.warn("Voice client packet handling failed", t);
             }
         }
     }
 
-    private void keepAliveLoop() {
+    private void maintenanceLoop() {
         while (running) {
             try {
                 Thread.sleep(MAINTENANCE_SLEEP_MILLIS);
@@ -156,25 +186,62 @@ public final class VoiceClient {
                 return;
             }
             long now = System.nanoTime();
-            if (!authenticated) {
-                if (now - lastAuthAttemptNanos >= AUTH_RETRY_INTERVAL_NANOS) sendAuthenticate();
+            HandshakeStage stage = handshakeStage;
+            if (stage == HandshakeStage.HELLO) {
+                if (now - stageSinceNanos >= HANDSHAKE_TIMEOUT_NANOS) resetHandshake(now);
+                if (now - lastHandshakeAttemptNanos >= HANDSHAKE_RETRY_NANOS) sendHello();
                 continue;
             }
+            if (stage == HandshakeStage.AUTH_RESPONSE) {
+                if (now - stageSinceNanos >= HANDSHAKE_TIMEOUT_NANOS) {
+                    resetHandshake(now);
+                    continue;
+                }
+                if (now - lastHandshakeAttemptNanos >= HANDSHAKE_RETRY_NANOS) sendAuthResponse();
+                continue;
+            }
+
             drainDecoderStreams(now);
+            if (now - lastServerPacketNanos >= SERVER_TIMEOUT_NANOS) {
+                AkashicVoice.LOG.warn("Voice server timed out; restarting secure handshake");
+                resetHandshake(now);
+                continue;
+            }
             if (now - lastKeepAliveNanos >= KEEPALIVE_INTERVAL_NANOS) {
                 lastKeepAliveNanos = now;
-                controlSendBuffer.clear();
-                new KeepAlivePacket(System.currentTimeMillis()).write(controlSendBuffer);
-                sendBuffer(controlSendBuffer, controlOutboundPacket);
+                sendKeepAlive();
             }
         }
     }
 
     private void handleDatagram(DatagramPacket packet) {
         if (!serverAddress.equals(packet.getSocketAddress())) return;
-        ByteBuffer buf = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
+        ByteBuffer datagram = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
+        byte outerType = WireProtocol.peekHeader(datagram);
+        if (outerType == WireProtocol.OUTER_CHALLENGE) {
+            HandshakePackets.Challenge challenge = HandshakePackets.readChallenge(datagram);
+            if (challenge != null) handleChallenge(challenge);
+            return;
+        }
+        if (outerType != WireProtocol.OUTER_ENCRYPTED) return;
+
+        SessionCrypto currentCrypto = crypto;
+        if (currentCrypto == null) return;
+        boolean opened;
+        try {
+            opened = currentCrypto.open(datagram, decryptBuffer);
+        } catch (IllegalStateException ignored) {
+            return;
+        }
+        if (!opened) return;
+        lastServerPacketNanos = System.nanoTime();
+        handleInner(decryptBuffer);
+    }
+
+    private void handleInner(ByteBuffer buf) {
         if (!buf.hasRemaining()) return;
         byte type = buf.get();
+        if (!authenticated && type != WirePacketType.AUTH_ACK) return;
         switch (type) {
             case WirePacketType.AUTH_ACK: {
                 AuthAckPacket ack = AuthAckPacket.read(buf);
@@ -182,6 +249,7 @@ public final class VoiceClient {
                 break;
             }
             case WirePacketType.KEEPALIVE:
+                KeepAlivePacket.read(buf);
                 break;
             case WirePacketType.SOUND_FRAME: {
                 SoundFramePacket sound = SoundFramePacket.read(buf);
@@ -193,33 +261,103 @@ public final class VoiceClient {
         }
     }
 
-    private void handleAuthAck(AuthAckPacket ack) {
-        if (ack.status == AuthAckPacket.STATUS_OK) {
-            authenticated = true;
-            lastKeepAliveNanos = System.nanoTime();
-            AkashicVoice.LOG.info("Voice auth successful");
-            startMicCapture();
-        } else {
-            AkashicVoice.LOG.warn("Voice auth rejected (status {})", ack.status);
-            stop();
+    private void handleChallenge(HandshakePackets.Challenge challenge) {
+        boolean sendResponse = false;
+        try {
+            synchronized (handshakeLock) {
+                if (handshakeStage == HandshakeStage.AUTHENTICATED) return;
+                if (handshakeStage == HandshakeStage.AUTH_RESPONSE) {
+                    sendResponse = serverNonce != null && Arrays.equals(serverNonce, challenge.serverNonce);
+                } else {
+                    byte[] nonceSnapshot = clientNonce;
+                    if (nonceSnapshot == null) return;
+                    SessionKeys keys = SessionKeys.derive(masterSecret, nonceSnapshot, challenge.serverNonce);
+                    try {
+                        if (!HandshakeProof.verifyServer(
+                            keys,
+                            playerId,
+                            nonceSnapshot,
+                            challenge.serverNonce,
+                            challenge.serverProof)) {
+                            return;
+                        }
+                        byte[] proof = HandshakeProof
+                            .computeClient(keys, playerId, nonceSnapshot, challenge.serverNonce);
+                        SessionCrypto nextCrypto = SessionCrypto.forClient(keys);
+                        SessionCrypto previousCrypto = crypto;
+                        crypto = nextCrypto;
+                        if (previousCrypto != null) previousCrypto.close();
+                        clearArray(serverNonce);
+                        clearArray(clientProof);
+                        serverNonce = Arrays.copyOf(challenge.serverNonce, challenge.serverNonce.length);
+                        clientProof = proof;
+                        handshakeStage = HandshakeStage.AUTH_RESPONSE;
+                        stageSinceNanos = System.nanoTime();
+                        sendResponse = true;
+                    } finally {
+                        keys.close();
+                    }
+                }
+            }
+        } finally {
+            clearArray(challenge.serverNonce);
+            clearArray(challenge.serverProof);
         }
+        if (sendResponse) sendAuthResponse();
+    }
+
+    private void handleAuthAck(AuthAckPacket ack) {
+        if (ack.status != AuthAckPacket.STATUS_OK) {
+            AkashicVoice.LOG.warn("Secure voice authentication rejected (status {})", ack.status);
+            resetHandshake(System.nanoTime());
+            return;
+        }
+        boolean startMic = false;
+        synchronized (handshakeLock) {
+            if (handshakeStage != HandshakeStage.AUTH_RESPONSE) return;
+            authenticated = true;
+            handshakeStage = HandshakeStage.AUTHENTICATED;
+            stageSinceNanos = System.nanoTime();
+            lastKeepAliveNanos = stageSinceNanos;
+            lastServerPacketNanos = stageSinceNanos;
+            clearArray(serverNonce);
+            clearArray(clientProof);
+            serverNonce = null;
+            clientProof = null;
+            startMic = micCapture == null;
+        }
+        AkashicVoice.LOG.info("Secure voice session authenticated");
+        if (startMic) startMicCapture();
     }
 
     private void startMicCapture() {
+        if (!running || !authenticated || micCapture != null) return;
         try {
             micCapture = new MicCapture(
                 this::onMicFrame,
                 dev.akashic.voice.config.AkashicVoiceConfig.selectedMicMixer());
             micCapture.start();
         } catch (AudioCaptureException e) {
+            micCapture = null;
             AkashicVoice.LOG.warn("Microphone unavailable: {}", e.getMessage());
         }
     }
 
+    private void stopMicCapture() {
+        MicCapture capture = micCapture;
+        micCapture = null;
+        if (capture != null) capture.stop();
+    }
+
     private void onMicFrame(int sequence, byte[] opusPayload, int payloadLength) {
-        micSendBuffer.clear();
-        MicFramePacket.write(micSendBuffer, sequence, opusPayload, payloadLength);
-        sendBuffer(micSendBuffer, micOutboundPacket);
+        if (!authenticated) return;
+        synchronized (sendLock) {
+            SessionCrypto currentCrypto = crypto;
+            if (currentCrypto == null || !authenticated) return;
+            innerSendBuffer.clear();
+            MicFramePacket.write(innerSendBuffer, sequence, opusPayload, payloadLength);
+            sealAndSendLocked(currentCrypto);
+        }
     }
 
     private void handleSoundFrame(SoundFramePacket pkt) {
@@ -260,14 +398,109 @@ public final class VoiceClient {
         }
     }
 
-    private void sendBuffer(ByteBuffer buf, DatagramPacket packet) {
-        try {
-            synchronized (sendLock) {
-                packet.setData(buf.array(), 0, buf.position());
-                socket.send(packet);
-            }
-        } catch (IOException e) {
-            AkashicVoice.LOG.debug("UDP send failed", e);
+    private void sendHello() {
+        byte[] nonce = clientNonce;
+        if (nonce == null || handshakeStage != HandshakeStage.HELLO) return;
+        lastHandshakeAttemptNanos = System.nanoTime();
+        synchronized (sendLock) {
+            handshakeSendBuffer.clear();
+            HandshakePackets.writeHello(handshakeSendBuffer, playerId, nonce);
+            sendRawLocked(handshakeSendBuffer);
         }
+    }
+
+    private void sendAuthResponse() {
+        byte[] proof = clientProof;
+        if (proof == null || handshakeStage != HandshakeStage.AUTH_RESPONSE) return;
+        lastHandshakeAttemptNanos = System.nanoTime();
+        synchronized (sendLock) {
+            handshakeSendBuffer.clear();
+            HandshakePackets.writeAuthResponse(handshakeSendBuffer, proof);
+            sendRawLocked(handshakeSendBuffer);
+        }
+    }
+
+    private void sendKeepAlive() {
+        synchronized (sendLock) {
+            SessionCrypto currentCrypto = crypto;
+            if (currentCrypto == null || !authenticated) return;
+            innerSendBuffer.clear();
+            new KeepAlivePacket(System.currentTimeMillis()).write(innerSendBuffer);
+            sealAndSendLocked(currentCrypto);
+        }
+    }
+
+    private void sendDisconnect() {
+        synchronized (sendLock) {
+            SessionCrypto currentCrypto = crypto;
+            if (currentCrypto == null || !authenticated) return;
+            innerSendBuffer.clear();
+            innerSendBuffer.put(WirePacketType.DISCONNECT);
+            sealAndSendLocked(currentCrypto);
+        }
+    }
+
+    private void sealAndSendLocked(SessionCrypto currentCrypto) {
+        if (currentCrypto.seal(innerSendBuffer, encryptedSendBuffer)) {
+            sendRawLocked(encryptedSendBuffer);
+        }
+    }
+
+    private void sendRawLocked(ByteBuffer buf) {
+        DatagramSocket currentSocket = socket;
+        if (currentSocket == null || currentSocket.isClosed()) return;
+        try {
+            outboundPacket.setData(buf.array(), 0, buf.position());
+            currentSocket.send(outboundPacket);
+        } catch (IOException e) {
+            if (running) AkashicVoice.LOG.debug("UDP send failed", e);
+        }
+    }
+
+    private void resetHandshake(long nowNanos) {
+        synchronized (handshakeLock) {
+            authenticated = false;
+            handshakeStage = HandshakeStage.HELLO;
+            stageSinceNanos = nowNanos;
+            lastHandshakeAttemptNanos = 0L;
+            lastKeepAliveNanos = 0L;
+            lastServerPacketNanos = 0L;
+            SessionCrypto previousCrypto = crypto;
+            crypto = null;
+            if (previousCrypto != null) previousCrypto.close();
+            clearArray(clientNonce);
+            clearArray(serverNonce);
+            clearArray(clientProof);
+            clientNonce = newNonce();
+            serverNonce = null;
+            clientProof = null;
+        }
+        stopMicCapture();
+        clearDecoderStreams();
+        if (running) sendHello();
+    }
+
+    private void clearDecoderStreams() {
+        for (Map.Entry<UUID, DecoderStream> entry : decoderStreams.entrySet()) {
+            UUID senderId = entry.getKey();
+            DecoderStream stream = entry.getValue();
+            if (!decoderStreams.remove(senderId, stream)) continue;
+            try {
+                stream.close();
+            } catch (RuntimeException ignored) {
+                // best-effort cleanup
+            }
+            if (playback != null) playback.dropChannel(senderId);
+        }
+    }
+
+    private static byte[] newNonce() {
+        byte[] nonce = new byte[SessionKeys.HANDSHAKE_NONCE_BYTES];
+        RANDOM.nextBytes(nonce);
+        return nonce;
+    }
+
+    private static void clearArray(byte[] value) {
+        if (value != null) Arrays.fill(value, (byte) 0);
     }
 }

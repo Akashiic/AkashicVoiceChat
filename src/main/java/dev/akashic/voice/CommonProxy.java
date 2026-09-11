@@ -10,6 +10,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import dev.akashic.voice.command.AvDebugCommand;
 import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.net.AkashicVoiceChannel;
+import dev.akashic.voice.voice.server.SecretRegistry;
 import dev.akashic.voice.voice.server.VoiceServerHolder;
 import dev.akashic.voice.voice.server.groups.GroupRegistryHolder;
 
@@ -42,6 +43,7 @@ public class CommonProxy {
 
     public void serverStopping(FMLServerStoppingEvent event) {
         VoiceServerHolder.stop();
+        SecretRegistry.clear();
         GroupRegistryHolder.clear();
     }
 }

@@ -14,7 +14,9 @@ This repository is under active development. The current foundation already incl
 - push-to-talk, voice activation and always-on capture modes;
 - microphone selection/test UI and voice settings;
 - persistent groups with distance-independent group audio;
-- bounded UDP parsing and authenticated media endpoints;
+- versioned AV UDP envelope with authenticated media endpoints;
+- HKDF-SHA-256 session derivation and directional AES-128-GCM transport;
+- 64-packet replay windows plus handshake and authenticated-media rate limits;
 - server-authoritative player position for proximity routing;
 - server-authoritative voice identity for offline-mode compatibility;
 - one Opus decoder state per remote speaker;
@@ -23,7 +25,7 @@ This repository is under active development. The current foundation already incl
 - a 128-frame preallocated PCM playback pool to avoid 50 Hz array churn;
 - JavaSound capture isolated behind an audio-capture SPI.
 
-The Simple Voice Chat bridge, encrypted media protocol, adaptive jitter tuning and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
+The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
 
 ## Runtime contract
 
@@ -56,19 +58,21 @@ Java 8 support is an audited requirement rather than a build flag. The current s
 
 The original ProxyChat bootstrap could authenticate UDP with a client-local UUID that differed from the UUID used by an offline-mode server. Akashic Voice does not guess UUID mode on the client.
 
-The Minecraft-side bootstrap now returns the authoritative `EntityPlayerMP` UUID together with the voice secret and UDP port. The client uses exactly that server-issued identity for voice authentication. This design also prepares the protocol for proxy forwarding and future bridge identities.
+The Minecraft-side bootstrap now returns the authoritative `EntityPlayerMP` UUID together with a 256-bit voice bootstrap secret and UDP port. The client uses exactly that server-issued identity for voice authentication. This design also prepares the protocol for proxy forwarding and future bridge identities.
 
 Live session secrets are credentials. Akashic Voice does not expose them through `/avdebug` or normal logs.
 
 ## Network model
 
-The Minecraft connection bootstraps the voice session; audio then flows over UDP. Media is accepted only after the UDP endpoint authenticates against a server-issued session secret.
+The Minecraft connection bootstraps the voice session; audio then flows over UDP. The bootstrap carries a 256-bit secret and the authoritative server UUID. UDP authentication uses fresh client/server nonces and HMAC proofs; HKDF-SHA-256 derives separate client-to-server and server-to-client AES keys.
+
+After authentication, control and media packets are carried only inside AES-128-GCM envelopes with authenticated protocol headers, monotonically increasing directional counters and a bounded replay window. Plaintext media is rejected.
 
 Proximity routing uses the server's tracked world/dimension/position. Client-reported coordinates are not trusted as an authority. Group audio deliberately bypasses distance/dimension checks and is marked non-spatial for playback.
 
-Malformed or oversized Opus payload declarations are rejected before payload allocation. The client UDP socket is connected to the expected voice endpoint and ignores unrelated datagrams.
+Malformed or oversized Opus payload declarations are rejected before payload allocation. The client UDP socket is connected to the expected voice endpoint and ignores unrelated datagrams. HELLO traffic is globally/per-IP rate-limited before expensive derivation, and authenticated inbound datagrams have per-session packet/byte budgets before AES-GCM decrypt.
 
-Encryption, replay protection and rate limiting are still roadmap gates and must be completed before production-security approval.
+Offline-mode remains a weaker identity root: Akashic Voice can secure the UDP session it bootstraps, but it cannot make an unauthenticated Minecraft login intrinsically trustworthy. Live proxy/offline-mode integration remains a separate release gate.
 
 ## Building
 
@@ -85,11 +89,10 @@ Artifacts are written to `build/libs/`. Quality-assurance helpers live under `to
 The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Major remaining work includes:
 
 1. adaptive jitter tuning, stream telemetry and live gameplay validation;
-2. authenticated encryption, replay window and UDP abuse controls;
-3. allocation/latency benchmarks and remaining low-frequency control-path cleanup;
-4. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
-5. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
-6. cross-server groups/radio semantics and public addon API.
+2. allocation/latency benchmarks and remaining low-frequency control-path cleanup;
+3. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
+4. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
+5. cross-server groups/radio semantics and public addon API.
 
 ## Credits and license
 

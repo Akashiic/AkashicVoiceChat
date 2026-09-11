@@ -12,14 +12,17 @@ public final class VoiceClientHolder {
 
     private VoiceClientHolder() {}
 
-    public static synchronized void connect(UUID playerId, UUID secret, InetAddress host, int udpPort) {
+    public static synchronized boolean connect(UUID playerId, byte[] masterSecret, InetAddress host, int udpPort) {
         stop();
-        VoiceClient client = new VoiceClient(playerId, secret, host, udpPort);
+        VoiceClient client = new VoiceClient(playerId, masterSecret, host, udpPort);
         try {
             client.start();
             instance = client;
+            return true;
         } catch (IOException e) {
+            client.stop();
             AkashicVoice.LOG.warn("Failed to start VoiceClient", e);
+            return false;
         }
     }
 
@@ -34,7 +37,7 @@ public final class VoiceClientHolder {
     }
 
     public static synchronized void notifyMicChanged() {
-        VoiceClient v = instance;
-        if (v != null) v.restartMicCapture();
+        VoiceClient current = instance;
+        if (current != null) current.restartMicCapture();
     }
 }

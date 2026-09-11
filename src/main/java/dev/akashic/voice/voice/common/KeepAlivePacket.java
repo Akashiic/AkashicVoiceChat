@@ -11,7 +11,7 @@ public final class KeepAlivePacket {
     }
 
     public static KeepAlivePacket read(ByteBuffer buf) {
-        if (buf.remaining() < 8) return null;
+        if (buf.remaining() != 8) return null;
         return new KeepAlivePacket(buf.getLong());
     }
 

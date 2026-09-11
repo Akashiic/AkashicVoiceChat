@@ -70,7 +70,17 @@ Acceptance:
 
 ## Gate 4 — UDP security and parser hardening
 
-Status: **PARTIAL PASS — bounded parsing, authoritative endpoint and media-auth gate implemented; protocol header/AEAD/replay/rate limits remain.**
+Status: **PASS — protocol/security implementation and isolated Java 8 QA complete. Live deployment remains an integration test, not a protocol-code blocker.**
+
+Evidence:
+- explicit `AV` magic, protocol version and fixed outer envelope types;
+- 256-bit bootstrap secret, fresh handshake nonces and distinct server/client HMAC proofs;
+- HKDF-SHA-256 checked against RFC 5869 test vector;
+- directional AES-128-GCM keys, 96-bit nonces, 128-bit tags and 64-packet replay window;
+- unauthenticated HELLO rate limiting plus authenticated packet/byte rate limiting before decrypt;
+- concurrent seal test produced counters 0..1999 exactly once;
+- fuzz test: 50,000 parser datagrams + 5,000 forged GCM envelopes with no crash/false acceptance;
+- full secure-handshake flow smoke: challenge/proofs/encrypted ACK/encrypted media/replay rejection.
 
 Acceptance:
 - packet magic/version/type validated before parsing payload;
@@ -79,7 +89,7 @@ Acceptance:
 - AEAD authentication failure drops packet without expensive/log-spam path;
 - replay/duplicate window enforced;
 - client accepts voice datagrams only from the expected server/gateway endpoint;
-- rate limits exist for unauthenticated handshakes and authenticated media abuse;
+- rate limits exist for unauthenticated handshakes and authenticated media abuse; ✓
 - malformed packet fuzz tests cannot crash network threads or allocate unbounded memory.
 
 ## Gate 5 — Performance

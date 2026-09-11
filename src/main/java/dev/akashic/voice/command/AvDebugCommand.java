@@ -29,9 +29,8 @@ public class AvDebugCommand extends CommandBase {
         return 2;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
         return Collections.emptyList();
     }
 
@@ -42,6 +41,6 @@ public class AvDebugCommand extends CommandBase {
         sender.addChatMessage(
             new ChatComponentText(
                 "Akashic Voice: UDP " + AkashicVoiceConfig
-                    .voicePort() + ", authenticated=" + connected + ", pendingSessions=" + SecretRegistry.size()));
+                    .voicePort() + ", authenticated=" + connected + ", bootstrapTickets=" + SecretRegistry.size()));
     }
 }

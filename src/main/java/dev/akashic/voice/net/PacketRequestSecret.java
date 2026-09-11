@@ -1,5 +1,6 @@
 package dev.akashic.voice.net;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -28,11 +29,14 @@ public class PacketRequestSecret implements IMessage {
         public PacketSecret onMessage(PacketRequestSecret msg, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
             UUID playerId = player.getUniqueID();
-            UUID secret = SecretRegistry.getOrCreate(playerId);
+            byte[] secret = SecretRegistry.getOrCreate(playerId);
             int port = AkashicVoiceConfig.voicePort();
-
-            AkashicVoice.LOG.info("Issued voice secret to {} (port {})", player.getCommandSenderName(), port);
-            return new PacketSecret(playerId, secret, port);
+            try {
+                AkashicVoice.LOG.info("Issued voice bootstrap to {} (port {})", player.getCommandSenderName(), port);
+                return new PacketSecret(playerId, secret, port);
+            } finally {
+                Arrays.fill(secret, (byte) 0);
+            }
         }
     }
 }

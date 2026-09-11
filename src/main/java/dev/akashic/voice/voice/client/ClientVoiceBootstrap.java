@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -129,11 +130,17 @@ public final class ClientVoiceBootstrap {
         if (ClientSecretCache.hasSecret() && VoiceClientHolder.get() == null) {
             InetAddress host = resolveServerHost(mc);
             if (host != null) {
-                VoiceClientHolder.connect(
-                    ClientSecretCache.getPlayerId(),
-                    ClientSecretCache.getSecret(),
-                    host,
-                    ClientSecretCache.getUdpPort());
+                byte[] secret = ClientSecretCache.getMasterSecret();
+                if (secret != null) {
+                    try {
+                        if (VoiceClientHolder
+                            .connect(ClientSecretCache.getPlayerId(), secret, host, ClientSecretCache.getUdpPort())) {
+                            ClientSecretCache.clear();
+                        }
+                    } finally {
+                        Arrays.fill(secret, (byte) 0);
+                    }
+                }
             }
         }
 

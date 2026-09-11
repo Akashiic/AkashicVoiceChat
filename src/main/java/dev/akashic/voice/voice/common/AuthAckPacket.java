@@ -15,7 +15,7 @@ public final class AuthAckPacket {
     }
 
     public static AuthAckPacket read(ByteBuffer buf) {
-        if (buf.remaining() < 1) return null;
+        if (buf.remaining() != 1) return null;
         return new AuthAckPacket(buf.get());
     }
 
