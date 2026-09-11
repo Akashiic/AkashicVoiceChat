@@ -15,9 +15,9 @@ public final class ConcentusOpusDecoder implements OpusDecoder {
     }
 
     @Override
-    public int decode(byte[] opus, int opusLength, short[] outPcm) {
+    public int decode(byte[] opus, int opusOffset, int opusLength, short[] outPcm) {
         try {
-            return delegate.decode(opus, 0, opusLength, outPcm, 0, AudioFormatSpec.FRAME_SAMPLES, false);
+            return delegate.decode(opus, opusOffset, opusLength, outPcm, 0, AudioFormatSpec.FRAME_SAMPLES, false);
         } catch (OpusException e) {
             throw new IllegalStateException("Opus decode failed", e);
         }
@@ -26,7 +26,6 @@ public final class ConcentusOpusDecoder implements OpusDecoder {
     @Override
     public int decodeMissing(short[] outPcm) {
         try {
-            // Packet-loss concealment: pass null to synthesize a frame.
             return delegate.decode(null, 0, 0, outPcm, 0, AudioFormatSpec.FRAME_SAMPLES, false);
         } catch (OpusException e) {
             throw new IllegalStateException("Opus PLC decode failed", e);

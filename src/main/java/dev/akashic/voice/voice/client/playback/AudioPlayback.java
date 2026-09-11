@@ -17,15 +17,19 @@ import dev.akashic.voice.AkashicVoice;
 
 public final class AudioPlayback {
 
-    private static final int MAX_PENDING_TASKS = 256;
+    private static final int MAX_PENDING_TASKS = 64;
+    private static final int FRAME_POOL_SIZE = 128;
 
     private static volatile AudioPlayback instance;
 
     private final BlockingQueue<Runnable> tasks = new ArrayBlockingQueue<>(MAX_PENDING_TASKS);
+    private final BlockingQueue<PlaybackFrame> pendingFrames = new ArrayBlockingQueue<>(FRAME_POOL_SIZE);
+    private final BlockingQueue<PlaybackFrame> freeFrames = new ArrayBlockingQueue<>(FRAME_POOL_SIZE);
     private final Map<UUID, PlaybackChannel> channels = new HashMap<>();
     private final Map<UUID, Boolean> sourceSpatial = new HashMap<>();
     private final FloatBuffer listenerOrientation = BufferUtils.createFloatBuffer(6);
     private final AtomicLong droppedTasks = new AtomicLong();
+    private final AtomicLong droppedFrames = new AtomicLong();
     private Thread thread;
     private volatile boolean running;
     private volatile float maxDistance = 48f;
@@ -34,7 +38,11 @@ public final class AudioPlayback {
     private volatile boolean spatial = true;
     private boolean weCreatedAl;
 
-    private AudioPlayback() {}
+    private AudioPlayback() {
+        for (int i = 0; i < FRAME_POOL_SIZE; i++) {
+            freeFrames.add(new PlaybackFrame());
+        }
+    }
 
     public static synchronized AudioPlayback start() {
         if (instance != null) return instance;
@@ -84,21 +92,26 @@ public final class AudioPlayback {
         }
     }
 
-    public void submitFrame(UUID senderId, boolean sourceIsSpatial, float x, float y, float z, short[] pcm) {
-        if (!running) return;
-        offerTask(() -> {
-            PlaybackChannel ch = channels.get(senderId);
-            if (ch == null) {
-                ch = new PlaybackChannel(referenceDistance);
-                ch.setMaxDistance(maxDistance);
-                channels.put(senderId, ch);
-            }
-            sourceSpatial.put(senderId, sourceIsSpatial);
-            boolean effectiveSpatial = spatial && sourceIsSpatial;
-            ch.setSpatial(effectiveSpatial);
-            if (effectiveSpatial) ch.setPosition(x, y, z);
-            ch.enqueue(pcm);
-        });
+    public PlaybackFrame acquireFrame() {
+        if (!running) return null;
+        return freeFrames.poll();
+    }
+
+    public boolean submitFrame(PlaybackFrame frame, UUID senderId, boolean sourceIsSpatial, float x, float y, float z) {
+        if (frame == null) return false;
+        if (!running) {
+            releaseFrame(frame);
+            return false;
+        }
+        frame.prepare(senderId, sourceIsSpatial, x, y, z);
+        if (pendingFrames.offer(frame)) return true;
+        droppedFrames.incrementAndGet();
+        releaseFrame(frame);
+        return false;
+    }
+
+    public void releaseFrame(PlaybackFrame frame) {
+        if (frame != null) freeFrames.offer(frame);
     }
 
     public void updateListener(float x, float y, float z, float pitchRad, float yawRad) {
@@ -136,6 +149,10 @@ public final class AudioPlayback {
         return droppedTasks.get();
     }
 
+    public long droppedFrameCount() {
+        return droppedFrames.get();
+    }
+
     private void offerTask(Runnable task) {
         if (!tasks.offer(task)) droppedTasks.incrementAndGet();
     }
@@ -163,12 +180,18 @@ public final class AudioPlayback {
 
         try {
             while (running) {
-                Runnable task = tasks.poll(50, TimeUnit.MILLISECONDS);
-                if (task == null) continue;
+                Runnable task;
+                while ((task = tasks.poll()) != null) {
+                    runTask(task);
+                }
+                PlaybackFrame frame = pendingFrames.poll(10, TimeUnit.MILLISECONDS);
+                if (frame == null) continue;
                 try {
-                    task.run();
+                    processFrame(frame);
                 } catch (Throwable t) {
-                    AkashicVoice.LOG.warn("Audio task failed", t);
+                    AkashicVoice.LOG.warn("Audio frame failed", t);
+                } finally {
+                    releaseFrame(frame);
                 }
             }
         } catch (InterruptedException ignored) {
@@ -176,6 +199,28 @@ public final class AudioPlayback {
         } finally {
             shutdownOpenAl();
         }
+    }
+
+    private void runTask(Runnable task) {
+        try {
+            task.run();
+        } catch (Throwable t) {
+            AkashicVoice.LOG.warn("Audio task failed", t);
+        }
+    }
+
+    private void processFrame(PlaybackFrame frame) {
+        PlaybackChannel ch = channels.get(frame.senderId);
+        if (ch == null) {
+            ch = new PlaybackChannel(referenceDistance);
+            ch.setMaxDistance(maxDistance);
+            channels.put(frame.senderId, ch);
+        }
+        sourceSpatial.put(frame.senderId, frame.sourceSpatial);
+        boolean effectiveSpatial = spatial && frame.sourceSpatial;
+        ch.setSpatial(effectiveSpatial);
+        if (effectiveSpatial) ch.setPosition(frame.x, frame.y, frame.z);
+        ch.enqueue(frame.pcm());
     }
 
     private void initOpenAl() throws Exception {
@@ -201,6 +246,10 @@ public final class AudioPlayback {
         channels.clear();
         sourceSpatial.clear();
         tasks.clear();
+        PlaybackFrame pending;
+        while ((pending = pendingFrames.poll()) != null) {
+            freeFrames.offer(pending);
+        }
 
         if (weCreatedAl && AL.isCreated()) {
             try {

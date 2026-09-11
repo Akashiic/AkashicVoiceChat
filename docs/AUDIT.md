@@ -38,7 +38,7 @@ Acceptance:
 
 ## Gate 2 — Identity and offline-mode correctness
 
-Status: **PARTIAL PASS — upstream identity defect fixed; live proxy/offline integration test remains.**.
+Status: **PARTIAL PASS — upstream identity defect fixed; live proxy/offline integration test remains.**
 
 Finding: server secrets are keyed by `EntityPlayerMP.getUniqueID()`, while the current client authenticates UDP
 with its local `player.getUniqueID()`. `PacketSecret` does not transmit the server-authoritative UUID.
@@ -55,7 +55,7 @@ Acceptance:
 
 ## Gate 3 — Audio stream correctness
 
-Status: **PARTIAL PASS — per-speaker decoder isolation and bounded playback are complete; jitter/reorder remains.**.
+Status: **PARTIAL PASS — jitter/reorder/PLC and pooled playback pass isolated Java 8 tests; live gameplay and allocation benchmark remain.**
 
 Findings:
 - upstream `VoiceClient` owns one stateful Opus decoder shared by every remote speaker;
@@ -70,7 +70,7 @@ Acceptance:
 
 ## Gate 4 — UDP security and parser hardening
 
-Status: **PARTIAL PASS — bounded parsing, authoritative endpoint and media-auth gate implemented; AEAD/replay/rate limits remain.**.
+Status: **PARTIAL PASS — bounded parsing, authoritative endpoint and media-auth gate implemented; protocol header/AEAD/replay/rate limits remain.**
 
 Acceptance:
 - packet magic/version/type validated before parsing payload;

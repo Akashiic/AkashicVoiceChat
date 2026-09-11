@@ -19,9 +19,11 @@ This repository is under active development. The current foundation already incl
 - server-authoritative voice identity for offline-mode compatibility;
 - one Opus decoder state per remote speaker;
 - bounded playback queues and reusable OpenAL scratch buffers;
+- per-speaker fixed jitter/reorder rings with duplicate/late handling and Opus PLC;
+- a 128-frame preallocated PCM playback pool to avoid 50 Hz array churn;
 - JavaSound capture isolated behind an audio-capture SPI.
 
-The Simple Voice Chat bridge, encrypted media protocol, adaptive jitter buffer and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
+The Simple Voice Chat bridge, encrypted media protocol, adaptive jitter tuning and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
 
 ## Runtime contract
 
@@ -82,9 +84,9 @@ Artifacts are written to `build/libs/`. Quality-assurance helpers live under `to
 
 The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Major remaining work includes:
 
-1. per-speaker jitter/reorder/PLC pipeline with bounded pooled storage;
+1. adaptive jitter tuning, stream telemetry and live gameplay validation;
 2. authenticated encryption, replay window and UDP abuse controls;
-3. low-allocation playback frame pool and performance benchmarks;
+3. allocation/latency benchmarks and remaining low-frequency control-path cleanup;
 4. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
 5. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
 6. cross-server groups/radio semantics and public addon API.

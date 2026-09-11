@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import dev.akashic.voice.AkashicVoice;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureException;
+import dev.akashic.voice.voice.client.jitter.DecoderStream;
 import dev.akashic.voice.voice.client.playback.AudioPlayback;
 import dev.akashic.voice.voice.client.talk.TalkCache;
 import dev.akashic.voice.voice.common.AuthAckPacket;
@@ -22,16 +23,14 @@ import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
 import dev.akashic.voice.voice.common.WirePacketType;
-import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
-import dev.akashic.voice.voice.common.codec.OpusCodecFactory;
-import dev.akashic.voice.voice.common.codec.OpusDecoder;
 
 public final class VoiceClient {
 
     private static final int MAX_DATAGRAM_BYTES = 1500;
     private static final long AUTH_RETRY_INTERVAL_NANOS = 1_000_000_000L;
     private static final long KEEPALIVE_INTERVAL_NANOS = 1_000_000_000L;
-    private static final long MAINTENANCE_SLEEP_MILLIS = 100L;
+    private static final long MAINTENANCE_SLEEP_MILLIS = 20L;
+    private static final long STREAM_IDLE_NANOS = 30_000_000_000L;
 
     private final UUID playerId;
     private final UUID secret;
@@ -46,7 +45,7 @@ public final class VoiceClient {
     private DatagramSocket socket;
     private SocketAddress serverAddress;
     private MicCapture micCapture;
-    private final Map<UUID, OpusDecoder> decoders = new ConcurrentHashMap<>();
+    private final Map<UUID, DecoderStream> decoderStreams = new ConcurrentHashMap<>();
     private AudioPlayback playback;
 
     private Thread receiveThread;
@@ -97,14 +96,14 @@ public final class VoiceClient {
         if (socket != null) socket.close();
         if (receiveThread != null) receiveThread.interrupt();
         if (keepAliveThread != null) keepAliveThread.interrupt();
-        for (OpusDecoder decoder : decoders.values()) {
+        for (DecoderStream stream : decoderStreams.values()) {
             try {
-                decoder.close();
+                stream.close();
             } catch (RuntimeException ignored) {
                 // best-effort shutdown
             }
         }
-        decoders.clear();
+        decoderStreams.clear();
         AudioPlayback.stop();
         playback = null;
         AkashicVoice.LOG.info("VoiceClient stopped");
@@ -161,11 +160,13 @@ public final class VoiceClient {
                 if (now - lastAuthAttemptNanos >= AUTH_RETRY_INTERVAL_NANOS) sendAuthenticate();
                 continue;
             }
-            if (now - lastKeepAliveNanos < KEEPALIVE_INTERVAL_NANOS) continue;
-            lastKeepAliveNanos = now;
-            controlSendBuffer.clear();
-            new KeepAlivePacket(System.currentTimeMillis()).write(controlSendBuffer);
-            sendBuffer(controlSendBuffer, controlOutboundPacket);
+            drainDecoderStreams(now);
+            if (now - lastKeepAliveNanos >= KEEPALIVE_INTERVAL_NANOS) {
+                lastKeepAliveNanos = now;
+                controlSendBuffer.clear();
+                new KeepAlivePacket(System.currentTimeMillis()).write(controlSendBuffer);
+                sendBuffer(controlSendBuffer, controlOutboundPacket);
+            }
         }
     }
 
@@ -223,32 +224,40 @@ public final class VoiceClient {
 
     private void handleSoundFrame(SoundFramePacket pkt) {
         long count = receivedFrames.incrementAndGet();
-        try {
-            short[] pcm = new short[AudioFormatSpec.FRAME_SAMPLES];
-            OpusDecoder decoder = decoderFor(pkt.senderId);
-            int decoded = decoder.decode(pkt.opusPayload, pkt.opusPayload.length, pcm);
-            if (decoded > 0 && playback != null) {
-                playback.submitFrame(pkt.senderId, pkt.isSpatial(), pkt.x, pkt.y, pkt.z, pcm);
-                TalkCache.markSpeaking(pkt.senderId);
-            }
-        } catch (RuntimeException e) {
-            AkashicVoice.LOG.debug("Sound frame decode failed at seq {}", pkt.sequence, e);
-        }
+        DecoderStream stream = streamFor(pkt.senderId);
+        stream.offer(pkt, System.nanoTime(), playback);
+        TalkCache.markSpeaking(pkt.senderId);
         if (count == 1 || count % 250 == 0) {
-            AkashicVoice.LOG.info("Decoded {} sound frames so far (last seq {})", count, pkt.sequence);
+            AkashicVoice.LOG.info("Received {} sound frames so far (last seq {})", count, pkt.sequence);
         }
     }
 
-    private OpusDecoder decoderFor(UUID senderId) {
-        OpusDecoder existing = decoders.get(senderId);
+    private DecoderStream streamFor(UUID senderId) {
+        DecoderStream existing = decoderStreams.get(senderId);
         if (existing != null) return existing;
-        OpusDecoder created = OpusCodecFactory.createDecoder();
-        OpusDecoder raced = decoders.putIfAbsent(senderId, created);
+        DecoderStream created = new DecoderStream(senderId);
+        DecoderStream raced = decoderStreams.putIfAbsent(senderId, created);
         if (raced != null) {
             created.close();
             return raced;
         }
         return created;
+    }
+
+    private void drainDecoderStreams(long nowNanos) {
+        for (Map.Entry<UUID, DecoderStream> entry : decoderStreams.entrySet()) {
+            UUID senderId = entry.getKey();
+            DecoderStream stream = entry.getValue();
+            stream.drain(nowNanos, playback);
+            if (!stream.isIdle(nowNanos, STREAM_IDLE_NANOS)) continue;
+            if (!decoderStreams.remove(senderId, stream)) continue;
+            try {
+                stream.close();
+            } catch (RuntimeException ignored) {
+                // best-effort cleanup
+            }
+            if (playback != null) playback.dropChannel(senderId);
+        }
     }
 
     private void sendBuffer(ByteBuffer buf, DatagramPacket packet) {

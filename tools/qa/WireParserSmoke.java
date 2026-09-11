@@ -24,7 +24,7 @@ public final class WireParserSmoke {
         ByteBuffer validMic = ByteBuffer.allocate(9);
         validMic.putInt(2).putShort((short) 3).put(new byte[] {1, 2, 3}).flip();
         MicFramePacket mic = MicFramePacket.read(validMic);
-        require(mic != null && mic.opusPayload.length == 3, "valid mic frame");
+        require(mic != null && mic.opusLength == 3, "valid mic frame");
 
         ByteBuffer trailingMic = ByteBuffer.allocate(8);
         trailingMic.putInt(3).putShort((short) 1).put((byte) 1).put((byte) 2).flip();

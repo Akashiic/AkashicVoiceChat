@@ -209,7 +209,16 @@ public final class VoiceServer {
         int radius = AkashicVoiceConfig.voiceRadius();
         long radiusSq = (long) radius * radius;
 
-        SoundFramePacket spatialOut = new SoundFramePacket(senderId, true, sx, sy, sz, pkt.sequence, pkt.opusPayload);
+        SoundFramePacket spatialOut = new SoundFramePacket(
+            senderId,
+            true,
+            sx,
+            sy,
+            sz,
+            pkt.sequence,
+            pkt.opusData,
+            pkt.opusOffset,
+            pkt.opusLength);
         SoundFramePacket nonSpatialOut = new SoundFramePacket(
             senderId,
             false,
@@ -217,7 +226,9 @@ public final class VoiceServer {
             sy,
             sz,
             pkt.sequence,
-            pkt.opusPayload);
+            pkt.opusData,
+            pkt.opusOffset,
+            pkt.opusLength);
         ByteBuffer spatialWire = null;
         ByteBuffer nonSpatialWire = null;
 
