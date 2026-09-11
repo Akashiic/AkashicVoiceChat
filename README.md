@@ -8,7 +8,7 @@ Akashic Voice is derived from the MIT-licensed ProxyChat project and is being re
 
 This repository is under active development. The current foundation already includes:
 
-- 48 kHz mono Opus voice using bundled pure-Java Concentus;
+- 48 kHz mono Opus voice at a 48 kbit/s default bitrate, with bundled native libopus on supported desktops and pure-Java Concentus fallback;
 - 20 ms / 960-sample audio frames;
 - proximity-based OpenAL 3D playback;
 - push-to-talk, voice activation and always-on capture modes;
@@ -23,7 +23,8 @@ This repository is under active development. The current foundation already incl
 - bounded playback queues and reusable OpenAL scratch buffers;
 - per-speaker fixed jitter/reorder rings with duplicate/late handling and Opus PLC;
 - a 128-frame preallocated PCM playback pool to avoid 50 Hz array churn;
-- JavaSound capture isolated behind an audio-capture SPI.
+- JavaSound capture isolated behind an audio-capture SPI;
+- selectable `auto` / `native` / `java` Opus backend with bounded native decoder scratch storage.
 
 The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
 
@@ -36,7 +37,7 @@ The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture b
 | Client JVM | Java 8+; produced classes are major version 52 |
 | Server JVM | Java 8+; Java 21 is a supported target for Crucible deployments |
 | Client graphics/audio API | LWJGL2-compatible OpenAL |
-| Codec | Opus / Concentus, 48 kHz mono |
+| Codec | Opus 48 kHz mono, 48 kbit/s default; native libopus preferred in `auto`, Concentus fallback |
 | Default voice transport | UDP 24454 |
 | UniMixins | not required |
 | GTNHLib | not required |
@@ -44,6 +45,8 @@ The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture b
 | Angelica / Hodgepodge / ArchaicFix / CoreTweaks | compatible targets, not dependencies |
 
 The same mod JAR is intended for client and Forge/Crucible server installation. Server-side gateway/bridge modules may later be split into dedicated Java 21 artifacts.
+
+Codec backend semantics: `auto` tries bundled native libopus and falls back to Concentus if native loading is unavailable; `native` requires native libopus and fails explicitly; `java` forces Concentus. The bundled native artifact currently targets desktop Windows/Linux/macOS architectures, not Android.
 
 ## Java 8 verification
 
@@ -84,12 +87,14 @@ The build tooling uses JDK 21. This does **not** raise the client runtime requir
 
 Artifacts are written to `build/libs/`. Quality-assurance helpers live under `tools/qa/`.
 
+The bundled native Opus dependency is checksum-pinned: `verifyNativeOpusBundle` validates SHA-256 `e4d67fb9aa3158ed5bd17536b78cea20f85862144e7c1cdb1d6f5972cf031c30` before `shadowJar` may package it.
+
 ## Development roadmap
 
 The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Major remaining work includes:
 
 1. adaptive jitter tuning, stream telemetry and live gameplay validation;
-2. allocation/latency benchmarks and remaining low-frequency control-path cleanup;
+2. live in-game allocation/latency/GC profiling and remaining control-path cleanup;
 3. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
 4. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
 5. cross-server groups/radio semantics and public addon API.
@@ -99,5 +104,7 @@ The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Majo
 Akashic Voice is derived from **ProxyChat** by Julius Meinking, distributed under the MIT License in this repository. The original license notice is preserved.
 
 The bundled Concentus implementation is distributed under its upstream BSD-style license; its notice is included in `META-INF/licenses/Concentus-LICENSE.txt` inside the built JAR.
+
+The optional preferred desktop backend bundles `com.plasmoverse:opus-jni-rust:1.0.4` (MIT) and its native libopus dependency chain. Corresponding third-party notices and checksum/provenance records are included under `META-INF/licenses/native-opus/`.
 
 Simple Voice Chat is used only as an interoperability/behavioral reference where permitted. Akashic Voice must not copy ARR Simple Voice Chat source code; bridge behavior is implemented independently against supported interfaces/protocol behavior.

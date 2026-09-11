@@ -35,6 +35,6 @@
  */
 dependencies {
     // Concentus: pure-Java Opus codec (BSD-3-Clause). Used as the default encoder/decoder.
-    // A native opus4j path can be added later behind the same OpusCodec interface.
+    // Native libopus is bundled separately without relocation in build.gradle.kts; Concentus remains the universal fallback.
     shadowImplementation("com.plasmoverse:concentus:1.0.0")
 }

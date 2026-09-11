@@ -25,14 +25,14 @@ The project advances by evidence gates, not by feature count.
 
 ## Phase C — Audio quality / 0.3.x
 
-1. Per-speaker jitter/reorder buffers with adaptive but bounded target delay.
-2. Opus PLC for missing frames; evaluate in-band FEC with measured loss scenarios.
+1. **PARTIAL:** fixed bounded per-speaker jitter/reorder is implemented; adaptive target-delay tuning remains.
+2. **PARTIAL:** Opus PLC is implemented; in-band FEC still requires measured loss scenarios.
 3. Player volume/mute/deafen controls.
 4. Whisper/proximity semantic flags and non-spatial group playback.
 5. Replace misleading basic 'noise suppression' label with explicit DSP stages.
 
 6. Add limiter/AGC only after objective clipping/noise tests and listening tests.
-7. Define quality presets (Economy/Balanced/High/Akashic HD) as measurable codec/DSP settings.
+7. **PARTIAL:** the default Akashic HD baseline is now 48 kbit/s Opus; the full named preset matrix remains.
 
 ## Phase D — Gateway and SVC bridge / 0.4.x
 

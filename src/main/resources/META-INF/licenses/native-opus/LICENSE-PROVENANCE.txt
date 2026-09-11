@@ -1,0 +1,37 @@
+Akashic Voice - Native Opus license notice provenance
+
+The six crates below declare dual licenses in their checksum-verified crates.io archives but do not ship LICENSE/COPYING files in those archives. Akashic Voice therefore includes the corresponding upstream-project license texts separately.
+
+indenter 0.3.3
+crate SHA-256: ce23b50ad8242c51a442f3ff322d56b02f08852c77e4c0b4d3fd684abc89c683
+crate VCS: 6dcbe9f1565218c1ee58f47e92a3f4a35c451a44
+SPDX: MIT OR Apache-2.0
+repository moved: yaahc/indenter -> eyre-rs/indenter
+license blobs: MIT 31aa79387f27e730e33d871925e152e35e428031; Apache 1b5ec8b78e237b5c3b3d812a7c0a6589d0f7161d
+
+jni 0.22.4
+crate SHA-256: 5efd9a482cf3a427f00d6b35f14332adc7902ce91efb778580e180ff90fa3498
+crate VCS: 5ae9458a4ec44c5318f37ddc7569c1d4ae8a69e7
+SPDX: MIT OR Apache-2.0
+license blobs: MIT 74323882c4eeb6ce9f75f1f3269d212038f394d2; Apache 16fe87b06e802f094b3fbb0894b137bca2b16ef1
+jni-macros 0.22.4
+crate SHA-256: a00109accc170f0bdb141fed3e393c565b6f5e072365c3bd58f5b062591560a3
+crate VCS: 33045a124105c939d1e2cbdcb5a39e5d868ffa03
+SPDX: MIT OR Apache-2.0
+license blobs: MIT 74323882c4eeb6ce9f75f1f3269d212038f394d2; Apache 16fe87b06e802f094b3fbb0894b137bca2b16ef1
+
+jni-sys-macros 0.4.1
+crate SHA-256: 38c0b942f458fe50cdac086d2f946512305e5631e720728f2a61aabcd47a6264
+crate VCS: 64d77b7a5f119d7b55b4e2c169a4668067ff59e6
+SPDX: MIT OR Apache-2.0
+license blobs: MIT 2008402b8a1299cf118ea38e02116bfcc72e53c3; Apache 8f71f43fee3f78649d238238cbde51e6d7055c82
+
+winapi-i686-pc-windows-gnu 0.4.0
+crate SHA-256: ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6
+SPDX: MIT/Apache-2.0
+license source: bundled winapi-rs 0.3.9 project notices
+
+winapi-x86_64-pc-windows-gnu 0.4.0
+crate SHA-256: 712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f
+SPDX: MIT/Apache-2.0
+license source: bundled winapi-rs 0.3.9 project notices

@@ -1,0 +1,43 @@
+Akashic Voice - Native Opus third-party inventory
+
+Bundled upstream artifact: com.plasmoverse:opus-jni-rust:1.0.4
+Official release SHA-256: e4d67fb9aa3158ed5bd17536b78cea20f85862144e7c1cdb1d6f5972cf031c30
+License notices under this directory correspond to the exact dependency versions listed below. Where a checksum-verified .crate omits license files, the upstream project notice is supplied separately; see LICENSE-PROVENANCE.txt.
+
+Package | Version | License | Source
+--- | --- | --- | ---
+bytes | 1.5.0 | MIT | https://github.com/tokio-rs/bytes
+cc | 1.0.83 | MIT OR Apache-2.0 | https://github.com/rust-lang/cc-rs
+cfg-if | 1.0.0 | MIT/Apache-2.0 | https://github.com/alexcrichton/cfg-if
+cmake | 0.1.50 | MIT OR Apache-2.0 | https://github.com/rust-lang/cmake-rs
+combine | 4.6.6 | MIT | https://github.com/Marwes/combine
+eyre | 0.6.12 | MIT OR Apache-2.0 | https://github.com/eyre-rs/eyre
+indenter | 0.3.3 | MIT OR Apache-2.0 | https://github.com/yaahc/indenter
+jni | 0.22.4 | MIT OR Apache-2.0 | https://github.com/jni-rs/jni-rs
+jni-macros | 0.22.4 | MIT OR Apache-2.0 | https://github.com/jni-rs/jni-rs
+jni-sys | 0.4.1 | MIT OR Apache-2.0 | https://github.com/jni-rs/jni-sys
+jni-sys-macros | 0.4.1 | MIT OR Apache-2.0 | https://github.com/jni-rs/jni-sys
+libc | 0.2.149 | MIT OR Apache-2.0 | https://github.com/rust-lang/libc
+log | 0.4.20 | MIT OR Apache-2.0 | https://github.com/rust-lang/log
+memchr | 2.6.4 | Unlicense OR MIT | https://github.com/BurntSushi/memchr
+once_cell | 1.18.0 | MIT OR Apache-2.0 | https://github.com/matklad/once_cell
+opus | 0.3.1 | MIT OR Apache-2.0 | https://github.com/SpaceManiac/opus-rs @ 559876660603dc8079a053e03e6438766f669e69
+opus-jni-rust | 0.1.0 | MIT | https://github.com/plasmoapp/opus-jni-rust @ tag 1.0.4
+opusic-sys | 0.7.3 | BSD-3-Clause | https://github.com/DoumanAsh/opusic-sys
+proc-macro2 | 1.0.106 | MIT OR Apache-2.0 | https://github.com/dtolnay/proc-macro2
+quote | 1.0.45 | MIT OR Apache-2.0 | https://github.com/dtolnay/quote
+rustc_version | 0.4.1 | MIT OR Apache-2.0 | https://github.com/djc/rustc-version-rs
+same-file | 1.0.6 | Unlicense/MIT | https://github.com/BurntSushi/same-file
+semver | 1.0.28 | MIT OR Apache-2.0 | https://github.com/dtolnay/semver
+simd_cesu8 | 1.1.1 | Apache-2.0 OR MIT | https://github.com/seancroach/simd_cesu8
+simdutf8 | 0.1.5 | MIT OR Apache-2.0 | https://github.com/rusticstuff/simdutf8
+syn | 2.0.117 | MIT OR Apache-2.0 | https://github.com/dtolnay/syn
+thiserror | 2.0.18 | MIT OR Apache-2.0 | https://github.com/dtolnay/thiserror
+thiserror-impl | 2.0.18 | MIT OR Apache-2.0 | https://github.com/dtolnay/thiserror
+unicode-ident | 1.0.12 | (MIT OR Apache-2.0) AND Unicode-DFS-2016 | https://github.com/dtolnay/unicode-ident
+walkdir | 2.4.0 | Unlicense/MIT | https://github.com/BurntSushi/walkdir
+winapi | 0.3.9 | MIT/Apache-2.0 | https://github.com/retep998/winapi-rs
+winapi-i686-pc-windows-gnu | 0.4.0 | MIT/Apache-2.0 | https://github.com/retep998/winapi-rs
+winapi-util | 0.1.6 | Unlicense/MIT | https://github.com/BurntSushi/winapi-util
+winapi-x86_64-pc-windows-gnu | 0.4.0 | MIT/Apache-2.0 | https://github.com/retep998/winapi-rs
+windows-link | 0.2.1 | MIT OR Apache-2.0 | https://github.com/microsoft/windows-rs

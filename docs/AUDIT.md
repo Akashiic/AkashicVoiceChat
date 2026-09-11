@@ -55,7 +55,7 @@ Acceptance:
 
 ## Gate 3 — Audio stream correctness
 
-Status: **PARTIAL PASS — jitter/reorder/PLC and pooled playback pass isolated Java 8 tests; live gameplay and allocation benchmark remain.**
+Status: **PARTIAL PASS — jitter/reorder/PLC, pooled playback and codec allocation benchmarks pass; live multi-client gameplay remains.**
 
 Findings:
 - upstream `VoiceClient` owns one stateful Opus decoder shared by every remote speaker;
@@ -94,9 +94,17 @@ Acceptance:
 
 ## Gate 5 — Performance
 
-Status: **PENDING**.
+Status: **PARTIAL PASS — desktop Java 8 codec/crypto throughput and allocation are measured and improved; live Minecraft, ARM/Pojav and multi-client server profiling remain.**
 
-Measure, do not guess. Initial targets to validate on representative hardware:
+Evidence:
+- five-JVM integrated Java 8 median at the 48 kbit/s default: native encode ~144.2 us vs Concentus ~537.6 us (~3.73x faster);
+- native decode ~31.7 us vs Concentus ~72.4 us (~2.29x faster);
+- native encode allocation ~144 B/frame vs ~131.0 KiB/frame; native decode ~1.9 KiB vs ~29.2 KiB/frame;
+- AES-GCM and 20-recipient crypto fan-out are orders of magnitude below the 20 ms audio frame budget on the baseline host;
+- native/JVM backend matrix, strict native mode, Java fallback, cross-codec interoperability and bounded decoder scratch all pass under JDK 8u411;
+- native package relocation was rejected by QA; final packaging preserves JNI names and contains audited third-party notices.
+
+Measure, do not guess. Remaining targets to validate on representative hardware:
 - voice networking/DSP never blocks the Minecraft tick/render thread;
 - 20 ms capture cadence remains stable under normal client load;
 - bounded queue latency under packet jitter; stale audio is dropped instead of accumulated;
