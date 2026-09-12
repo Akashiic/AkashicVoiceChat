@@ -81,6 +81,7 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
             metrics.activeSessions(), metrics.pendingHandshakes(), backendRoutes,
             metrics.helloRateLimited(), metrics.mediaRateLimited(), metrics.encryptedRejected(),
             metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.soundResetsSent(),
+            agents.droppedMediaFrames(), agents.queuedMediaMessages(), agents.queuedControlMessages(),
             metrics.sessionsOpened(), metrics.sessionsClosed());
     }
 

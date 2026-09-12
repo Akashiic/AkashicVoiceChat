@@ -5,5 +5,8 @@ record SvcBridgeStatus(
     boolean voicechatBound,
     int desiredPlayers,
     int activeSessions,
-    int identityBindings
+    int identityBindings,
+    long gatewayMediaDropped,
+    int gatewayMediaQueued,
+    int gatewayControlQueued
 ) {}

@@ -39,7 +39,8 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
     SvcBridgeStatus statusSnapshot() {
         return new SvcBridgeStatus(
             gateway.isConnected(), voicechat != null,
-            desiredPlayers.size(), sessions.size(), identities.size());
+            desiredPlayers.size(), sessions.size(), identities.size(),
+            gateway.droppedMediaFrames(), gateway.queuedMediaMessages(), gateway.queuedControlMessages());
     }
 
     void bindVoicechat(VoicechatServerApi api) {

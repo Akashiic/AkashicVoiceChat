@@ -25,6 +25,8 @@ Implemented/tested locally:
 - proxy UUID ↔ local Bukkit UUID binding by exact player name for offline-mode/proxy deployments;
 - end-to-end local test: Akashic UDP MIC → Gateway → agent and SVC delivery/reset → Gateway → Akashic UDP;
 - additive `SOUND_FRAME_V2` preserves per-frame SVC max-distance and whisper metadata without changing Forbidden's v1 packet contract.
+- bounded agent backpressure keeps control responsive, drops stale media instead of blocking producers and preserves reset ordering;
+- permanent soak QA covers 20 concurrent Akashic UDP clients across repeated agent reconnects.
 
 Remaining live gates:
 - deploy the Velocity and Paper artifacts against the actual Rede Akashic proxy/lobby;

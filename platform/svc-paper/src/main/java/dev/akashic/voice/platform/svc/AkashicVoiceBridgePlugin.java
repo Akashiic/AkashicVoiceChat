@@ -91,6 +91,9 @@ public final class AkashicVoiceBridgePlugin extends JavaPlugin {
         sender.sendMessage("Players: desired=" + status.desiredPlayers()
             + " active=" + status.activeSessions()
             + " bindings=" + status.identityBindings());
+        sender.sendMessage("Transport: dropped=" + status.gatewayMediaDropped()
+            + " mediaQ=" + status.gatewayMediaQueued()
+            + " controlQ=" + status.gatewayControlQueued());
         return true;
     }
 

@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 final class AgentHub implements AutoCloseable {
     interface Listener {
@@ -42,6 +43,7 @@ final class AgentHub implements AutoCloseable {
     private final BackendRouteRegistry routes;
     private final Listener listener;
     private final SecureRandom random = new SecureRandom();
+    private final AtomicLong historicalMediaDrops = new AtomicLong();
     private final ExecutorService handshakes = Executors.newFixedThreadPool(4, runnable -> {
         Thread thread = new Thread(runnable, "AkashicVoice-Agent-Handshake");
         thread.setDaemon(true);
@@ -177,6 +179,15 @@ final class AgentHub implements AutoCloseable {
             return channel.send(new AgentMessage.SpeakerReset(speakerId));
         }
 
+        @Override
+        public long droppedMediaFrames() { return channel.droppedMediaFrames(); }
+
+        @Override
+        public int queuedMediaMessages() { return channel.queuedMediaMessages(); }
+
+        @Override
+        public int queuedControlMessages() { return channel.queuedControlMessages(); }
+
         private void readLoop() {
             try {
                 while (isOpen()) {
@@ -209,6 +220,7 @@ final class AgentHub implements AutoCloseable {
         public void close() {
             if (!closed.compareAndSet(false, true)) return;
             boolean removed = routes.unregister(this);
+            historicalMediaDrops.addAndGet(channel.droppedMediaFrames());
             channel.close();
             Thread reader = readerThread;
             if (reader != null && reader != Thread.currentThread()) reader.interrupt();
@@ -219,6 +231,14 @@ final class AgentHub implements AutoCloseable {
     private static boolean isNormalDisconnect(Throwable failure) {
         return failure instanceof EOFException || failure instanceof SocketException;
     }
+
+    long droppedMediaFrames() {
+        return historicalMediaDrops.get() + routes.droppedMediaFrames();
+    }
+
+    int queuedMediaMessages() { return routes.queuedMediaMessages(); }
+
+    int queuedControlMessages() { return routes.queuedControlMessages(); }
 
     private void safeRouteUp(String backendName) {
         safeCallback(backendName, () -> listener.onRouteUp(backendName));

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 final class SocketGatewayLink implements GatewayLink {
@@ -29,6 +30,7 @@ final class SocketGatewayLink implements GatewayLink {
     private final byte[] psk;
     private final SecureRandom random = new SecureRandom();
     private final AtomicReference<AgentSecureChannel> channel = new AtomicReference<>();
+    private final AtomicLong historicalMediaDrops = new AtomicLong();
     private final Set<UUID> attachedPlayers = ConcurrentHashMap.newKeySet();
     private volatile Listener listener;
     private volatile boolean running;
@@ -62,6 +64,24 @@ final class SocketGatewayLink implements GatewayLink {
     }
 
     @Override
+    public long droppedMediaFrames() {
+        AgentSecureChannel current = channel.get();
+        return historicalMediaDrops.get() + (current != null ? current.droppedMediaFrames() : 0L);
+    }
+
+    @Override
+    public int queuedMediaMessages() {
+        AgentSecureChannel current = channel.get();
+        return current != null ? current.queuedMediaMessages() : 0;
+    }
+
+    @Override
+    public int queuedControlMessages() {
+        AgentSecureChannel current = channel.get();
+        return current != null ? current.queuedControlMessages() : 0;
+    }
+
+    @Override
     public void publishSvcDelivery(BridgeDelivery delivery) {
         send(new AgentMessage.SvcDelivery(delivery));
     }
@@ -83,14 +103,20 @@ final class SocketGatewayLink implements GatewayLink {
             try {
                 AgentSecureChannel connected = connect();
                 AgentSecureChannel previous = channel.getAndSet(connected);
-                if (previous != null && previous != connected) previous.close();
+                if (previous != null && previous != connected) {
+                    historicalMediaDrops.addAndGet(previous.droppedMediaFrames());
+                    previous.close();
+                }
                 retryMillis = MIN_RETRY_MILLIS;
                 readLoop(connected);
             } catch (IOException | RuntimeException ignored) {
                 // Reconnect is expected; plugin logs only state changes at a higher level.
             } finally {
                 AgentSecureChannel current = channel.getAndSet(null);
-                if (current != null) current.close();
+                if (current != null) {
+                    historicalMediaDrops.addAndGet(current.droppedMediaFrames());
+                    current.close();
+                }
                 detachAll();
             }
             if (!running) break;
@@ -134,7 +160,10 @@ final class SocketGatewayLink implements GatewayLink {
         }
     }
     private void disconnectCurrent(AgentSecureChannel current) {
-        if (channel.compareAndSet(current, null)) current.close();
+        if (channel.compareAndSet(current, null)) {
+            historicalMediaDrops.addAndGet(current.droppedMediaFrames());
+            current.close();
+        }
     }
 
     private void detachAll() {
@@ -166,7 +195,10 @@ final class SocketGatewayLink implements GatewayLink {
         if (!running && listener == null) return;
         running = false;
         AgentSecureChannel current = channel.getAndSet(null);
-        if (current != null) current.close();
+        if (current != null) {
+            historicalMediaDrops.addAndGet(current.droppedMediaFrames());
+            current.close();
+        }
         if (worker != null) worker.interrupt();
         detachAll();
         listener = null;

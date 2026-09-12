@@ -49,6 +49,10 @@ final class GatewayStatusCommand implements SimpleCommand {
                 + " svcOut=" + status.soundFramesSent()
                 + " resets=" + status.soundResetsSent()));
         invocation.source().sendMessage(Component.text(
+            "Agent queue: dropped=" + status.agentMediaDropped()
+                + " mediaQ=" + status.agentMediaQueued()
+                + " controlQ=" + status.agentControlQueued()));
+        invocation.source().sendMessage(Component.text(
             "Rejected: helloRate=" + status.helloRateLimited()
                 + " mediaRate=" + status.mediaRateLimited()
                 + " encrypted=" + status.encryptedRejected()));

@@ -17,6 +17,9 @@ class SvcBridgeStatusTest {
             assertEquals(0, status.desiredPlayers());
             assertEquals(0, status.activeSessions());
             assertEquals(0, status.identityBindings());
+        assertEquals(0L, status.gatewayMediaDropped());
+        assertEquals(0, status.gatewayMediaQueued());
+        assertEquals(0, status.gatewayControlQueued());
         } finally {
             engine.close();
         }

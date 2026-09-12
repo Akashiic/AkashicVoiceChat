@@ -149,6 +149,9 @@ Evidence:
 - local reconnect/load soak keeps 8 authenticated UDP clients alive across 4 agent reconnect cycles, preserving 256 MIC uplinks and 32 SVC v2 downlinks with no leaked sessions;
 - normal EOF/socket closure during agent reconnect is classified as route lifecycle, not a false operational error.
 - SVC adapter maps through public `AudioSender` / `PlayerAudioListener` contracts and preserves compatible Opus bytes without decode/re-encode;
+- agent transport uses separate bounded control/media queues; media producer threads do not block on a stalled TCP peer and oldest media is dropped under pressure while stream reset ordering is preserved;
+- 20-client Gateway soak passes with 4 agent reconnect cycles, 640 encrypted MIC frames, 80 SVC downlinks, zero leaked UDP sessions and zero unexpected media/replay rejection;
+- `/avgateway status` and `/avbridge status` expose non-sensitive queue/drop/session diagnostics for homologation.
 - backends without a healthy authenticated agent remain fail-open to their native Forge bootstrap path.
 
 Remaining acceptance:

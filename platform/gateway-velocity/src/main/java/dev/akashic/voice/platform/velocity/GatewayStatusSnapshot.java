@@ -15,6 +15,9 @@ record GatewayStatusSnapshot(
     long micFramesAccepted,
     long soundFramesSent,
     long soundResetsSent,
+    long agentMediaDropped,
+    int agentMediaQueued,
+    int agentControlQueued,
     long sessionsOpened,
     long sessionsClosed
 ) {

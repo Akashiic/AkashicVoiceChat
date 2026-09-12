@@ -5,6 +5,9 @@ import java.util.UUID;
 public interface GatewayLink extends AutoCloseable {
     void start(Listener listener) throws Exception;
     boolean isConnected();
+    default long droppedMediaFrames() { return 0L; }
+    default int queuedMediaMessages() { return 0; }
+    default int queuedControlMessages() { return 0; }
     void publishSvcDelivery(BridgeDelivery delivery);
     void publishSvcReset(BridgeStreamReset reset);
 

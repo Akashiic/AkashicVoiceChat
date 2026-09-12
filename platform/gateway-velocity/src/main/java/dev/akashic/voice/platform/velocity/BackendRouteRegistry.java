@@ -16,6 +16,9 @@ final class BackendRouteRegistry implements AutoCloseable {
         boolean sendDetach(UUID playerId);
         boolean sendFrame(AkashicSpeakerFrame frame);
         boolean sendReset(UUID speakerId);
+        long droppedMediaFrames();
+        int queuedMediaMessages();
+        int queuedControlMessages();
         @Override
         void close();
     }
@@ -40,6 +43,23 @@ final class BackendRouteRegistry implements AutoCloseable {
     boolean unregister(Route route) {
         if (route == null) return false;
         return routes.remove(route.backendName(), route);
+    }
+    long droppedMediaFrames() {
+        long total = 0L;
+        for (Route route : routes.values()) total += route.droppedMediaFrames();
+        return total;
+    }
+
+    int queuedMediaMessages() {
+        int total = 0;
+        for (Route route : routes.values()) total += route.queuedMediaMessages();
+        return total;
+    }
+
+    int queuedControlMessages() {
+        int total = 0;
+        for (Route route : routes.values()) total += route.queuedControlMessages();
+        return total;
     }
 
     @Override

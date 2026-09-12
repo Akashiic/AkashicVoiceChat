@@ -37,7 +37,7 @@ import java.util.function.BooleanSupplier;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class GatewayRuntimeSoakTest {
-    private static final int CLIENT_COUNT = 8;
+    private static final int CLIENT_COUNT = 20;
     private static final int RECONNECT_CYCLES = 4;
     private static final int FRAMES_PER_CLIENT_PER_CYCLE = 8;
 
@@ -93,6 +93,10 @@ final class GatewayRuntimeSoakTest {
                 assertEquals(CLIENT_COUNT, done.sessionsClosed());
                 assertEquals(CLIENT_COUNT * RECONNECT_CYCLES * FRAMES_PER_CLIENT_PER_CYCLE,
                     done.micFramesAccepted());
+                assertEquals(CLIENT_COUNT * RECONNECT_CYCLES, done.soundFramesSent());
+                assertEquals(0L, done.soundResetsSent());
+                assertEquals(0L, done.mediaRateLimited());
+                assertEquals(0L, done.encryptedRejected());
                 assertTrue(listener.errors.isEmpty(), () -> "Runtime errors: " + listener.errors);
             } finally {
                 agent.close();
