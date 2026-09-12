@@ -12,7 +12,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -29,8 +29,7 @@ class AgentHubTest {
         RecordingListener listener = new RecordingListener();
         try (AgentHub hub = new AgentHub(
             new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-            psk,
-            Set.of("lobby"),
+            Map.of("lobby", psk),
             routes,
             listener)) {
             hub.start();

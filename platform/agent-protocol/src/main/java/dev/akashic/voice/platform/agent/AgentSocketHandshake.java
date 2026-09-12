@@ -13,7 +13,6 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 public final class AgentSocketHandshake {
     public static final int HANDSHAKE_TIMEOUT_MILLIS = 5_000;
@@ -21,6 +20,12 @@ public final class AgentSocketHandshake {
     private static final int MAX_RAW_FRAME_BYTES = 512;
 
     private AgentSocketHandshake() {}
+
+    @FunctionalInterface
+    public interface PskProvider {
+        /** Returns a 32-byte secret copy owned by the caller, or null for an unknown backend. */
+        byte[] pskCopyFor(String backendId);
+    }
 
     public static AgentSecureChannel connect(Socket socket, String backendId, byte[] psk,
                                              SecureRandom random) throws IOException {
@@ -80,13 +85,13 @@ public final class AgentSocketHandshake {
         }
     }
 
-    public static Accepted accept(Socket socket, byte[] psk, Predicate<String> allowedBackend,
+    public static Accepted accept(Socket socket, PskProvider pskProvider,
                                   SecureRandom random) throws IOException {
         Objects.requireNonNull(socket, "socket");
-        Objects.requireNonNull(allowedBackend, "allowedBackend");
+        Objects.requireNonNull(pskProvider, "pskProvider");
         Objects.requireNonNull(random, "random");
         configureHandshakeSocket(socket);
-        byte[] localPsk = copyPsk(psk);
+        byte[] localPsk = null;
         byte[] serverNonce = new byte[SessionKeys.HANDSHAKE_NONCE_BYTES];
         SessionCrypto crypto = null;
         AgentHandshake.Hello hello = null;
@@ -97,15 +102,23 @@ public final class AgentSocketHandshake {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             hello = AgentHandshake.readHello(readRaw(in, MAX_RAW_FRAME_BYTES));
-            if (hello == null || !allowedBackend.test(hello.backendId())) {
+            if (hello == null) throw new IOException("agent hello rejected");
+            localPsk = pskProvider.pskCopyFor(hello.backendId());
+            if (localPsk == null || localPsk.length != AgentKeyDerivation.PSK_BYTES) {
+                if (localPsk != null) Arrays.fill(localPsk, (byte) 0);
+                localPsk = null;
                 throw new IOException("agent backend rejected");
             }
+
             random.nextBytes(serverNonce);
-            SessionKeys keys = AgentKeyDerivation.derive(localPsk, hello.backendId(), hello.clientNonce(), serverNonce);
+            SessionKeys keys = AgentKeyDerivation.derive(
+                localPsk, hello.backendId(), hello.clientNonce(), serverNonce);
             try {
                 UUID routeId = AgentKeyDerivation.routeIdentity(hello.backendId());
-                serverProof = HandshakeProof.computeServer(keys, routeId, hello.clientNonce(), serverNonce);
-                expectedClientProof = HandshakeProof.computeClient(keys, routeId, hello.clientNonce(), serverNonce);
+                serverProof = HandshakeProof.computeServer(
+                    keys, routeId, hello.clientNonce(), serverNonce);
+                expectedClientProof = HandshakeProof.computeClient(
+                    keys, routeId, hello.clientNonce(), serverNonce);
                 crypto = SessionCrypto.forServer(keys);
             } finally {
                 keys.close();
@@ -118,7 +131,8 @@ public final class AgentSocketHandshake {
 
             response = AgentHandshake.readAuthResponse(
                 readRaw(in, AgentHandshake.AUTH_RESPONSE_BYTES));
-            if (response == null || !java.security.MessageDigest.isEqual(expectedClientProof, response.clientProof())) {
+            if (response == null || !java.security.MessageDigest.isEqual(
+                expectedClientProof, response.clientProof())) {
                 throw new IOException("agent client proof rejected");
             }
             Arrays.fill(expectedClientProof, (byte) 0);
@@ -142,7 +156,7 @@ public final class AgentSocketHandshake {
             if (response != null) Arrays.fill(response.clientProof(), (byte) 0);
             if (serverProof != null) Arrays.fill(serverProof, (byte) 0);
             if (expectedClientProof != null) Arrays.fill(expectedClientProof, (byte) 0);
-            Arrays.fill(localPsk, (byte) 0);
+            if (localPsk != null) Arrays.fill(localPsk, (byte) 0);
             Arrays.fill(serverNonce, (byte) 0);
         }
     }

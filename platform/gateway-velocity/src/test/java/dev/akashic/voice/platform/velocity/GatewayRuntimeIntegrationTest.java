@@ -26,7 +26,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -46,8 +46,7 @@ final class GatewayRuntimeIntegrationTest {
              GatewayRuntime runtime = new GatewayRuntime(
                  udpPort,
                  new InetSocketAddress(InetAddress.getLoopbackAddress(), 0),
-                 psk,
-                 Set.of("lobby"),
+                 Map.of("lobby", psk),
                  registry,
                  listener)) {
             runtime.start();

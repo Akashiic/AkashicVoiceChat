@@ -8,7 +8,7 @@ import dev.akashic.voice.platform.bridge.ManagedPlayer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listener, AutoCloseable {
@@ -25,13 +25,12 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     private final Listener listener;
     private volatile boolean running;
 
-    GatewayRuntime(int udpPort, InetSocketAddress agentBind, byte[] agentPsk,
-                   Set<String> allowedBackends, BootstrapSessionRegistry bootstrapSessions,
-                   Listener listener) {
+    GatewayRuntime(int udpPort, InetSocketAddress agentBind, Map<String, byte[]> agentPsks,
+                   BootstrapSessionRegistry bootstrapSessions, Listener listener) {
         this.bootstrapSessions = Objects.requireNonNull(bootstrapSessions, "bootstrapSessions");
         this.listener = Objects.requireNonNull(listener, "listener");
         this.udp = new GatewayUdpServer(udpPort, bootstrapSessions, this);
-        this.agents = new AgentHub(agentBind, agentPsk, allowedBackends, routes, this);
+        this.agents = new AgentHub(agentBind, agentPsks, routes, this);
     }
 
     synchronized void start() throws IOException {

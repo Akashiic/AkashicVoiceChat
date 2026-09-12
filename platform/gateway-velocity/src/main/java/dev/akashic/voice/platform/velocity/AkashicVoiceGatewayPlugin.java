@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,17 +50,18 @@ public final class AkashicVoiceGatewayPlugin implements GatewayRuntime.Listener 
         channel = new LegacyChannelIdentifier(LegacyForgeBootstrapCodec.CHANNEL);
         proxy.getChannelRegistrar().register(channel);
         try (GatewaySettings settings = GatewaySettings.load(dataDirectory)) {
-            byte[] psk = settings.agentPskCopy();
+            Map<String, byte[]> psks = settings.agentPsksCopy();
             try {
                 GatewayRuntime created = new GatewayRuntime(
-                    settings.udpPort(), settings.agentBind(), psk,
-                    settings.allowedBackends(), bootstrapSessions, this);
+                    settings.udpPort(), settings.agentBind(), psks,
+                    bootstrapSessions, this);
                 created.start();
                 runtime = created;
-                logger.info("Akashic Voice Gateway started: UDP {}, agent {}:{}",
-                    created.udpPort(), settings.agentBind().getAddress().getHostAddress(), created.agentPort());
+                logger.info("Akashic Voice Gateway started: UDP {}, agent {}:{}, backends {}",
+                    created.udpPort(), settings.agentBind().getAddress().getHostAddress(),
+                    created.agentPort(), settings.allowedBackends());
             } finally {
-                Arrays.fill(psk, (byte) 0);
+                zeroPsks(psks);
             }
         } catch (Exception failure) {
             logger.error("Akashic Voice Gateway runtime failed; plugin messaging remains fail-open", failure);
@@ -172,5 +174,12 @@ public final class AkashicVoiceGatewayPlugin implements GatewayRuntime.Listener 
         if (!player.sendPluginMessage(currentChannel, payload)) {
             logger.debug("Akashic Voice control message was not delivered to {}", player.getUsername());
         }
+    }
+
+    private static void zeroPsks(Map<String, byte[]> psks) {
+        for (byte[] secret : psks.values()) {
+            if (secret != null) Arrays.fill(secret, (byte) 0);
+        }
+        psks.clear();
     }
 }

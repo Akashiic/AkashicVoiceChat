@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +26,8 @@ class AgentSocketHandshakeTest {
              ExecutorService executor = Executors.newSingleThreadExecutor()) {
             Future<AgentSocketHandshake.Accepted> acceptedFuture = executor.submit(() -> {
                 Socket socket = listener.accept();
-                return AgentSocketHandshake.accept(socket, psk, "lobby"::equals, new SecureRandom());
+                return AgentSocketHandshake.accept(socket, backend -> "lobby".equals(backend)
+                    ? Arrays.copyOf(psk, psk.length) : null, new SecureRandom());
             });
 
             try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), listener.getLocalPort());
@@ -55,7 +57,8 @@ class AgentSocketHandshakeTest {
              ExecutorService executor = Executors.newSingleThreadExecutor()) {
             Future<AgentSocketHandshake.Accepted> acceptedFuture = executor.submit(() -> {
                 Socket socket = listener.accept();
-                return AgentSocketHandshake.accept(socket, serverPsk, "lobby"::equals, new SecureRandom());
+                return AgentSocketHandshake.accept(socket, backend -> "lobby".equals(backend)
+                    ? Arrays.copyOf(serverPsk, serverPsk.length) : null, new SecureRandom());
             });
 
             Socket clientSocket = new Socket(InetAddress.getLoopbackAddress(), listener.getLocalPort());
@@ -66,6 +69,29 @@ class AgentSocketHandshakeTest {
             assertInstanceOf(java.io.IOException.class, serverFailure.getCause());
         }
     }
+    @Test
+    void backendScopedPskCannotAuthenticateAsDifferentBackend() throws Exception {
+        byte[] lobbyPsk = fixedPsk(21);
+        byte[] forbiddenPsk = fixedPsk(77);
+        try (ServerSocket listener = new ServerSocket(0, 16, InetAddress.getLoopbackAddress());
+             ExecutorService executor = Executors.newSingleThreadExecutor()) {
+            Future<AgentSocketHandshake.Accepted> acceptedFuture = executor.submit(() -> {
+                Socket socket = listener.accept();
+                return AgentSocketHandshake.accept(socket, backend -> {
+                    if ("lobby".equals(backend)) return Arrays.copyOf(lobbyPsk, lobbyPsk.length);
+                    if ("forbidden-1".equals(backend)) return Arrays.copyOf(forbiddenPsk, forbiddenPsk.length);
+                    return null;
+                }, new SecureRandom());
+            });
+            Socket client = new Socket(InetAddress.getLoopbackAddress(), listener.getLocalPort());
+            assertThrows(java.io.IOException.class,
+                () -> AgentSocketHandshake.connect(client, "forbidden-1", lobbyPsk, new SecureRandom()));
+            ExecutionException serverFailure = assertThrows(ExecutionException.class,
+                () -> acceptedFuture.get(3, TimeUnit.SECONDS));
+            assertInstanceOf(java.io.IOException.class, serverFailure.getCause());
+        }
+    }
+
     private static byte[] fixedPsk(int seed) {
         byte[] psk = new byte[AgentKeyDerivation.PSK_BYTES];
         for (int i = 0; i < psk.length; i++) psk[i] = (byte) (seed + i * 13);

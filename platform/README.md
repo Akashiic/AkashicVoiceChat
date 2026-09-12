@@ -33,3 +33,15 @@ Remaining live gates:
 - prove cross-server group/radio semantics without treating unrelated backend coordinates as physical proximity.
 
 The Gateway remains fail-open for backends without a healthy authenticated agent: it does not steal the legacy Forge bootstrap request from those servers.
+
+## Agent PSKs
+
+The Gateway stores a distinct 256-bit PSK for every allowed backend. For example:
+
+```properties
+allowed-backends=lobby,forbidden-1
+agent-psk.lobby.base64=<lobby-only-secret>
+agent-psk.forbidden-1.base64=<forbidden-only-secret>
+```
+
+The Paper bridge for `backend-id: lobby` must receive only the value from `agent-psk.lobby.base64` in its `gateway.psk-base64` setting. A backend PSK must never be copied to another backend. Legacy single-key configs are migrated automatically only when exactly one backend is allowed; a legacy global key with multiple backends is rejected.

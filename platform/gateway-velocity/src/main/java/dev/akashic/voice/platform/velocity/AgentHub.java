@@ -1,5 +1,7 @@
 package dev.akashic.voice.platform.velocity;
 
+import dev.akashic.voice.platform.agent.AgentHandshake;
+import dev.akashic.voice.platform.agent.AgentKeyDerivation;
 import dev.akashic.voice.platform.agent.AgentMessage;
 import dev.akashic.voice.platform.agent.AgentSecureChannel;
 import dev.akashic.voice.platform.agent.AgentSocketHandshake;
@@ -16,8 +18,9 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,8 +36,8 @@ final class AgentHub implements AutoCloseable {
         void onError(String backendName, Throwable error);
     }
     private final InetSocketAddress bindAddress;
-    private final byte[] psk;
-    private final Set<String> allowedBackends;
+    private final Object pskLock = new Object();
+    private final Map<String, byte[]> backendPsks = new HashMap<>();
     private final BackendRouteRegistry routes;
     private final Listener listener;
     private final SecureRandom random = new SecureRandom();
@@ -48,13 +51,22 @@ final class AgentHub implements AutoCloseable {
     private Thread acceptThread;
     private volatile boolean running;
 
-    AgentHub(InetSocketAddress bindAddress, byte[] psk, Set<String> allowedBackends,
+    AgentHub(InetSocketAddress bindAddress, Map<String, byte[]> backendPsks,
              BackendRouteRegistry routes, Listener listener) {
         this.bindAddress = Objects.requireNonNull(bindAddress, "bindAddress");
-        if (psk == null || psk.length != 32) throw new IllegalArgumentException("agent PSK must be 32 bytes");
-        this.psk = Arrays.copyOf(psk, psk.length);
-        this.allowedBackends = Set.copyOf(allowedBackends);
-        if (this.allowedBackends.isEmpty()) throw new IllegalArgumentException("allowedBackends");
+        Objects.requireNonNull(backendPsks, "backendPsks");
+        if (backendPsks.isEmpty()) throw new IllegalArgumentException("backendPsks");
+        for (Map.Entry<String, byte[]> entry : backendPsks.entrySet()) {
+            String backend = entry.getKey();
+            byte[] secret = entry.getValue();
+            if (!AgentHandshake.isValidBackendId(backend)) {
+                throw new IllegalArgumentException("invalid backend: " + backend);
+            }
+            if (secret == null || secret.length != AgentKeyDerivation.PSK_BYTES) {
+                throw new IllegalArgumentException("agent PSK must be 32 bytes for " + backend);
+            }
+            this.backendPsks.put(backend, Arrays.copyOf(secret, secret.length));
+        }
         this.routes = Objects.requireNonNull(routes, "routes");
         this.listener = Objects.requireNonNull(listener, "listener");
     }
@@ -99,7 +111,7 @@ final class AgentHub implements AutoCloseable {
     private void authenticate(Socket socket) {
         try {
             AgentSocketHandshake.Accepted accepted = AgentSocketHandshake.accept(
-                socket, psk, allowedBackends::contains, random);
+                socket, this::pskCopyForBackend, random);
             AgentRoute route = new AgentRoute(accepted.backendId(), accepted.channel());
             BackendRouteRegistry.Route previous = routes.register(route);
             if (previous != null && previous != route) previous.close();
@@ -110,6 +122,13 @@ final class AgentHub implements AutoCloseable {
             if (running) safeError("<handshake>", failure);
         }
     }
+    private byte[] pskCopyForBackend(String backendName) {
+        synchronized (pskLock) {
+            byte[] secret = backendPsks.get(backendName);
+            return secret == null ? null : Arrays.copyOf(secret, secret.length);
+        }
+    }
+
     private final class AgentRoute implements BackendRouteRegistry.Route {
         private final String backendName;
         private final AgentSecureChannel channel;
@@ -248,7 +267,10 @@ final class AgentHub implements AutoCloseable {
         if (acceptThread != null) acceptThread.interrupt();
         handshakes.shutdownNow();
         routes.close();
-        Arrays.fill(psk, (byte) 0);
+        synchronized (pskLock) {
+            for (byte[] secret : backendPsks.values()) Arrays.fill(secret, (byte) 0);
+            backendPsks.clear();
+        }
     }
 
     private static void closeSocket(Socket socket) {
