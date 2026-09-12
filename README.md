@@ -27,7 +27,7 @@ This repository is under active development. The current foundation already incl
 - automatic capture fallback plus bounded microphone retry/recovery for device loss and delayed audio readiness;
 - selectable `auto` / `native` / `java` Opus backend with bounded native decoder scratch storage.
 
-The Simple Voice Chat bridge and adaptive jitter tuning remain planned. OpenAL Capture is implemented as a portability path, but Android/Pojav/Amethyst real-device microphone validation is **not** claimed complete yet.
+The Gateway/Simple Voice Chat bridge now passes secure local end-to-end transport QA, including backend-bound bootstrap, agent reconnect, raw-Opus passthrough and proxy UUID ↔ local Bukkit UUID binding. It is **not** claimed production-ready until real Velocity/Paper/SVC clients pass listening, transfer and soak tests. Adaptive jitter tuning and Android/Pojav/Amethyst real-device microphone validation also remain open gates.
 
 ## Runtime contract
 
@@ -36,7 +36,9 @@ The Simple Voice Chat bridge and adaptive jitter tuning remain planned. OpenAL C
 | Minecraft | 1.7.10 |
 | Forge | 10.13.4.1614 |
 | Client JVM | Java 8+; produced classes are major version 52 |
-| Server JVM | Java 8+; Java 21 is a supported target for Crucible deployments |
+| Crucible/server JVM | Java 8+; Java 21 is the supported Rede Akashic target |
+| Paper/SVC bridge JVM | Java 21 |
+| Velocity Gateway JVM | Java 25 for Velocity 4.0.0 |
 | Client graphics/audio API | LWJGL2-compatible OpenAL playback; JavaSound/OpenAL Capture input |
 | Codec | Opus 48 kHz mono, 48 kbit/s default; native libopus preferred in `auto`, Concentus fallback |
 | Default voice transport | UDP 24454 |
@@ -45,7 +47,7 @@ The Simple Voice Chat bridge and adaptive jitter tuning remain planned. OpenAL C
 | lwjgl3ify | optional environment compatibility, not a dependency |
 | Angelica / Hodgepodge / ArchaicFix / CoreTweaks | compatible targets, not dependencies |
 
-The same mod JAR is intended for client and Forge/Crucible server installation. Server-side gateway/bridge modules may later be split into dedicated Java 21 artifacts.
+The same legacy mod JAR is intended for client and Forge/Crucible server installation. Cross-version routing is isolated under `platform/`: Paper/SVC, agent protocol and Velocity Gateway are separate server-side artifacts so modern dependencies never contaminate the Java 8 client classpath.
 
 Codec backend semantics: `auto` tries bundled native libopus and falls back to Concentus if native loading is unavailable; `native` requires native libopus and fails explicitly; `java` forces Concentus. The bundled native artifact currently targets desktop Windows/Linux/macOS architectures, not Android.
 
@@ -97,7 +99,7 @@ The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Majo
 1. adaptive jitter tuning, stream telemetry and live gameplay validation;
 2. live in-game allocation/latency/GC profiling and remaining control-path cleanup;
 3. real-device OpenAL/Android capture validation for Pojav/Amethyst-class launchers;
-4. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
+4. live deployment validation of the implemented Akashic Voice Gateway and bidirectional Simple Voice Chat bridge;
 5. cross-server groups/radio semantics and public addon API.
 
 ## Credits and license

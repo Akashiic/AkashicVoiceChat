@@ -134,14 +134,28 @@ Remaining acceptance:
 
 ## Gate 6 — Cross-version bridge
 
-Status: **PENDING**.
+Status: **PARTIAL PASS — secure Gateway/agent/SVC transport passes local end-to-end QA; live Rede Akashic deployment and listening tests remain.**
 
-Acceptance:
-- Akashic 1.7.10 -> SVC user and SVC -> Akashic user are both audible;
-- sender identity, speaking state, position and channel semantics are mapped explicitly;
-- proximity never leaks across unrelated backend coordinate spaces;
-- Opus passthrough is used only when format/packet semantics are actually compatible;
-- bridge failure cannot take down the core local 1.7.10 voice service.
+Evidence:
+- `client-protocol` compiles the exact Java 8 AV wire/crypto sources used by both the legacy mod and Gateway;
+- Velocity 4.0.0 Gateway compiles/tests on a Java 25 toolchain; Paper/SVC adapter compiles/tests on Java 21;
+- Forge legacy bootstrap request/response framing is byte-tested, plus discriminator-9 `REBOOTSTRAP` for backend handoff;
+- Gateway creates backend-bound random voice identities and 256-bit secrets instead of trusting proxy/offline UUID equivalence;
+- Paper agent uses a separate 256-bit PSK/HKDF domain and AES-GCM channel; wrong PSK is rejected;
+- agent reconnect replaces the old route without a false route-down race;
+- proxy UUID and local Bukkit/SVC UUID may differ and are bound explicitly by exact player name; duplicate local claims are rejected;
+- Gateway UDP integration test covers encrypted auth, MIC, replay rejection, SOUND and disconnect;
+- full runtime integration test covers Akashic UDP MIC -> Gateway -> agent and agent SVC delivery/reset -> Gateway -> Akashic UDP;
+- SVC adapter maps through public `AudioSender` / `PlayerAudioListener` contracts and preserves compatible Opus bytes without decode/re-encode;
+- backends without a healthy authenticated agent remain fail-open to their native Forge bootstrap path.
+
+Remaining acceptance:
+- run two real clients through Velocity + Paper lobby + Simple Voice Chat and prove audible bidirectional speech;
+- prove lobby <-> Forbidden backend transfer repeatedly without stale voice sessions;
+- live-test offline-mode UUID divergence with the actual proxy/Paper configuration;
+- preserve/negotiated exact SVC per-frame distance/whisper attenuation (wire v1 currently carries position, not max distance);
+- validate group/category semantics and cross-server radio without leaking physical proximity across unrelated backends;
+- soak-test agent reconnect, Gateway restart and prolonged sessions under load.
 
 ## Critical finding — secret disclosure
 

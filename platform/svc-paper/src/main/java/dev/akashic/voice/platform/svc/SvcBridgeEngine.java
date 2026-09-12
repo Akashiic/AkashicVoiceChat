@@ -12,10 +12,11 @@ import dev.akashic.voice.platform.bridge.GatewayLink;
 import dev.akashic.voice.platform.bridge.ManagedPlayer;
 import dev.akashic.voice.platform.bridge.PositionSnapshot;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,8 +24,10 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
     private final GatewayLink gateway;
     private final String backendId;
     private final BukkitPositionSnapshots positions;
-    private final Set<UUID> desiredPlayers = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, ManagedPlayer> desiredPlayers = new ConcurrentHashMap<>();
     private final Map<UUID, ManagedSession> sessions = new ConcurrentHashMap<>();
+    private final ManagedIdentityBindings identities = new ManagedIdentityBindings();
+
     private volatile VoicechatServerApi voicechat;
 
     SvcBridgeEngine(GatewayLink gateway, String backendId, BukkitPositionSnapshots positions) {
@@ -52,86 +55,96 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
         if (api == null) return;
         reconcile(api);
     }
-
     private void reconcile(VoicechatServerApi api) {
-        Set<UUID> desiredSnapshot = new HashSet<>(desiredPlayers);
-        for (UUID playerId : new HashSet<>(sessions.keySet())) {
-            if (!desiredSnapshot.contains(playerId)) {
-                detach(api, playerId);
-            }
+        Map<UUID, ManagedPlayer> desiredSnapshot = new HashMap<>(desiredPlayers);
+        for (UUID proxyId : new HashSet<>(sessions.keySet())) {
+            if (!desiredSnapshot.containsKey(proxyId)) detach(api, proxyId);
         }
-        for (UUID playerId : desiredSnapshot) {
-            VoicechatConnection connection = api.getConnectionOf(playerId);
-            if (connection == null || connection.isInstalled()) {
-                detach(api, playerId);
+        for (ManagedPlayer managed : desiredSnapshot.values()) {
+            Player bukkitPlayer = Bukkit.getPlayerExact(managed.playerName());
+            if (bukkitPlayer == null || !bukkitPlayer.getName().equalsIgnoreCase(managed.playerName())) {
+                detach(api, managed.playerId());
                 continue;
             }
-            if (!sessions.containsKey(playerId)) {
-                attach(api, connection);
+            UUID localId = bukkitPlayer.getUniqueId();
+            VoicechatConnection connection = api.getConnectionOf(localId);
+            if (connection == null || connection.isInstalled()) {
+                detach(api, managed.playerId());
+                continue;
             }
+            ManagedSession existing = sessions.get(managed.playerId());
+            if (existing != null && !existing.localPlayerId.equals(localId)) {
+                detach(api, managed.playerId());
+                existing = null;
+            }
+            if (existing == null) attach(api, managed.playerId(), localId, connection);
         }
     }
 
-    private void attach(VoicechatServerApi api, VoicechatConnection connection) {
-        UUID playerId = connection.getPlayer().getUuid();
-        AudioSender sender = api.createAudioSender(connection);
-        if (!api.registerAudioSender(sender)) return;
+    private void attach(VoicechatServerApi api, UUID proxyId, UUID localId, VoicechatConnection connection) {
+        if (!identities.bind(proxyId, localId)) return;
 
+        AudioSender sender = api.createAudioSender(connection);
+        if (!api.registerAudioSender(sender)) {
+            identities.unbind(proxyId, localId);
+            return;
+        }
         PlayerAudioListener listener = api.playerAudioListenerBuilder()
-            .setPlayer(playerId)
-            .setPacketListener(packet -> onSvcPacket(playerId, packet))
+            .setPlayer(localId)
+            .setPacketListener(packet -> onSvcPacket(proxyId, localId, packet))
             .build();
         if (!api.registerAudioListener(listener)) {
             api.unregisterAudioSender(sender);
+            identities.unbind(proxyId, localId);
             return;
         }
-        ManagedSession session = new ManagedSession(playerId, sender, listener);
-        ManagedSession raced = sessions.putIfAbsent(playerId, session);
+
+        ManagedSession session = new ManagedSession(proxyId, localId, sender, listener);
+        ManagedSession raced = sessions.putIfAbsent(proxyId, session);
         if (raced != null) {
             session.close(api);
+            identities.unbind(proxyId, localId);
         }
     }
-
-    private void detach(VoicechatServerApi api, UUID playerId) {
-        ManagedSession session = sessions.get(playerId);
+    private void detach(VoicechatServerApi api, UUID proxyId) {
+        ManagedSession session = sessions.get(proxyId);
         if (session == null) return;
         session.reset();
-        if (sessions.remove(playerId, session)) {
+        if (sessions.remove(proxyId, session)) {
+            identities.unbind(proxyId, session.localPlayerId);
             session.close(api);
         }
     }
 
     private void closeSessions(VoicechatServerApi api) {
-        for (UUID playerId : new HashSet<>(sessions.keySet())) {
-            detach(api, playerId);
-        }
+        for (UUID proxyId : new HashSet<>(sessions.keySet())) detach(api, proxyId);
     }
 
-    private void onSvcPacket(UUID recipientId, SoundPacket packet) {
+    private void onSvcPacket(UUID proxyRecipientId, UUID localRecipientId, SoundPacket packet) {
         if (!gateway.isConnected()) return;
         UUID senderId = packet.getSender();
-        if (sessions.containsKey(senderId)) return;
+        if (identities.isManagedLocal(senderId)) return;
 
-        BridgeStreamReset reset = SvcPacketMapper.mapReset(recipientId, packet);
+        BridgeStreamReset reset = SvcPacketMapper.mapReset(proxyRecipientId, packet);
         if (reset != null) {
             gateway.publishSvcReset(reset);
             return;
         }
 
-        PositionSnapshot recipientPosition = positions.get(recipientId);
+        PositionSnapshot recipientPosition = positions.get(localRecipientId);
         PositionSnapshot entityPosition = null;
         if (packet instanceof de.maxhenkel.voicechat.api.packets.EntitySoundPacket entity) {
             entityPosition = positions.get(entity.getEntityUuid());
         }
         BridgeDelivery delivery = SvcPacketMapper.mapFrame(
-            recipientId, packet, recipientPosition, entityPosition);
+            proxyRecipientId, packet, recipientPosition, entityPosition);
         if (delivery != null) gateway.publishSvcDelivery(delivery);
     }
 
     @Override
     public void onManagedPlayerAttached(ManagedPlayer player) {
         if (!backendId.equals(player.backendId())) return;
-        desiredPlayers.add(player.playerId());
+        desiredPlayers.put(player.playerId(), player);
     }
 
     @Override
@@ -150,29 +163,32 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
         ManagedSession session = sessions.get(speakerId);
         if (session != null) session.reset();
     }
-
     @Override
     public void close() {
         VoicechatServerApi api = voicechat;
         if (api != null) closeSessions(api);
         desiredPlayers.clear();
+        identities.clear();
         voicechat = null;
     }
 
     private static final class ManagedSession {
-        private final UUID playerId;
+        private final UUID proxyPlayerId;
+        private final UUID localPlayerId;
         private final AudioSender sender;
         private final PlayerAudioListener listener;
         private boolean closed;
 
-        private ManagedSession(UUID playerId, AudioSender sender, PlayerAudioListener listener) {
-            this.playerId = playerId;
+        private ManagedSession(UUID proxyPlayerId, UUID localPlayerId,
+                               AudioSender sender, PlayerAudioListener listener) {
+            this.proxyPlayerId = proxyPlayerId;
+            this.localPlayerId = localPlayerId;
             this.sender = sender;
             this.listener = listener;
         }
 
         synchronized void send(AkashicSpeakerFrame frame) {
-            if (closed || !playerId.equals(frame.speakerId()) || !sender.canSend()) return;
+            if (closed || !proxyPlayerId.equals(frame.speakerId()) || !sender.canSend()) return;
             sender.whispering(frame.whispering())
                 .sequenceNumber(frame.sequence())
                 .send(frame.opusUnsafe());

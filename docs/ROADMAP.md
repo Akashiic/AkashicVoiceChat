@@ -36,13 +36,13 @@ The project advances by evidence gates, not by feature count.
 
 ## Phase D — Gateway and SVC bridge / 0.4.x
 
-1. Java 21 Akashic Voice Gateway with protocol-adapter interfaces.
-2. Simple Voice Chat adapter through supported public API contracts.
-3. Bidirectional voice, speaking state and positional semantics in the same backend.
-4. Cross-server groups/radio channels; never fake cross-server physical proximity.
-5. Opus passthrough fast path where negotiated format permits it; transcoder fallback otherwise.
-6. Central moderation, permissions, metrics and session routing.
-7. Failure isolation: SVC/Velocity/Paper adapter outage must not break Forbidden-local voice.
+1. **PARTIAL:** Velocity 4.0.0 Gateway, secure UDP session authority and backend-bound bootstrap are implemented; live deployment remains.
+2. **PARTIAL:** Paper 1.21.1 SVC adapter is implemented against public API 2.6.20; real-client listening test remains.
+3. **PARTIAL:** bidirectional raw-Opus transport passes local end-to-end tests; exact SVC distance/whisper semantics still need a negotiated wire extension.
+4. **PENDING:** cross-server groups/radio channels; never fake physical proximity between unrelated backend coordinate spaces.
+5. **IMPLEMENTED FAST PATH:** compatible 48 kHz / 960-sample / 20 ms Opus is passed through without transcoding; fallback transcoder is not yet implemented.
+6. **PENDING:** central moderation, permissions and production metrics/session dashboards.
+7. **PARTIAL:** fail-open backend routing and agent reconnect isolation are implemented; live outage/restart soak testing remains.
 
 ## Phase E — Mobile / 0.5.x
 

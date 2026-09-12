@@ -8,6 +8,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import dev.akashic.voice.AkashicVoice;
 import dev.akashic.voice.voice.client.ClientSecretCache;
+import dev.akashic.voice.voice.client.VoiceClientHolder;
 import dev.akashic.voice.voice.common.crypto.SessionKeys;
 import io.netty.buffer.ByteBuf;
 
@@ -62,6 +63,7 @@ public class PacketSecret implements IMessage {
         public IMessage onMessage(PacketSecret msg, MessageContext ctx) {
             byte[] secret = msg.getMasterSecret();
             try {
+                VoiceClientHolder.stop();
                 ClientSecretCache.store(msg.getPlayerId(), secret, msg.getUdpPort());
             } finally {
                 Arrays.fill(secret, (byte) 0);

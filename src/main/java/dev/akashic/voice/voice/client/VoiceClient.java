@@ -24,6 +24,7 @@ import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundResetPacket;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
 import dev.akashic.voice.voice.common.crypto.HandshakeProof;
@@ -265,6 +266,11 @@ public final class VoiceClient {
                 if (sound != null) handleSoundFrame(sound);
                 break;
             }
+            case WirePacketType.SOUND_RESET: {
+                SoundResetPacket reset = SoundResetPacket.read(buf);
+                if (reset != null) handleSoundReset(reset.senderId);
+                break;
+            }
             default:
                 break;
         }
@@ -383,6 +389,13 @@ public final class VoiceClient {
             MicFramePacket.write(innerSendBuffer, sequence, opusPayload, payloadLength);
             sealAndSendLocked(currentCrypto);
         }
+    }
+
+    private void handleSoundReset(UUID senderId) {
+        DecoderStream stream = decoderStreams.remove(senderId);
+        if (stream != null) stream.close();
+        AudioPlayback currentPlayback = playback;
+        if (currentPlayback != null) currentPlayback.dropChannel(senderId);
     }
 
     private void handleSoundFrame(SoundFramePacket pkt) {

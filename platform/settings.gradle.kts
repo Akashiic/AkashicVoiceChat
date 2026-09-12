@@ -6,5 +6,6 @@ rootProject.name = "akashic-voice-platform"
 
 include("client-protocol")
 include("bridge-core")
+include("agent-protocol")
 include("svc-paper")
 include("gateway-velocity")

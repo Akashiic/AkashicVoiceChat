@@ -1,7 +1,10 @@
-# Logical backend ID announced by the Gateway for players currently in this Lobby.
+# Logical backend ID announced to the Gateway.
 backend-id: lobby
 
-# Gateway transport is intentionally disabled in the first Gate 6 compile milestone.
-# A secure transport module will replace the disconnected link before integration testing.
 gateway:
+  # Enable only after the Gateway is configured with the same 256-bit PSK.
   enabled: false
+  host: 127.0.0.1
+  port: 24456
+  # 32 random bytes, Base64 encoded. Never reuse a client voice secret here.
+  psk-base64: ""

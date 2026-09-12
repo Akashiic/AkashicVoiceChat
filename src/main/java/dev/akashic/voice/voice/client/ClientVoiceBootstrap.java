@@ -30,10 +30,20 @@ import dev.akashic.voice.voice.client.playback.AudioPlayback;
 
 public final class ClientVoiceBootstrap {
 
+    private static final long BOOTSTRAP_RESPONSE_TIMEOUT_NANOS = 10_000_000_000L;
+    private static final long VOICE_AUTH_RECOVERY_NANOS = 20_000_000_000L;
+
     private volatile boolean secretRequested = false;
     private volatile boolean wizardShown = false;
+    private volatile long lastBootstrapRequestNanos;
+    private volatile long unauthenticatedSinceNanos;
+    private static volatile boolean rebootstrapRequested;
 
     private ClientVoiceBootstrap() {}
+
+    public static void requestRebootstrap() {
+        rebootstrapRequested = true;
+    }
 
     public static void install() {
         applyConfigToGate();
@@ -89,7 +99,23 @@ public final class ClientVoiceBootstrap {
                 PendingInviteQueue.clear();
                 VoiceClientHolder.stop();
             }
+            rebootstrapRequested = false;
+            lastBootstrapRequestNanos = 0L;
+            unauthenticatedSinceNanos = 0L;
             return;
+        }
+
+        if (rebootstrapRequested) {
+            rebootstrapRequested = false;
+            secretRequested = false;
+            ClientSecretCache.clear();
+            ClientGroupCache.clear();
+            ClientPlayerRoster.clear();
+            PendingInviteQueue.clear();
+            VoiceClientHolder.stop();
+            lastBootstrapRequestNanos = 0L;
+            unauthenticatedSinceNanos = 0L;
+            AkashicVoice.LOG.info("Voice route changed; requesting a fresh bootstrap");
         }
 
         // Pending group invites: pop one and show the banner if no other GUI is up.
@@ -116,14 +142,39 @@ public final class ClientVoiceBootstrap {
             }
         }
 
+        long nowNanos = System.nanoTime();
+        VoiceClient activeVoice = VoiceClientHolder.get();
+        if (activeVoice == null) {
+            unauthenticatedSinceNanos = 0L;
+            if (secretRequested && !ClientSecretCache.hasSecret()
+                && lastBootstrapRequestNanos != 0L
+                && nowNanos - lastBootstrapRequestNanos >= BOOTSTRAP_RESPONSE_TIMEOUT_NANOS) {
+                secretRequested = false;
+                lastBootstrapRequestNanos = 0L;
+                AkashicVoice.LOG.debug("Voice bootstrap timed out; retrying");
+            }
+        } else if (activeVoice.isAuthenticated()) {
+            unauthenticatedSinceNanos = 0L;
+        } else if (unauthenticatedSinceNanos == 0L) {
+            unauthenticatedSinceNanos = nowNanos;
+        } else if (nowNanos - unauthenticatedSinceNanos >= VOICE_AUTH_RECOVERY_NANOS) {
+            AkashicVoice.LOG.warn("Voice authentication did not recover; requesting a fresh bootstrap");
+            VoiceClientHolder.stop();
+            ClientSecretCache.clear();
+            secretRequested = false;
+            lastBootstrapRequestNanos = 0L;
+            unauthenticatedSinceNanos = 0L;
+        }
+
         // In a world. Step 1: request the secret if we haven't yet.
         if (!secretRequested) {
             ClientSecretCache.clear();
             VoiceClientHolder.stop();
-            AkashicVoice.LOG.info("Requesting voice secret from server");
+            AkashicVoice.LOG.info("Requesting voice bootstrap from server");
             AkashicVoiceChannel.get()
                 .sendToServer(new PacketRequestSecret());
             secretRequested = true;
+            lastBootstrapRequestNanos = System.nanoTime();
         }
 
         // Step 2: once the secret arrives, open the UDP voice connection.
@@ -136,6 +187,8 @@ public final class ClientVoiceBootstrap {
                         if (VoiceClientHolder
                             .connect(ClientSecretCache.getPlayerId(), secret, host, ClientSecretCache.getUdpPort())) {
                             ClientSecretCache.clear();
+                            lastBootstrapRequestNanos = 0L;
+                            unauthenticatedSinceNanos = 0L;
                         }
                     } finally {
                         Arrays.fill(secret, (byte) 0);

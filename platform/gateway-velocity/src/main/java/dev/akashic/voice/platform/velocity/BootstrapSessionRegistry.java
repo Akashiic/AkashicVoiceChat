@@ -20,10 +20,13 @@ final class BootstrapSessionRegistry implements AutoCloseable {
         this.random = Objects.requireNonNull(random, "random");
     }
 
-    synchronized BootstrapGrant grantFor(UUID proxyPlayerId, int udpPort) {
+    synchronized BootstrapGrant grantFor(UUID proxyPlayerId, String playerName, String backendName, int udpPort) {
         validatePort(udpPort);
+        validateBackendName(backendName);
+        validatePlayerName(playerName);
         Session existing = byProxyPlayer.get(proxyPlayerId);
-        if (existing != null && existing.udpPort == udpPort) {
+        if (existing != null && existing.udpPort == udpPort
+            && existing.backendName.equals(backendName) && existing.playerName.equals(playerName)) {
             return existing.grant();
         }
         if (existing != null) remove(existing);
@@ -31,7 +34,7 @@ final class BootstrapSessionRegistry implements AutoCloseable {
         byte[] secret = new byte[LegacyForgeBootstrapCodec.MASTER_SECRET_BYTES];
         random.nextBytes(secret);
         UUID voiceIdentity = nextVoiceIdentity();
-        Session session = new Session(proxyPlayerId, voiceIdentity, secret, udpPort);
+        Session session = new Session(proxyPlayerId, playerName, backendName, voiceIdentity, secret, udpPort);
         Arrays.fill(secret, (byte) 0);
         byProxyPlayer.put(proxyPlayerId, session);
         byVoiceIdentity.put(voiceIdentity, session);
@@ -77,34 +80,61 @@ final class BootstrapSessionRegistry implements AutoCloseable {
         if (port < 1 || port > 65_535) throw new IllegalArgumentException("invalid UDP port");
     }
 
-    static final class SessionMaterial {
+    private static void validatePlayerName(String playerName) {
+        if (playerName == null || !playerName.matches("[A-Za-z0-9_]{1,16}")) {
+            throw new IllegalArgumentException("invalid player name");
+        }
+    }
+
+    private static void validateBackendName(String backendName) {
+        if (backendName == null || backendName.isBlank() || backendName.length() > 64) {
+            throw new IllegalArgumentException("invalid backend name");
+        }
+    }
+
+    static final class SessionMaterial implements AutoCloseable {
         private final UUID proxyPlayerId;
+        private final String playerName;
+        private final String backendName;
         private final UUID voiceIdentity;
         private final byte[] secret;
         private final int udpPort;
 
-        private SessionMaterial(UUID proxyPlayerId, UUID voiceIdentity, byte[] secret, int udpPort) {
+        private SessionMaterial(UUID proxyPlayerId, String playerName, String backendName, UUID voiceIdentity, byte[] secret, int udpPort) {
             this.proxyPlayerId = proxyPlayerId;
+            this.playerName = playerName;
+            this.backendName = backendName;
             this.voiceIdentity = voiceIdentity;
             this.secret = Arrays.copyOf(secret, secret.length);
             this.udpPort = udpPort;
         }
 
         UUID proxyPlayerId() { return proxyPlayerId; }
+        String playerName() { return playerName; }
+        String backendName() { return backendName; }
         UUID voiceIdentity() { return voiceIdentity; }
         byte[] secretCopy() { return Arrays.copyOf(secret, secret.length); }
         int udpPort() { return udpPort; }
+
+        @Override
+        public void close() {
+            Arrays.fill(secret, (byte) 0);
+        }
     }
 
     private static final class Session implements AutoCloseable {
         private final UUID proxyPlayerId;
+        private final String playerName;
+        private final String backendName;
         private final UUID voiceIdentity;
         private final byte[] secret;
         private final int udpPort;
         private boolean closed;
 
-        private Session(UUID proxyPlayerId, UUID voiceIdentity, byte[] secret, int udpPort) {
+        private Session(UUID proxyPlayerId, String playerName, String backendName, UUID voiceIdentity, byte[] secret, int udpPort) {
             this.proxyPlayerId = Objects.requireNonNull(proxyPlayerId, "proxyPlayerId");
+            this.playerName = Objects.requireNonNull(playerName, "playerName");
+            this.backendName = Objects.requireNonNull(backendName, "backendName");
             this.voiceIdentity = Objects.requireNonNull(voiceIdentity, "voiceIdentity");
             this.secret = Arrays.copyOf(secret, secret.length);
             this.udpPort = udpPort;
@@ -117,7 +147,7 @@ final class BootstrapSessionRegistry implements AutoCloseable {
 
         private SessionMaterial material() {
             if (closed) return null;
-            return new SessionMaterial(proxyPlayerId, voiceIdentity, secret, udpPort);
+            return new SessionMaterial(proxyPlayerId, playerName, backendName, voiceIdentity, secret, udpPort);
         }
 
         @Override

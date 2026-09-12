@@ -17,6 +17,12 @@ class LegacyForgeBootstrapCodecTest {
     }
 
     @Test
+    void rebootstrapUsesRegisteredClientDiscriminator() {
+        byte[] wire = LegacyForgeBootstrapCodec.encodeRebootstrap();
+        assertArrayEquals(new byte[] {9}, wire);
+    }
+
+    @Test
     void responseMatchesForgeSimpleIndexedFraming() {
         UUID id = UUID.fromString("01234567-89ab-cdef-0123-456789abcdef");
         byte[] secret = new byte[32];

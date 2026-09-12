@@ -12,15 +12,15 @@ class BootstrapSessionRegistryTest {
     void grantIsIdempotentUntilInvalidated() {
         UUID proxyId = UUID.randomUUID();
         try (BootstrapSessionRegistry registry = new BootstrapSessionRegistry()) {
-            BootstrapGrant first = registry.grantFor(proxyId, 24454);
-            BootstrapGrant second = registry.grantFor(proxyId, 24454);
+            BootstrapGrant first = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
+            BootstrapGrant second = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             assertEquals(first.voiceIdentity(), second.voiceIdentity());
             assertArrayEquals(first.masterSecretCopy(), second.masterSecretCopy());
             assertEquals(1, registry.size());
 
             registry.invalidate(proxyId);
             assertEquals(0, registry.size());
-            BootstrapGrant rotated = registry.grantFor(proxyId, 24454);
+            BootstrapGrant rotated = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             assertNotEquals(first.voiceIdentity(), rotated.voiceIdentity());
         }
     }
@@ -29,7 +29,7 @@ class BootstrapSessionRegistryTest {
     void grantAndLookupUseDefensiveSecretCopies() {
         UUID proxyId = UUID.randomUUID();
         try (BootstrapSessionRegistry registry = new BootstrapSessionRegistry()) {
-            BootstrapGrant grant = registry.grantFor(proxyId, 24454);
+            BootstrapGrant grant = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             byte[] first = grant.masterSecretCopy();
             byte original = first[0];
             first[0] ^= 0x7F;
@@ -39,6 +39,8 @@ class BootstrapSessionRegistryTest {
                 registry.findByVoiceIdentity(grant.voiceIdentity());
             assertNotNull(material);
             assertEquals(proxyId, material.proxyPlayerId());
+            assertEquals("TestPlayer", material.playerName());
+            assertEquals("lobby", material.backendName());
             assertEquals(grant.voiceIdentity(), material.voiceIdentity());
             assertArrayEquals(grant.masterSecretCopy(), material.secretCopy());
         }

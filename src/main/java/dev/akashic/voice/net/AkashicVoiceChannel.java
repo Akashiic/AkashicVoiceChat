@@ -27,6 +27,7 @@ public final class AkashicVoiceChannel {
         channel.registerMessage(PacketInviteNotify.Handler.class, PacketInviteNotify.class, 6, Side.CLIENT);
         channel.registerMessage(PacketGroupStateSync.Handler.class, PacketGroupStateSync.class, 7, Side.CLIENT);
         channel.registerMessage(PacketRosterSync.Handler.class, PacketRosterSync.class, 8, Side.CLIENT);
+        channel.registerMessage(PacketRebootstrap.Handler.class, PacketRebootstrap.class, 9, Side.CLIENT);
     }
 
     public static SimpleNetworkWrapper get() {

@@ -8,6 +8,7 @@ public final class LegacyForgeBootstrapCodec {
     public static final String CHANNEL = "AkashicVoice";
     public static final byte REQUEST_DISCRIMINATOR = 0;
     public static final byte RESPONSE_DISCRIMINATOR = 1;
+    public static final byte REBOOTSTRAP_DISCRIMINATOR = 9;
     public static final int MASTER_SECRET_BYTES = 32;
     public static final int RESPONSE_BYTES = 1 + 16 + MASTER_SECRET_BYTES + 4;
 
@@ -16,6 +17,10 @@ public final class LegacyForgeBootstrapCodec {
 
     public static boolean isBootstrapRequest(byte[] data) {
         return data != null && data.length == 1 && data[0] == REQUEST_DISCRIMINATOR;
+    }
+
+    public static byte[] encodeRebootstrap() {
+        return new byte[] {REBOOTSTRAP_DISCRIMINATOR};
     }
 
     public static byte[] encodeResponse(UUID voiceIdentity, byte[] masterSecret, int udpPort) {
