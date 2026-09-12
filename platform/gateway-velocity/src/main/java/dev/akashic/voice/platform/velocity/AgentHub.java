@@ -10,6 +10,7 @@ import dev.akashic.voice.platform.bridge.BridgeDelivery;
 import dev.akashic.voice.platform.bridge.BridgeStreamReset;
 import dev.akashic.voice.platform.bridge.ManagedPlayer;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -199,7 +200,7 @@ final class AgentHub implements AutoCloseable {
                     }
                 }
             } catch (IOException | RuntimeException failure) {
-                if (isOpen()) safeError(backendName, failure);
+                if (isOpen() && !isNormalDisconnect(failure)) safeError(backendName, failure);
             } finally {
                 close();
             }
@@ -213,6 +214,10 @@ final class AgentHub implements AutoCloseable {
             if (reader != null && reader != Thread.currentThread()) reader.interrupt();
             if (removed) safeRouteDown(backendName);
         }
+    }
+
+    private static boolean isNormalDisconnect(Throwable failure) {
+        return failure instanceof EOFException || failure instanceof SocketException;
     }
 
     private void safeRouteUp(String backendName) {

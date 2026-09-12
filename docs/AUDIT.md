@@ -146,6 +146,8 @@ Evidence:
 - proxy UUID and local Bukkit/SVC UUID may differ and are bound explicitly by exact player name; duplicate local claims are rejected;
 - Gateway UDP integration test covers encrypted auth, MIC, replay rejection, SOUND and disconnect;
 - full runtime integration test covers Akashic UDP MIC -> Gateway -> agent and agent SVC delivery/reset -> Gateway -> Akashic UDP;
+- local reconnect/load soak keeps 8 authenticated UDP clients alive across 4 agent reconnect cycles, preserving 256 MIC uplinks and 32 SVC v2 downlinks with no leaked sessions;
+- normal EOF/socket closure during agent reconnect is classified as route lifecycle, not a false operational error.
 - SVC adapter maps through public `AudioSender` / `PlayerAudioListener` contracts and preserves compatible Opus bytes without decode/re-encode;
 - backends without a healthy authenticated agent remain fail-open to their native Forge bootstrap path.
 
@@ -155,7 +157,7 @@ Remaining acceptance:
 - live-test offline-mode UUID divergence with the actual proxy/Paper configuration;
 - live-listen and validate SVC per-frame distance/whisper attenuation; additive SOUND_FRAME_V2 now carries max-distance + whisper metadata while legacy v1 remains unchanged;
 - validate group/category semantics and cross-server radio without leaking physical proximity across unrelated backends;
-- soak-test agent reconnect, Gateway restart and prolonged sessions under load.
+- extend the passing local reconnect/load soak to Gateway process restart and prolonged real-network sessions under load.
 
 ## Critical finding — secret disclosure
 
