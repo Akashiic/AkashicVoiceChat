@@ -10,6 +10,7 @@ public final class AkashicVoiceConfig {
     public static final int DEFAULT_VOICE_RADIUS = 48;
     public static final int DEFAULT_OPUS_BITRATE = 48_000;
     public static final String DEFAULT_OPUS_BACKEND = "auto";
+    public static final String DEFAULT_CAPTURE_BACKEND = "auto";
     public static final String DEFAULT_ACTIVATION_MODE = "ptt";
     public static final double DEFAULT_THRESHOLD_DB = -50.0;
     public static final boolean DEFAULT_DEBUG_SELF_ECHO = false;
@@ -29,6 +30,7 @@ public final class AkashicVoiceConfig {
     private static int voiceRadius = DEFAULT_VOICE_RADIUS;
     private static int opusBitrate = DEFAULT_OPUS_BITRATE;
     private static String opusBackend = DEFAULT_OPUS_BACKEND;
+    private static String captureBackend = DEFAULT_CAPTURE_BACKEND;
     private static String activationMode = DEFAULT_ACTIVATION_MODE;
     private static double thresholdDb = DEFAULT_THRESHOLD_DB;
     private static boolean debugSelfEcho = DEFAULT_DEBUG_SELF_ECHO;
@@ -70,6 +72,12 @@ public final class AkashicVoiceConfig {
             DEFAULT_OPUS_BACKEND,
             "Opus implementation: auto (native when available, Java fallback) | native (required) | java.",
             new String[] { "auto", "native", "java" });
+        captureBackend = cfg.getString(
+            "captureBackend",
+            "client",
+            DEFAULT_CAPTURE_BACKEND,
+            "Microphone capture: auto (JavaSound then OpenAL fallback) | javasound | openal.",
+            new String[] { "auto", "javasound", "openal" });
         debugSelfEcho = cfg.getBoolean(
             "debugSelfEcho",
             "voice",
@@ -133,7 +141,11 @@ public final class AkashicVoiceConfig {
             "selectedMicMixer",
             "client",
             DEFAULT_SELECTED_MIC_MIXER,
-            "Name of the audio Mixer used for microphone input. Empty = system default.");
+            "Capture device ID. Empty = automatic system default; legacy JavaSound mixer names are migrated.");
+        if (!selectedMicMixer.isEmpty() && !selectedMicMixer.startsWith("javasound:")
+            && !selectedMicMixer.startsWith("openal:")) {
+            selectedMicMixer = "javasound:" + selectedMicMixer;
+        }
         selectedSpeakerMixer = cfg.getString(
             "selectedSpeakerMixer",
             "client",
@@ -166,6 +178,8 @@ public final class AkashicVoiceConfig {
             .set(opusBitrate);
         cfg.get("client", "opusBackend", DEFAULT_OPUS_BACKEND)
             .set(opusBackend);
+        cfg.get("client", "captureBackend", DEFAULT_CAPTURE_BACKEND)
+            .set(captureBackend);
         cfg.get("voice", "debugSelfEcho", DEFAULT_DEBUG_SELF_ECHO)
             .set(debugSelfEcho);
 
@@ -214,6 +228,16 @@ public final class AkashicVoiceConfig {
         if (backend == null) return;
         if (!"auto".equals(backend) && !"native".equals(backend) && !"java".equals(backend)) return;
         opusBackend = backend;
+    }
+
+    public static String captureBackend() {
+        return captureBackend;
+    }
+
+    public static void setCaptureBackend(String backend) {
+        if (backend == null) return;
+        if (!"auto".equals(backend) && !"javasound".equals(backend) && !"openal".equals(backend)) return;
+        captureBackend = backend;
     }
 
     public static String activationMode() {
@@ -276,8 +300,16 @@ public final class AkashicVoiceConfig {
         return selectedMicMixer;
     }
 
+    public static String selectedMicDevice() {
+        return selectedMicMixer;
+    }
+
     public static void setSelectedMicMixer(String name) {
         selectedMicMixer = name == null ? "" : name;
+    }
+
+    public static void setSelectedMicDevice(String id) {
+        selectedMicMixer = id == null ? "" : id;
     }
 
     public static String selectedSpeakerMixer() {

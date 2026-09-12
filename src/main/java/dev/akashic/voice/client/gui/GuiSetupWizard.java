@@ -2,16 +2,15 @@ package dev.akashic.voice.client.gui;
 
 import java.util.List;
 
-import javax.sound.sampled.Mixer;
-
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
 import dev.akashic.voice.client.gui.widget.LevelMeterWidget;
 import dev.akashic.voice.config.AkashicVoiceConfig;
-import dev.akashic.voice.voice.client.audio.MicDeviceRegistry;
 import dev.akashic.voice.voice.client.audio.MicLevelMonitor;
+import dev.akashic.voice.voice.client.audio.capture.AudioCaptureBackends;
+import dev.akashic.voice.voice.client.audio.capture.AudioCaptureDeviceInfo;
 
 public class GuiSetupWizard extends GuiScreen {
 
@@ -20,29 +19,29 @@ public class GuiSetupWizard extends GuiScreen {
     private static final int BTN_DONE = 2;
     private static final int BTN_CANCEL = 3;
 
-    private List<Mixer.Info> mixers;
+    private List<AudioCaptureDeviceInfo> devices;
     private int selectedIndex = -1;
     private MicLevelMonitor monitor;
     private LevelMeterWidget meter;
 
     @Override
     public void initGui() {
-        mixers = MicDeviceRegistry.listInputMixers();
+        devices = AudioCaptureBackends.listDevices();
 
-        // Resolve previously selected mixer to an index, fallback to 0.
-        String saved = AkashicVoiceConfig.selectedMicMixer();
+        // Resolve the previously selected capture device to an index, fallback to system default.
+        String saved = AkashicVoiceConfig.selectedMicDevice();
         selectedIndex = -1;
         if (saved != null && !saved.isEmpty()) {
-            for (int i = 0; i < mixers.size(); i++) {
+            for (int i = 0; i < devices.size(); i++) {
                 if (saved.equals(
-                    mixers.get(i)
-                        .getName())) {
+                    devices.get(i)
+                        .id())) {
                     selectedIndex = i;
                     break;
                 }
             }
         }
-        if (selectedIndex == -1 && !mixers.isEmpty()) selectedIndex = 0;
+        if (selectedIndex == -1 && !devices.isEmpty()) selectedIndex = 0;
 
         int cx = width / 2;
         buttonList.clear();
@@ -61,8 +60,9 @@ public class GuiSetupWizard extends GuiScreen {
             monitor.stop();
             monitor = null;
         }
-        Mixer.Info info = (selectedIndex >= 0 && selectedIndex < mixers.size()) ? mixers.get(selectedIndex) : null;
-        monitor = new MicLevelMonitor(info);
+        String deviceId = (selectedIndex >= 0 && selectedIndex < devices.size()) ? devices.get(selectedIndex)
+            .id() : "";
+        monitor = new MicLevelMonitor(deviceId);
         monitor.start();
     }
 
@@ -70,19 +70,19 @@ public class GuiSetupWizard extends GuiScreen {
     protected void actionPerformed(GuiButton btn) {
         switch (btn.id) {
             case BTN_PREV:
-                if (mixers.isEmpty()) return;
-                selectedIndex = (selectedIndex - 1 + mixers.size()) % mixers.size();
+                if (devices.isEmpty()) return;
+                selectedIndex = (selectedIndex - 1 + devices.size()) % devices.size();
                 startMonitor();
                 break;
             case BTN_NEXT:
-                if (mixers.isEmpty()) return;
-                selectedIndex = (selectedIndex + 1) % mixers.size();
+                if (devices.isEmpty()) return;
+                selectedIndex = (selectedIndex + 1) % devices.size();
                 startMonitor();
                 break;
             case BTN_DONE:
-                String name = (selectedIndex >= 0 && selectedIndex < mixers.size()) ? mixers.get(selectedIndex)
-                    .getName() : "";
-                AkashicVoiceConfig.setSelectedMicMixer(name);
+                String deviceId = (selectedIndex >= 0 && selectedIndex < devices.size()) ? devices.get(selectedIndex)
+                    .id() : "";
+                AkashicVoiceConfig.setSelectedMicDevice(deviceId);
                 AkashicVoiceConfig.setFirstRunComplete(true);
                 AkashicVoiceConfig.save();
                 close();
@@ -126,8 +126,8 @@ public class GuiSetupWizard extends GuiScreen {
         drawCenteredString(fontRendererObj, I18n.format("akashicvoice.gui.wizard.title"), cx, 30, 0xFFFFFFFF);
         drawCenteredString(fontRendererObj, I18n.format("akashicvoice.gui.wizard.subtitle"), cx, 50, 0xFFAAAAAA);
 
-        String name = (selectedIndex >= 0 && selectedIndex < mixers.size()) ? mixers.get(selectedIndex)
-            .getName() : I18n.format("akashicvoice.gui.wizard.noMics");
+        String name = (selectedIndex >= 0 && selectedIndex < devices.size()) ? devices.get(selectedIndex)
+            .displayName() : I18n.format("akashicvoice.gui.wizard.noMics");
         drawCenteredString(
             fontRendererObj,
             I18n.format("akashicvoice.gui.wizard.device") + ": " + name,

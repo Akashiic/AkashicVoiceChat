@@ -23,10 +23,11 @@ This repository is under active development. The current foundation already incl
 - bounded playback queues and reusable OpenAL scratch buffers;
 - per-speaker fixed jitter/reorder rings with duplicate/late handling and Opus PLC;
 - a 128-frame preallocated PCM playback pool to avoid 50 Hz array churn;
-- JavaSound capture isolated behind an audio-capture SPI;
+- backend-agnostic microphone capture SPI with JavaSound and LWJGL2/OpenAL Capture implementations;
+- automatic capture fallback plus bounded microphone retry/recovery for device loss and delayed audio readiness;
 - selectable `auto` / `native` / `java` Opus backend with bounded native decoder scratch storage.
 
-The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture backend are planned work and are **not** claimed complete yet.
+The Simple Voice Chat bridge and adaptive jitter tuning remain planned. OpenAL Capture is implemented as a portability path, but Android/Pojav/Amethyst real-device microphone validation is **not** claimed complete yet.
 
 ## Runtime contract
 
@@ -36,7 +37,7 @@ The Simple Voice Chat bridge, adaptive jitter tuning and Android/Pojav capture b
 | Forge | 10.13.4.1614 |
 | Client JVM | Java 8+; produced classes are major version 52 |
 | Server JVM | Java 8+; Java 21 is a supported target for Crucible deployments |
-| Client graphics/audio API | LWJGL2-compatible OpenAL |
+| Client graphics/audio API | LWJGL2-compatible OpenAL playback; JavaSound/OpenAL Capture input |
 | Codec | Opus 48 kHz mono, 48 kbit/s default; native libopus preferred in `auto`, Concentus fallback |
 | Default voice transport | UDP 24454 |
 | UniMixins | not required |
@@ -95,7 +96,7 @@ The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Majo
 
 1. adaptive jitter tuning, stream telemetry and live gameplay validation;
 2. live in-game allocation/latency/GC profiling and remaining control-path cleanup;
-3. OpenAL/Android capture backends for Pojav/Amethyst-class launchers;
+3. real-device OpenAL/Android capture validation for Pojav/Amethyst-class launchers;
 4. Akashic Voice Gateway and bidirectional Simple Voice Chat interoperability;
 5. cross-server groups/radio semantics and public addon API.
 

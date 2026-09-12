@@ -112,6 +112,26 @@ Measure, do not guess. Remaining targets to validate on representative hardware:
 - server routing scales without per-frame world scans or synchronous disk I/O;
 - GC allocation profile identifies and removes avoidable 50-Hz hot-path garbage.
 
+## Gate 5A - Capture portability / mobile readiness
+
+Status: **PARTIAL PASS - JavaSound/OpenAL Capture abstraction and recovery QA pass on Java 8; real Android/Pojav/Amethyst microphone validation remains.**
+
+Evidence:
+- capture UI, setup wizard and mic test use backend-neutral device IDs instead of `Mixer.Info`;
+- `auto`, `javasound` and `openal` routing is configurable while legacy raw JavaSound mixer names are migrated;
+- LWJGL2 ALC capture compiles against the exact Forge 1.7.10 LWJGL API and does not create/destroy the global OpenAL context;
+- OpenAL probing is linkage-safe: missing `lwjgl64` does not crash device enumeration or the GUI;
+- fixed direct scratch buffers bound OpenAL polling/copy memory; no per-poll buffer allocation;
+- microphone startup and runtime failure recovery retry outside the Minecraft tick/render thread with log-spam suppression;
+- full Akashic source recompiles with Oracle JDK 8u411 after the capture changes;
+- `CaptureBackendSmoke` passes without opening a physical microphone.
+
+Remaining acceptance:
+- capture real microphone audio under Pojav legacy and Amethyst on ARM64;
+- verify Android permission lifecycle, suspend/resume and Bluetooth/wired hotplug;
+- measure 20 ms cadence, thermals and battery cost;
+- add Android-native AudioRecord/Oboe fallback only if JavaSound/OpenAL prove unreliable.
+
 ## Gate 6 — Cross-version bridge
 
 Status: **PENDING**.

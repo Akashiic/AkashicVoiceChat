@@ -55,9 +55,12 @@ public final class MicCapture {
             "Microphone capture started ({} Hz, {}-sample frames, backend={}, device={})",
             AudioFormatSpec.SAMPLE_RATE,
             AudioFormatSpec.FRAME_SAMPLES,
-            AudioCaptureBackends.get()
-                .name(),
+            capture.backendName(),
             capture.description());
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public synchronized void stop() {

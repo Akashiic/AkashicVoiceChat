@@ -46,10 +46,10 @@ The project advances by evidence gates, not by feature count.
 
 ## Phase E — Mobile / 0.5.x
 
-1. Run Java 8 client under Pojav legacy and Amethyst test matrices.
-2. Validate JavaSound microphone enumeration/capture; do not assume it works.
-3. Validate OpenAL capture as portable fallback.
-4. If both are unreliable, implement the smallest possible Android-native AudioRecord/Oboe adapter.
+1. **PENDING:** run the Java 8 client under Pojav legacy and Amethyst real-device test matrices.
+2. **PARTIAL:** JavaSound is isolated, hardened and fallback-safe; Android enumeration/capture remains a real-device test.
+3. **IMPLEMENTED / NEEDS DEVICE VALIDATION:** LWJGL2 OpenAL Capture backend, linkage-safe probing, bounded buffers and runtime retry/recovery.
+4. **CONDITIONAL:** if JavaSound/OpenAL are unreliable on Android, implement the smallest possible AudioRecord/Oboe adapter.
 5. Add touch-friendly PTT/toggle UX without requiring a physical keyboard.
 6. Profile thermal load, battery impact, encode complexity and jitter on ARM devices.
 

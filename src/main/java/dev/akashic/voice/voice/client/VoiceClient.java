@@ -46,6 +46,7 @@ public final class VoiceClient {
     private static final long SERVER_TIMEOUT_NANOS = 8_000_000_000L;
     private static final long MAINTENANCE_SLEEP_MILLIS = 20L;
     private static final long STREAM_IDLE_NANOS = 30_000_000_000L;
+    private static final long MIC_RETRY_NANOS = 3_000_000_000L;
 
     private final UUID playerId;
     private final byte[] masterSecret;
@@ -63,7 +64,7 @@ public final class VoiceClient {
 
     private DatagramSocket socket;
     private SocketAddress serverAddress;
-    private MicCapture micCapture;
+    private volatile MicCapture micCapture;
     private AudioPlayback playback;
     private Thread receiveThread;
     private Thread maintenanceThread;
@@ -80,6 +81,8 @@ public final class VoiceClient {
     private volatile long lastHandshakeAttemptNanos;
     private volatile long lastKeepAliveNanos;
     private volatile long lastServerPacketNanos;
+    private volatile long lastMicAttemptNanos;
+    private volatile boolean micFailureLogged;
 
     public VoiceClient(UUID playerId, byte[] masterSecret, InetAddress serverHost, int serverPort) {
         if (playerId == null || serverHost == null) throw new IllegalArgumentException("null voice client input");
@@ -156,6 +159,8 @@ public final class VoiceClient {
     public synchronized void restartMicCapture() {
         if (!running || !authenticated) return;
         stopMicCapture();
+        lastMicAttemptNanos = 0L;
+        micFailureLogged = false;
         startMicCapture();
     }
 
@@ -202,6 +207,10 @@ public final class VoiceClient {
             }
 
             drainDecoderStreams(now);
+            reconcileMicCapture(now);
+            if (micCapture == null && now - lastMicAttemptNanos >= MIC_RETRY_NANOS) {
+                startMicCapture();
+            }
             if (now - lastServerPacketNanos >= SERVER_TIMEOUT_NANOS) {
                 AkashicVoice.LOG.warn("Voice server timed out; restarting secure handshake");
                 resetHandshake(now);
@@ -330,20 +339,36 @@ public final class VoiceClient {
         if (startMic) startMicCapture();
     }
 
-    private void startMicCapture() {
+    private synchronized void reconcileMicCapture(long nowNanos) {
+        MicCapture current = micCapture;
+        if (current == null || current.isRunning()) return;
+        current.stop();
+        if (micCapture == current) micCapture = null;
+        lastMicAttemptNanos = nowNanos;
+    }
+
+    private synchronized void startMicCapture() {
         if (!running || !authenticated || micCapture != null) return;
+        lastMicAttemptNanos = System.nanoTime();
         try {
-            micCapture = new MicCapture(
+            MicCapture created = new MicCapture(
                 this::onMicFrame,
-                dev.akashic.voice.config.AkashicVoiceConfig.selectedMicMixer());
-            micCapture.start();
+                dev.akashic.voice.config.AkashicVoiceConfig.selectedMicDevice());
+            created.start();
+            micCapture = created;
+            micFailureLogged = false;
         } catch (AudioCaptureException e) {
             micCapture = null;
-            AkashicVoice.LOG.warn("Microphone unavailable: {}", e.getMessage());
+            if (!micFailureLogged) {
+                micFailureLogged = true;
+                AkashicVoice.LOG.warn("Microphone unavailable: {}", e.getMessage());
+            } else {
+                AkashicVoice.LOG.debug("Microphone still unavailable: {}", e.getMessage());
+            }
         }
     }
 
-    private void stopMicCapture() {
+    private synchronized void stopMicCapture() {
         MicCapture capture = micCapture;
         micCapture = null;
         if (capture != null) capture.stop();
@@ -465,6 +490,8 @@ public final class VoiceClient {
             lastHandshakeAttemptNanos = 0L;
             lastKeepAliveNanos = 0L;
             lastServerPacketNanos = 0L;
+            lastMicAttemptNanos = 0L;
+            micFailureLogged = false;
             SessionCrypto previousCrypto = crypto;
             crypto = null;
             if (previousCrypto != null) previousCrypto.close();

@@ -205,10 +205,8 @@ public class GuiVoiceChatSettings extends GuiScreen {
 
     private void startMonitor() {
         stopMonitor();
-        javax.sound.sampled.Mixer.Info info = dev.akashic.voice.voice.client.audio.MicDeviceRegistry
-            .findByName(AkashicVoiceConfig.selectedMicMixer());
         // loopback=true so the user actually hears their mic during testing
-        monitor = new MicLevelMonitor(info, true);
+        monitor = new MicLevelMonitor(AkashicVoiceConfig.selectedMicDevice(), true);
         monitor.start();
     }
 
