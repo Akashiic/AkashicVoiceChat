@@ -10,7 +10,7 @@ import dev.akashic.voice.platform.bridge.SpatialKind;
 import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.MicFramePacket;
-import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.SoundResetPacket;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.crypto.HandshakeProof;
@@ -91,19 +91,21 @@ final class GatewayRuntimeIntegrationTest {
                         SpatialKind.LOCATION,
                         null,
                         new PositionSnapshot("minecraft:overworld", 12.5, 70.0, -2.25),
-                        48F,
-                        false,
+                        23.5F,
+                        true,
                         "proximity",
                         downlinkOpus);
                     assertTrue(agent.send(new AgentMessage.SvcDelivery(delivery)));
 
-                    SoundFramePacket sound = receiveSound(client, clientCrypto);
+                    SoundFrameV2Packet sound = receiveSound(client, clientCrypto);
                     assertEquals(svcSender, sound.senderId);
                     assertEquals(9001, sound.sequence);
                     assertTrue(sound.isSpatial());
                     assertEquals(12.5F, sound.x);
                     assertEquals(70F, sound.y);
                     assertEquals(-2.25F, sound.z);
+                    assertEquals(23.5F, sound.maxDistance);
+                    assertTrue(sound.isWhispering());
                     assertArrayEquals(
                         downlinkOpus,
                         Arrays.copyOfRange(sound.opusData, sound.opusOffset, sound.opusOffset + sound.opusLength));
@@ -186,14 +188,14 @@ final class GatewayRuntimeIntegrationTest {
         assertTrue(crypto.seal(inner, encrypted));
         send(client, Arrays.copyOf(encrypted.array(), encrypted.position()));
     }
-    private static SoundFramePacket receiveSound(
+    private static SoundFrameV2Packet receiveSound(
         DatagramSocket client,
         SessionCrypto crypto
     ) throws Exception {
         ByteBuffer plain = ByteBuffer.allocate(1_500);
         assertTrue(crypto.open(receive(client), plain), "SOUND datagram failed AEAD verification");
-        assertEquals(WirePacketType.SOUND_FRAME, plain.get());
-        SoundFramePacket packet = SoundFramePacket.read(plain);
+        assertEquals(WirePacketType.SOUND_FRAME_V2, plain.get());
+        SoundFrameV2Packet packet = SoundFrameV2Packet.read(plain);
         assertNotNull(packet);
         return packet;
     }

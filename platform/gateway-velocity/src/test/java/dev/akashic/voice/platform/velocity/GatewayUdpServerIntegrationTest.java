@@ -6,7 +6,7 @@ import dev.akashic.voice.platform.bridge.SpatialKind;
 import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.MicFramePacket;
-import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.crypto.HandshakeProof;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
@@ -72,15 +72,17 @@ final class GatewayUdpServerIntegrationTest {
                     proxyPlayerId, svcSender, UUID.randomUUID(), 123L,
                     SpatialKind.LOCATION, null,
                     new PositionSnapshot("minecraft:overworld", 10.5, 64.0, -7.25),
-                    48F, false, null, downlinkOpus);
+                    48F, true, null, downlinkOpus);
                 assertTrue(server.sendBridgeDelivery("lobby", delivery));
-                SoundFramePacket sound = receiveSound(client, clientCrypto);
+                SoundFrameV2Packet sound = receiveSound(client, clientCrypto);
                 assertEquals(svcSender, sound.senderId);
                 assertEquals(123, sound.sequence);
                 assertTrue(sound.isSpatial());
                 assertEquals(10.5F, sound.x);
                 assertEquals(64F, sound.y);
                 assertEquals(-7.25F, sound.z);
+                assertEquals(48F, sound.maxDistance);
+                assertTrue(sound.isWhispering());
                 assertArrayEquals(downlinkOpus,
                     Arrays.copyOfRange(sound.opusData, sound.opusOffset, sound.opusOffset + sound.opusLength));
 
@@ -141,11 +143,11 @@ final class GatewayUdpServerIntegrationTest {
         return encrypted;
     }
 
-    private static SoundFramePacket receiveSound(DatagramSocket client, SessionCrypto crypto) throws Exception {
+    private static SoundFrameV2Packet receiveSound(DatagramSocket client, SessionCrypto crypto) throws Exception {
         ByteBuffer plain = ByteBuffer.allocate(1_500);
         assertTrue(crypto.open(receive(client), plain), "SOUND datagram failed AEAD verification");
-        assertEquals(WirePacketType.SOUND_FRAME, plain.get());
-        SoundFramePacket packet = SoundFramePacket.read(plain);
+        assertEquals(WirePacketType.SOUND_FRAME_V2, plain.get());
+        SoundFrameV2Packet packet = SoundFrameV2Packet.read(plain);
         assertNotNull(packet);
         return packet;
     }

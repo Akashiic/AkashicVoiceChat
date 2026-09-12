@@ -22,6 +22,7 @@ public final class PlaybackChannel {
     private float y;
     private float z;
     private boolean spatial = true;
+    private float maxDistance = Float.NaN;
 
     public PlaybackChannel(float referenceDistance) {
         IntBuffer src = BufferUtils.createIntBuffer(1);
@@ -34,6 +35,8 @@ public final class PlaybackChannel {
     }
 
     public void setMaxDistance(float maxDistance) {
+        if (!Float.isFinite(maxDistance) || maxDistance <= 0F || maxDistance == this.maxDistance) return;
+        this.maxDistance = maxDistance;
         AL10.alSourcef(sourceId, AL10.AL_MAX_DISTANCE, maxDistance);
     }
 

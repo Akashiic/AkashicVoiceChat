@@ -6,6 +6,7 @@ import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.WireProtocol;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
 import dev.akashic.voice.voice.common.crypto.SessionKeys;
@@ -27,6 +28,7 @@ public final class WireFuzzSmoke {
             KeepAlivePacket.read(ByteBuffer.wrap(data));
             MicFramePacket.read(ByteBuffer.wrap(data));
             SoundFramePacket.read(ByteBuffer.wrap(data));
+            SoundFrameV2Packet.read(ByteBuffer.wrap(data));
         }
         byte[] master = new byte[SessionKeys.MASTER_SECRET_BYTES];
         byte[] cn = new byte[SessionKeys.HANDSHAKE_NONCE_BYTES];

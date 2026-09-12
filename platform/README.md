@@ -23,13 +23,14 @@ Implemented/tested locally:
 - authenticated PSK agent channel with HKDF domain separation, AES-GCM, replay protection and reconnect handling;
 - raw Opus passthrough through SVC `AudioSender` / `PlayerAudioListener` adapter paths;
 - proxy UUID ↔ local Bukkit UUID binding by exact player name for offline-mode/proxy deployments;
-- end-to-end local test: Akashic UDP MIC → Gateway → agent and SVC delivery/reset → Gateway → Akashic UDP.
+- end-to-end local test: Akashic UDP MIC → Gateway → agent and SVC delivery/reset → Gateway → Akashic UDP;
+- additive `SOUND_FRAME_V2` preserves per-frame SVC max-distance and whisper metadata without changing Forbidden's v1 packet contract.
 
 Remaining live gates:
 - deploy the Velocity and Paper artifacts against the actual Rede Akashic proxy/lobby;
 - verify audible Akashic ↔ SVC speech with two real clients and backend transfers;
 - verify SVC group/category behavior and long-session reconnects;
-- add/negotiated protocol support for exact per-frame SVC maximum distance/whisper attenuation (wire v1 currently preserves position but not per-frame distance);
+- validate live SVC attenuation/whisper behavior carried by additive `SOUND_FRAME_V2`; wire v1 remains unchanged for Forbidden-local voice;
 - prove cross-server group/radio semantics without treating unrelated backend coordinates as physical proximity.
 
 The Gateway remains fail-open for backends without a healthy authenticated agent: it does not steal the legacy Forge bootstrap request from those servers.

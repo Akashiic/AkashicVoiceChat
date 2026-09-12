@@ -98,12 +98,17 @@ public final class AudioPlayback {
     }
 
     public boolean submitFrame(PlaybackFrame frame, UUID senderId, boolean sourceIsSpatial, float x, float y, float z) {
+        return submitFrame(frame, senderId, sourceIsSpatial, x, y, z, Float.NaN, false);
+    }
+
+    public boolean submitFrame(PlaybackFrame frame, UUID senderId, boolean sourceIsSpatial, float x, float y, float z,
+        float sourceMaxDistance, boolean whispering) {
         if (frame == null) return false;
         if (!running) {
             releaseFrame(frame);
             return false;
         }
-        frame.prepare(senderId, sourceIsSpatial, x, y, z);
+        frame.prepare(senderId, sourceIsSpatial, x, y, z, sourceMaxDistance, whispering);
         if (pendingFrames.offer(frame)) return true;
         droppedFrames.incrementAndGet();
         releaseFrame(frame);
@@ -213,13 +218,17 @@ public final class AudioPlayback {
         PlaybackChannel ch = channels.get(frame.senderId);
         if (ch == null) {
             ch = new PlaybackChannel(referenceDistance);
-            ch.setMaxDistance(maxDistance);
             channels.put(frame.senderId, ch);
         }
         sourceSpatial.put(frame.senderId, frame.sourceSpatial);
         boolean effectiveSpatial = spatial && frame.sourceSpatial;
         ch.setSpatial(effectiveSpatial);
-        if (effectiveSpatial) ch.setPosition(frame.x, frame.y, frame.z);
+        if (effectiveSpatial) {
+            ch.setPosition(frame.x, frame.y, frame.z);
+            float effectiveMaxDistance = Float.isFinite(frame.maxDistance) && frame.maxDistance > 0F ? frame.maxDistance
+                : maxDistance;
+            ch.setMaxDistance(effectiveMaxDistance);
+        }
         ch.enqueue(frame.pcm());
     }
 

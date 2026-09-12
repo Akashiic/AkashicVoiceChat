@@ -5,6 +5,7 @@ import java.util.UUID;
 import dev.akashic.voice.voice.client.playback.AudioPlayback;
 import dev.akashic.voice.voice.client.playback.PlaybackFrame;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 import dev.akashic.voice.voice.common.codec.OpusCodecFactory;
 import dev.akashic.voice.voice.common.codec.OpusDecoder;
@@ -22,6 +23,8 @@ public final class DecoderStream implements AutoCloseable {
     private float lastX;
     private float lastY;
     private float lastZ;
+    private float lastMaxDistance = Float.NaN;
+    private boolean lastWhispering;
     private long lastPacketNanos;
     private long decodeErrorCount;
 
@@ -37,16 +40,42 @@ public final class DecoderStream implements AutoCloseable {
 
     public synchronized void offer(SoundFramePacket packet, long nowNanos, AudioPlayback playback) {
         if (!senderId.equals(packet.senderId)) return;
-        boolean accepted = jitter.offer(
+        offer(
             packet.sequence,
             packet.isSpatial(),
             packet.x,
             packet.y,
             packet.z,
+            Float.NaN,
+            false,
             packet.opusData,
             packet.opusOffset,
             packet.opusLength,
-            nowNanos);
+            nowNanos,
+            playback);
+    }
+
+    public synchronized void offer(SoundFrameV2Packet packet, long nowNanos, AudioPlayback playback) {
+        if (!senderId.equals(packet.senderId)) return;
+        offer(
+            packet.sequence,
+            packet.isSpatial(),
+            packet.x,
+            packet.y,
+            packet.z,
+            packet.maxDistance,
+            packet.isWhispering(),
+            packet.opusData,
+            packet.opusOffset,
+            packet.opusLength,
+            nowNanos,
+            playback);
+    }
+
+    private void offer(int sequence, boolean spatial, float x, float y, float z, float maxDistance, boolean whispering,
+        byte[] opus, int offset, int length, long nowNanos, AudioPlayback playback) {
+        boolean accepted = jitter
+            .offer(sequence, spatial, x, y, z, maxDistance, whispering, opus, offset, length, nowNanos);
         if (accepted) lastPacketNanos = nowNanos;
         drain(nowNanos, playback);
     }
@@ -78,6 +107,8 @@ public final class DecoderStream implements AutoCloseable {
                     lastX = slot.x();
                     lastY = slot.y();
                     lastZ = slot.z();
+                    lastMaxDistance = slot.maxDistance();
+                    lastWhispering = slot.isWhispering();
                 }
             } else {
                 decoded = decoder.decodeMissing(pcm);
@@ -93,7 +124,7 @@ public final class DecoderStream implements AutoCloseable {
             playback.releaseFrame(frame);
             return;
         }
-        playback.submitFrame(frame, senderId, lastSpatial, lastX, lastY, lastZ);
+        playback.submitFrame(frame, senderId, lastSpatial, lastX, lastY, lastZ, lastMaxDistance, lastWhispering);
     }
 
     public synchronized boolean isIdle(long nowNanos, long timeoutNanos) {

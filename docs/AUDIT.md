@@ -153,7 +153,7 @@ Remaining acceptance:
 - run two real clients through Velocity + Paper lobby + Simple Voice Chat and prove audible bidirectional speech;
 - prove lobby <-> Forbidden backend transfer repeatedly without stale voice sessions;
 - live-test offline-mode UUID divergence with the actual proxy/Paper configuration;
-- preserve/negotiated exact SVC per-frame distance/whisper attenuation (wire v1 currently carries position, not max distance);
+- live-listen and validate SVC per-frame distance/whisper attenuation; additive SOUND_FRAME_V2 now carries max-distance + whisper metadata while legacy v1 remains unchanged;
 - validate group/category semantics and cross-server radio without leaking physical proximity across unrelated backends;
 - soak-test agent reconnect, Gateway restart and prolonged sessions under load.
 

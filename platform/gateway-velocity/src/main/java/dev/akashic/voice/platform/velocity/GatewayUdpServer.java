@@ -9,6 +9,7 @@ import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
@@ -353,11 +354,17 @@ final class GatewayUdpServer implements AutoCloseable {
             if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) return false;
         }
 
-        // Wire v1 has no per-frame max-distance field. BridgeDelivery retains distance so
-        // a capability-negotiated v2 can preserve SVC attenuation/whisper semantics exactly.
-        SoundFramePacket packet = new SoundFramePacket(
-            delivery.senderId(), spatial, x, y, z, (int) delivery.sequence(), delivery.opusUnsafe());
-        return connection.sendSound(socket, packet);
+        SoundFrameV2Packet packet = new SoundFrameV2Packet(
+            delivery.senderId(),
+            spatial,
+            delivery.whispering(),
+            x,
+            y,
+            z,
+            spatial ? delivery.distance() : 0F,
+            (int) delivery.sequence(),
+            delivery.opusUnsafe());
+        return connection.sendSoundV2(socket, packet);
     }
 
     boolean sendBridgeReset(String backendName, BridgeStreamReset reset) {

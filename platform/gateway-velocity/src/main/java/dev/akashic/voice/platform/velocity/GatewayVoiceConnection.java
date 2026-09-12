@@ -3,6 +3,7 @@ package dev.akashic.voice.platform.velocity;
 import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.SoundResetPacket;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
 
@@ -80,6 +81,13 @@ final class GatewayVoiceConnection implements AutoCloseable {
     }
 
     synchronized boolean sendSound(DatagramSocket socket, SoundFramePacket packet) {
+        if (closed) return false;
+        innerSendBuffer.clear();
+        packet.write(innerSendBuffer);
+        return sealAndSend(socket);
+    }
+
+    synchronized boolean sendSoundV2(DatagramSocket socket, SoundFrameV2Packet packet) {
         if (closed) return false;
         innerSendBuffer.clear();
         packet.write(innerSendBuffer);

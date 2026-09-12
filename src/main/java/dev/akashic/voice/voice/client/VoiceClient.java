@@ -24,6 +24,7 @@ import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
+import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.SoundResetPacket;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
@@ -266,6 +267,11 @@ public final class VoiceClient {
                 if (sound != null) handleSoundFrame(sound);
                 break;
             }
+            case WirePacketType.SOUND_FRAME_V2: {
+                SoundFrameV2Packet sound = SoundFrameV2Packet.read(buf);
+                if (sound != null) handleSoundFrame(sound);
+                break;
+            }
             case WirePacketType.SOUND_RESET: {
                 SoundResetPacket reset = SoundResetPacket.read(buf);
                 if (reset != null) handleSoundReset(reset.senderId);
@@ -405,6 +411,16 @@ public final class VoiceClient {
         TalkCache.markSpeaking(pkt.senderId);
         if (count == 1 || count % 250 == 0) {
             AkashicVoice.LOG.info("Received {} sound frames so far (last seq {})", count, pkt.sequence);
+        }
+    }
+
+    private void handleSoundFrame(SoundFrameV2Packet pkt) {
+        long count = receivedFrames.incrementAndGet();
+        DecoderStream stream = streamFor(pkt.senderId);
+        stream.offer(pkt, System.nanoTime(), playback);
+        TalkCache.markSpeaking(pkt.senderId);
+        if (count == 1 || count % 250 == 0) {
+            AkashicVoice.LOG.info("Received {} sound frames so far (last seq {}, bridge-v2)", count, pkt.sequence);
         }
     }
 

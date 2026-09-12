@@ -23,6 +23,8 @@ public final class OpusJitterBuffer {
         float x;
         float y;
         float z;
+        float maxDistance;
+        boolean whispering;
         boolean occupied;
 
         public int sequence() {
@@ -47,6 +49,14 @@ public final class OpusJitterBuffer {
 
         public float z() {
             return z;
+        }
+
+        public float maxDistance() {
+            return maxDistance;
+        }
+
+        public boolean isWhispering() {
+            return whispering;
         }
 
         public byte[] payload() {
@@ -90,6 +100,11 @@ public final class OpusJitterBuffer {
 
     public synchronized boolean offer(int sequence, boolean spatial, float x, float y, float z, byte[] payload,
         int offset, int length, long nowNanos) {
+        return offer(sequence, spatial, x, y, z, Float.NaN, false, payload, offset, length, nowNanos);
+    }
+
+    public synchronized boolean offer(int sequence, boolean spatial, float x, float y, float z, float maxDistance,
+        boolean whispering, byte[] payload, int offset, int length, long nowNanos) {
         if (length <= 0 || length > AudioFormatSpec.MAX_OPUS_PAYLOAD
             || offset < 0
             || offset + length > payload.length) {
@@ -129,6 +144,8 @@ public final class OpusJitterBuffer {
         slot.x = x;
         slot.y = y;
         slot.z = z;
+        slot.maxDistance = maxDistance;
+        slot.whispering = whispering;
         slot.occupied = true;
         if (sequence - highestSequence > 0) highestSequence = sequence;
         lastOfferNanos = nowNanos;

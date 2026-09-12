@@ -62,6 +62,15 @@ public final class JitterBufferSmoke {
         require(offer(resync, 40, t + 1), "resync far packet");
         require(resync.resyncCount() == 1, "resync count");
 
+        OpusJitterBuffer metadata = new OpusJitterBuffer(8, 2, 40_000_000L);
+        require(metadata.offer(100, true, 1F, 2F, 3F, 17.5F, true,
+            P, 0, P.length, t), "metadata offer");
+        require(metadata.next(t + 41_000_000L) == ReadyKind.PACKET, "metadata flush");
+        OpusJitterBuffer.Slot metadataSlot = metadata.expectedSlot();
+        require(metadataSlot != null, "metadata slot");
+        require(metadataSlot.maxDistance() == 17.5F, "metadata distance");
+        require(metadataSlot.isWhispering(), "metadata whisper");
+
         System.out.println("jitter-buffer-smoke-ok");
     }
 }
