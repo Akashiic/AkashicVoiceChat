@@ -146,11 +146,12 @@ Evidence:
 - proxy UUID and local Bukkit/SVC UUID may differ and are bound explicitly by exact player name; duplicate local claims are rejected;
 - Gateway UDP integration test covers encrypted auth, MIC, replay rejection, SOUND and disconnect;
 - full runtime integration test covers Akashic UDP MIC -> Gateway -> agent and agent SVC delivery/reset -> Gateway -> Akashic UDP;
-- local reconnect/load soak keeps 8 authenticated UDP clients alive across 4 agent reconnect cycles, preserving 256 MIC uplinks and 32 SVC v2 downlinks with no leaked sessions;
 - normal EOF/socket closure during agent reconnect is classified as route lifecycle, not a false operational error.
 - SVC adapter maps through public `AudioSender` / `PlayerAudioListener` contracts and preserves compatible Opus bytes without decode/re-encode;
 - agent transport uses separate bounded control/media queues; media producer threads do not block on a stalled TCP peer and oldest media is dropped under pressure while stream reset ordering is preserved;
-- 20-client Gateway soak passes with 4 agent reconnect cycles, 640 encrypted MIC frames, 80 SVC downlinks, zero leaked UDP sessions and zero unexpected media/replay rejection;
+- repeated concurrent Gateway soak passes 5/5 runs; each run keeps 20 authenticated UDP clients alive across 4 agent reconnect cycles, for 3,200 encrypted MIC frames and 400 SVC v2 downlinks total, with zero leaked UDP sessions and zero unexpected media/replay rejection;
+- real SocketGatewayLink integration test covers Gateway→Paper ATTACH/SpeakerFrame/SpeakerReset, Paper→Gateway SvcDelivery/SvcReset, disconnect cleanup and automatic reconnect/reattach;
+- Gateway restart integration rejects stale pre-restart voice identities and accepts only a fresh bootstrap; the Java 8 client escalates failed secure rehandshake to a new Minecraft bootstrap request;
 - `/avgateway status` and `/avbridge status` expose non-sensitive queue/drop/session diagnostics for homologation.
 - backends without a healthy authenticated agent remain fail-open to their native Forge bootstrap path.
 
@@ -160,7 +161,7 @@ Remaining acceptance:
 - live-test offline-mode UUID divergence with the actual proxy/Paper configuration;
 - live-listen and validate SVC per-frame distance/whisper attenuation; additive SOUND_FRAME_V2 now carries max-distance + whisper metadata while legacy v1 remains unchanged;
 - validate group/category semantics and cross-server radio without leaking physical proximity across unrelated backends;
-- extend the passing local reconnect/load soak to Gateway process restart and prolonged real-network sessions under load.
+- run prolonged real-network sessions under sustained load, including live Gateway process restart while players are speaking.
 
 ## Critical finding — secret disclosure
 

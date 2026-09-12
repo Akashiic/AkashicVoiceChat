@@ -14,7 +14,7 @@ import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.crypto.HandshakeProof;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
 import dev.akashic.voice.voice.common.crypto.SessionKeys;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -41,7 +44,7 @@ final class GatewayRuntimeSoakTest {
     private static final int RECONNECT_CYCLES = 4;
     private static final int FRAMES_PER_CLIENT_PER_CYCLE = 8;
 
-    @Test
+    @RepeatedTest(5)
     void clientsSurviveRepeatedAgentReconnectsWithoutSessionLeaks() throws Exception {
         int udpPort = freeUdpPort();
         byte[] psk = new byte[32];
@@ -120,12 +123,23 @@ final class GatewayRuntimeSoakTest {
     }
 
     private static void sendMicBurst(List<TestClient> clients, int cycle) throws Exception {
-        for (int frame = 0; frame < FRAMES_PER_CLIENT_PER_CYCLE; frame++) {
+        ExecutorService executor = Executors.newFixedThreadPool(clients.size());
+        try {
+            List<Future<?>> futures = new ArrayList<>();
             for (int clientIndex = 0; clientIndex < clients.size(); clientIndex++) {
-                int sequence = cycle * 1_000 + frame;
-                byte[] opus = {(byte) cycle, (byte) frame, (byte) clientIndex, 42};
-                clients.get(clientIndex).sendMic(sequence, opus);
+                final int index = clientIndex;
+                futures.add(executor.submit(() -> {
+                    for (int frame = 0; frame < FRAMES_PER_CLIENT_PER_CYCLE; frame++) {
+                        int sequence = cycle * 1_000 + frame;
+                        byte[] opus = {(byte) cycle, (byte) frame, (byte) index, 42};
+                        clients.get(index).sendMic(sequence, opus);
+                    }
+                    return null;
+                }));
             }
+            for (Future<?> future : futures) future.get(3, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
         }
     }
 

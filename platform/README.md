@@ -26,7 +26,9 @@ Implemented/tested locally:
 - end-to-end local test: Akashic UDP MIC → Gateway → agent and SVC delivery/reset → Gateway → Akashic UDP;
 - additive `SOUND_FRAME_V2` preserves per-frame SVC max-distance and whisper metadata without changing Forbidden's v1 packet contract.
 - bounded agent backpressure keeps control responsive, drops stale media instead of blocking producers and preserves reset ordering;
-- permanent soak QA covers 20 concurrent Akashic UDP clients across repeated agent reconnects.
+- permanent soak QA covers five independent runs of 20 concurrent Akashic UDP clients, concurrent MIC bursts and repeated agent reconnects;
+- SocketGatewayLink loopback integration covers both media/control directions plus disconnect cleanup and automatic agent reconnect;
+- Gateway restart QA rejects stale voice identities and requires a fresh bootstrap before a new secure session can authenticate.
 
 Remaining live gates:
 - deploy the Velocity and Paper artifacts against the actual Rede Akashic proxy/lobby;
