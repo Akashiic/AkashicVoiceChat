@@ -47,3 +47,10 @@ tasks.named<org.gradle.jvm.tasks.Jar>("shadowJar") {
         exclude("META-INF/MANIFEST.MF")
     }
 }
+
+// Shared Java 8 wire/crypto source consumed by both the legacy mod and the Java 21/25 platform.
+sourceSets {
+    main {
+        java.srcDir("shared/client-protocol/src/main/java")
+    }
+}
