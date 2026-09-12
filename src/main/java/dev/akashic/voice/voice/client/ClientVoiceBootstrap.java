@@ -144,6 +144,15 @@ public final class ClientVoiceBootstrap {
 
         long nowNanos = System.nanoTime();
         VoiceClient activeVoice = VoiceClientHolder.get();
+        if (activeVoice != null && activeVoice.needsFreshBootstrap()) {
+            AkashicVoice.LOG.warn("Voice transport requested a fresh bootstrap");
+            VoiceClientHolder.stop();
+            ClientSecretCache.clear();
+            secretRequested = false;
+            lastBootstrapRequestNanos = 0L;
+            unauthenticatedSinceNanos = 0L;
+            activeVoice = null;
+        }
         if (activeVoice == null) {
             unauthenticatedSinceNanos = 0L;
             if (secretRequested && !ClientSecretCache.hasSecret()

@@ -44,6 +44,7 @@ public final class VoiceClient {
     private static final int MAX_DATAGRAM_BYTES = 1500;
     private static final long HANDSHAKE_RETRY_NANOS = 1_000_000_000L;
     private static final long HANDSHAKE_TIMEOUT_NANOS = 12_000_000_000L;
+    private static final long RECOVERY_HANDSHAKE_TIMEOUT_NANOS = 6_000_000_000L;
     private static final long KEEPALIVE_INTERVAL_NANOS = 1_000_000_000L;
     private static final long SERVER_TIMEOUT_NANOS = 8_000_000_000L;
     private static final long MAINTENANCE_SLEEP_MILLIS = 20L;
@@ -73,6 +74,8 @@ public final class VoiceClient {
 
     private volatile boolean running;
     private volatile boolean authenticated;
+    private volatile boolean freshBootstrapRequired;
+    private volatile boolean recoveryHandshake;
     private volatile boolean closed;
     private volatile HandshakeStage handshakeStage = HandshakeStage.HELLO;
     private volatile byte[] clientNonce;
@@ -158,6 +161,10 @@ public final class VoiceClient {
         return authenticated;
     }
 
+    public boolean needsFreshBootstrap() {
+        return freshBootstrapRequired;
+    }
+
     public synchronized void restartMicCapture() {
         if (!running || !authenticated) return;
         stopMicCapture();
@@ -193,15 +200,28 @@ public final class VoiceClient {
                 return;
             }
             long now = System.nanoTime();
+            if (freshBootstrapRequired) continue;
             HandshakeStage stage = handshakeStage;
             if (stage == HandshakeStage.HELLO) {
-                if (now - stageSinceNanos >= HANDSHAKE_TIMEOUT_NANOS) resetHandshake(now);
+                long timeout = recoveryHandshake ? RECOVERY_HANDSHAKE_TIMEOUT_NANOS : HANDSHAKE_TIMEOUT_NANOS;
+                if (now - stageSinceNanos >= timeout) {
+                    if (recoveryHandshake) {
+                        requireFreshBootstrap();
+                        continue;
+                    }
+                    resetHandshake(now, false);
+                }
                 if (now - lastHandshakeAttemptNanos >= HANDSHAKE_RETRY_NANOS) sendHello();
                 continue;
             }
             if (stage == HandshakeStage.AUTH_RESPONSE) {
-                if (now - stageSinceNanos >= HANDSHAKE_TIMEOUT_NANOS) {
-                    resetHandshake(now);
+                long timeout = recoveryHandshake ? RECOVERY_HANDSHAKE_TIMEOUT_NANOS : HANDSHAKE_TIMEOUT_NANOS;
+                if (now - stageSinceNanos >= timeout) {
+                    if (recoveryHandshake) {
+                        requireFreshBootstrap();
+                        continue;
+                    }
+                    resetHandshake(now, false);
                     continue;
                 }
                 if (now - lastHandshakeAttemptNanos >= HANDSHAKE_RETRY_NANOS) sendAuthResponse();
@@ -215,7 +235,7 @@ public final class VoiceClient {
             }
             if (now - lastServerPacketNanos >= SERVER_TIMEOUT_NANOS) {
                 AkashicVoice.LOG.warn("Voice server timed out; restarting secure handshake");
-                resetHandshake(now);
+                resetHandshake(now, true);
                 continue;
             }
             if (now - lastKeepAliveNanos >= KEEPALIVE_INTERVAL_NANOS) {
@@ -330,13 +350,15 @@ public final class VoiceClient {
     private void handleAuthAck(AuthAckPacket ack) {
         if (ack.status != AuthAckPacket.STATUS_OK) {
             AkashicVoice.LOG.warn("Secure voice authentication rejected (status {})", ack.status);
-            resetHandshake(System.nanoTime());
+            resetHandshake(System.nanoTime(), false);
             return;
         }
         boolean startMic = false;
         synchronized (handshakeLock) {
             if (handshakeStage != HandshakeStage.AUTH_RESPONSE) return;
             authenticated = true;
+            freshBootstrapRequired = false;
+            recoveryHandshake = false;
             handshakeStage = HandshakeStage.AUTHENTICATED;
             stageSinceNanos = System.nanoTime();
             lastKeepAliveNanos = stageSinceNanos;
@@ -511,9 +533,36 @@ public final class VoiceClient {
         }
     }
 
-    private void resetHandshake(long nowNanos) {
+    private void requireFreshBootstrap() {
+        boolean changed = false;
+        synchronized (handshakeLock) {
+            if (!freshBootstrapRequired) {
+                freshBootstrapRequired = true;
+                authenticated = false;
+                recoveryHandshake = false;
+                SessionCrypto previousCrypto = crypto;
+                crypto = null;
+                if (previousCrypto != null) previousCrypto.close();
+                clearArray(clientNonce);
+                clearArray(serverNonce);
+                clearArray(clientProof);
+                clientNonce = null;
+                serverNonce = null;
+                clientProof = null;
+                changed = true;
+            }
+        }
+        if (!changed) return;
+        stopMicCapture();
+        clearDecoderStreams();
+        AkashicVoice.LOG.warn("Voice secure rehandshake failed; requesting a fresh bootstrap");
+    }
+
+    private void resetHandshake(long nowNanos, boolean recovery) {
         synchronized (handshakeLock) {
             authenticated = false;
+            freshBootstrapRequired = false;
+            recoveryHandshake = recovery;
             handshakeStage = HandshakeStage.HELLO;
             stageSinceNanos = nowNanos;
             lastHandshakeAttemptNanos = 0L;
