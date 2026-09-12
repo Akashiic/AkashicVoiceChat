@@ -5,6 +5,8 @@ import dev.akashic.voice.platform.agent.AgentHandshake;
 import dev.akashic.voice.platform.bridge.DisconnectedGatewayLink;
 import dev.akashic.voice.platform.bridge.GatewayLink;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -72,6 +74,24 @@ public final class AkashicVoiceBridgePlugin extends JavaPlugin {
         } else {
             getLogger().warning("Gateway transport is disabled; SVC adapter is loaded but disconnected");
         }
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length > 1 || (args.length == 1 && !"status".equalsIgnoreCase(args[0]))) return false;
+        SvcBridgeEngine current = engine;
+        if (current == null) {
+            sender.sendMessage("Akashic Voice SVC bridge is unavailable");
+            return true;
+        }
+        SvcBridgeStatus status = current.statusSnapshot();
+        sender.sendMessage("Akashic Voice SVC Bridge");
+        sender.sendMessage("Gateway: " + (status.gatewayConnected() ? "CONNECTED" : "DISCONNECTED")
+            + " | SVC API: " + (status.voicechatBound() ? "BOUND" : "UNBOUND"));
+        sender.sendMessage("Players: desired=" + status.desiredPlayers()
+            + " active=" + status.activeSessions()
+            + " bindings=" + status.identityBindings());
+        return true;
     }
 
     @Override

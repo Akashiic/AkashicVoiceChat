@@ -65,6 +65,10 @@ final class GatewayUdpServerIntegrationTest {
                 assertEquals(0xFFFF_FFFFL, mic.sequence);
                 assertArrayEquals(micOpus, mic.opus);
                 assertNull(listener.micFrames.poll(200, TimeUnit.MILLISECONDS), "Replay was accepted twice");
+                GatewayUdpSnapshot afterReplay = server.snapshot();
+                assertEquals(1L, afterReplay.micFramesAccepted());
+                assertTrue(afterReplay.encryptedRejected() >= 1L, "Replay rejection was not observable");
+                assertEquals(1, afterReplay.activeSessions());
 
                 UUID svcSender = UUID.randomUUID();
                 byte[] downlinkOpus = new byte[] {7, 8, 9, 10};
@@ -85,12 +89,17 @@ final class GatewayUdpServerIntegrationTest {
                 assertTrue(sound.isWhispering());
                 assertArrayEquals(downlinkOpus,
                     Arrays.copyOfRange(sound.opusData, sound.opusOffset, sound.opusOffset + sound.opusLength));
+                assertEquals(1L, server.snapshot().soundFramesSent());
 
                 sendDisconnect(client, clientCrypto);
                 assertTrue(listener.disconnected.await(2, TimeUnit.SECONDS));
                 assertEquals(proxyPlayerId, listener.disconnectedProxyPlayerId);
                 assertEquals("lobby", listener.disconnectedBackendName);
                 assertEquals(grant.voiceIdentity(), listener.disconnectedVoiceIdentity);
+                GatewayUdpSnapshot afterDisconnect = server.snapshot();
+                assertEquals(0, afterDisconnect.activeSessions());
+                assertEquals(1L, afterDisconnect.sessionsOpened());
+                assertEquals(1L, afterDisconnect.sessionsClosed());
                 assertTrue(listener.errors.isEmpty(), "Gateway reported unexpected errors: " + listener.errors);
             } finally {
                 if (clientCrypto != null) clientCrypto.close();

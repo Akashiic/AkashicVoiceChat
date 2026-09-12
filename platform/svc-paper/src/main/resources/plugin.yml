@@ -5,3 +5,12 @@ api-version: '1.21'
 depend: [voicechat]
 authors: [RedeAkashic]
 description: Akashic Voice to Simple Voice Chat interoperability adapter
+commands:
+  avbridge:
+    description: Show Akashic Voice SVC bridge health
+    usage: /avbridge status
+    permission: akashicvoice.bridge.status
+permissions:
+  akashicvoice.bridge.status:
+    description: View Akashic Voice bridge diagnostics
+    default: op

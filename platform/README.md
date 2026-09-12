@@ -46,3 +46,9 @@ agent-psk.forbidden-1.base64=<forbidden-only-secret>
 ```
 
 The Paper bridge for `backend-id: lobby` must receive only the value from `agent-psk.lobby.base64` in its `gateway.psk-base64` setting. A backend PSK must never be copied to another backend. Legacy single-key configs are migrated automatically only when exactly one backend is allowed; a legacy global key with multiple backends is rejected.
+## Homologation diagnostics
+
+- Velocity: `/avgateway status` (permission `akashicvoice.gateway.status`). Shows runtime state, UDP/agent ports, backend route readiness, active/pending sessions, accepted MIC/downlink/reset counters and aggregate reject counters. It never prints player identities, bootstrap secrets, nonces or PSKs.
+- Paper lobby: `/avbridge status` (permission `akashicvoice.bridge.status`, default OP). Shows Gateway connectivity, SVC API binding, desired managed players, active bridge sessions and identity-binding count.
+
+Use both commands together during live tests: if the Gateway route is `UP` but the Paper bridge reports `DISCONNECTED`, investigate the agent link/PSK; if both are healthy but `micIn` does not rise, investigate client bootstrap/UDP; if `micIn` rises but active Paper sessions stay at zero, investigate local player/SVC binding.

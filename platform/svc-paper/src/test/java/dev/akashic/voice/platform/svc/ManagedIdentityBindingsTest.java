@@ -15,11 +15,13 @@ class ManagedIdentityBindingsTest {
 
         assertNotEquals(proxyId, localId);
         assertTrue(bindings.bind(proxyId, localId));
+        assertEquals(1, bindings.size());
         assertTrue(bindings.isManagedLocal(localId));
         assertEquals(proxyId, bindings.proxyForLocal(localId));
 
         bindings.unbind(proxyId, localId);
         assertFalse(bindings.isManagedLocal(localId));
+        assertEquals(0, bindings.size());
         assertNull(bindings.proxyForLocal(localId));
     }
     @Test

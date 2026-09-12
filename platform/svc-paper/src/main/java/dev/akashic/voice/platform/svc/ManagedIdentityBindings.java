@@ -25,6 +25,10 @@ final class ManagedIdentityBindings {
         return localToProxy.get(localPlayerId);
     }
 
+    int size() {
+        return localToProxy.size();
+    }
+
     void clear() {
         localToProxy.clear();
     }

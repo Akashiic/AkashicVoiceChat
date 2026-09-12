@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 
 final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listener, AutoCloseable {
@@ -23,12 +25,14 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     private final GatewayUdpServer udp;
     private final AgentHub agents;
     private final Listener listener;
+    private final Set<String> configuredBackends;
     private volatile boolean running;
 
     GatewayRuntime(int udpPort, InetSocketAddress agentBind, Map<String, byte[]> agentPsks,
                    BootstrapSessionRegistry bootstrapSessions, Listener listener) {
         this.bootstrapSessions = Objects.requireNonNull(bootstrapSessions, "bootstrapSessions");
         this.listener = Objects.requireNonNull(listener, "listener");
+        this.configuredBackends = Set.copyOf(Objects.requireNonNull(agentPsks, "agentPsks").keySet());
         this.udp = new GatewayUdpServer(udpPort, bootstrapSessions, this);
         this.agents = new AgentHub(agentBind, agentPsks, routes, this);
     }
@@ -65,6 +69,21 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     int agentPort() {
         return agents.localPort();
     }
+
+    GatewayStatusSnapshot statusSnapshot() {
+        GatewayUdpSnapshot metrics = udp.snapshot();
+        TreeMap<String, Boolean> backendRoutes = new TreeMap<>();
+        for (String backend : configuredBackends) {
+            backendRoutes.put(backend, routes.isReady(backend));
+        }
+        return new GatewayStatusSnapshot(
+            running, udp.localPort(), agents.localPort(),
+            metrics.activeSessions(), metrics.pendingHandshakes(), backendRoutes,
+            metrics.helloRateLimited(), metrics.mediaRateLimited(), metrics.encryptedRejected(),
+            metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.soundResetsSent(),
+            metrics.sessionsOpened(), metrics.sessionsClosed());
+    }
+
     void disconnectProxyPlayer(UUID proxyPlayerId) {
         udp.disconnectProxyPlayer(proxyPlayerId);
         bootstrapSessions.invalidate(proxyPlayerId);

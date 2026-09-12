@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 final class GatewayUdpServer implements AutoCloseable {
     private static final int MAX_DATAGRAM_BYTES = 1500;
@@ -53,6 +54,14 @@ final class GatewayUdpServer implements AutoCloseable {
     private final Map<UUID, GatewayVoiceConnection> byVoiceIdentity = new ConcurrentHashMap<>();
     private final Map<UUID, GatewayVoiceConnection> byProxyPlayer = new ConcurrentHashMap<>();
     private final Map<SocketAddress, GatewayVoiceConnection> byAddress = new ConcurrentHashMap<>();
+    private final AtomicLong helloRateLimited = new AtomicLong();
+    private final AtomicLong mediaRateLimited = new AtomicLong();
+    private final AtomicLong encryptedRejected = new AtomicLong();
+    private final AtomicLong micFramesAccepted = new AtomicLong();
+    private final AtomicLong soundFramesSent = new AtomicLong();
+    private final AtomicLong soundResetsSent = new AtomicLong();
+    private final AtomicLong sessionsOpened = new AtomicLong();
+    private final AtomicLong sessionsClosed = new AtomicLong();
 
     private DatagramSocket socket;
     private Thread receiveThread;
@@ -85,6 +94,18 @@ final class GatewayUdpServer implements AutoCloseable {
 
     int connectionCount() {
         return byVoiceIdentity.size();
+    }
+
+    GatewayUdpSnapshot snapshot() {
+        final int pending;
+        synchronized (pendingLock) {
+            pending = pendingHandshakes.size();
+        }
+        return new GatewayUdpSnapshot(
+            byVoiceIdentity.size(), pending,
+            helloRateLimited.get(), mediaRateLimited.get(), encryptedRejected.get(),
+            micFramesAccepted.get(), soundFramesSent.get(), soundResetsSent.get(),
+            sessionsOpened.get(), sessionsClosed.get());
     }
 
     boolean hasConnection(UUID proxyPlayerId, String backendName) {
@@ -143,7 +164,10 @@ final class GatewayUdpServer implements AutoCloseable {
 
         if (outerType == WireProtocol.OUTER_HELLO) {
             if (datagram.remaining() != HandshakePackets.HELLO_BYTES) return;
-            if (!handshakeRateLimiter.allow(remote)) return;
+            if (!handshakeRateLimiter.allow(remote)) {
+                helloRateLimited.incrementAndGet();
+                return;
+            }
             HandshakePackets.Hello hello = HandshakePackets.readHello(datagram);
             if (hello != null) handleHello(hello, remote);
             return;
@@ -156,9 +180,17 @@ final class GatewayUdpServer implements AutoCloseable {
         if (outerType != WireProtocol.OUTER_ENCRYPTED) return;
 
         GatewayVoiceConnection connection = byAddress.get(remote);
-        if (connection == null || !connection.allowInboundDatagram(packet.getLength())) return;
+        if (connection == null) return;
+        if (!connection.allowInboundDatagram(packet.getLength())) {
+            mediaRateLimited.incrementAndGet();
+            return;
+        }
         ByteBuffer plain = connection.open(datagram);
-        if (plain != null) handleInner(plain, connection);
+        if (plain != null) {
+            handleInner(plain, connection);
+        } else {
+            encryptedRejected.incrementAndGet();
+        }
     }
 
     private void handleInner(ByteBuffer buf, GatewayVoiceConnection connection) {
@@ -298,16 +330,19 @@ final class GatewayUdpServer implements AutoCloseable {
     }
 
     private void notifyConnected(GatewayVoiceConnection connection) {
+        sessionsOpened.incrementAndGet();
         safeListener(() -> listener.onConnected(
             connection.proxyPlayerId, connection.backendName, connection.voiceIdentity));
     }
 
     private void notifyDisconnected(GatewayVoiceConnection connection) {
+        sessionsClosed.incrementAndGet();
         safeListener(() -> listener.onDisconnected(
             connection.proxyPlayerId, connection.backendName, connection.voiceIdentity));
     }
 
     private void notifyMicFrame(GatewayVoiceConnection connection, long sequence, byte[] opus) {
+        micFramesAccepted.incrementAndGet();
         safeListener(() -> listener.onMicFrame(
             connection.proxyPlayerId, connection.backendName, connection.voiceIdentity, sequence, opus));
     }
@@ -364,14 +399,18 @@ final class GatewayUdpServer implements AutoCloseable {
             spatial ? delivery.distance() : 0F,
             (int) delivery.sequence(),
             delivery.opusUnsafe());
-        return connection.sendSoundV2(socket, packet);
+        boolean sent = connection.sendSoundV2(socket, packet);
+        if (sent) soundFramesSent.incrementAndGet();
+        return sent;
     }
 
     boolean sendBridgeReset(String backendName, BridgeStreamReset reset) {
         if (backendName == null || reset == null) return false;
         GatewayVoiceConnection connection = byProxyPlayer.get(reset.recipientId());
         if (connection == null || !backendName.equals(connection.backendName)) return false;
-        return connection.sendSoundReset(socket, reset.senderId());
+        boolean sent = connection.sendSoundReset(socket, reset.senderId());
+        if (sent) soundResetsSent.incrementAndGet();
+        return sent;
     }
 
     void disconnectBackend(String backendName) {

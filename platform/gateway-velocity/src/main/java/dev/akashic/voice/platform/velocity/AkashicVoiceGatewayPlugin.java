@@ -1,6 +1,7 @@
 package dev.akashic.voice.platform.velocity;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
@@ -36,6 +37,7 @@ public final class AkashicVoiceGatewayPlugin implements GatewayRuntime.Listener 
     private final Set<UUID> akashicClients = ConcurrentHashMap.newKeySet();
 
     private LegacyChannelIdentifier channel;
+    private CommandMeta statusCommandMeta;
     private volatile GatewayRuntime runtime;
 
     @Inject
@@ -49,6 +51,8 @@ public final class AkashicVoiceGatewayPlugin implements GatewayRuntime.Listener 
     public void onInitialize(ProxyInitializeEvent event) {
         channel = new LegacyChannelIdentifier(LegacyForgeBootstrapCodec.CHANNEL);
         proxy.getChannelRegistrar().register(channel);
+        statusCommandMeta = proxy.getCommandManager().metaBuilder("avgateway").plugin(this).build();
+        proxy.getCommandManager().register(statusCommandMeta, new GatewayStatusCommand(this::statusSnapshot));
         try (GatewaySettings settings = GatewaySettings.load(dataDirectory)) {
             Map<String, byte[]> psks = settings.agentPsksCopy();
             try {
@@ -134,7 +138,16 @@ public final class AkashicVoiceGatewayPlugin implements GatewayRuntime.Listener 
             proxy.getChannelRegistrar().unregister(channel);
             channel = null;
         }
+        if (statusCommandMeta != null) {
+            proxy.getCommandManager().unregister(statusCommandMeta);
+            statusCommandMeta = null;
+        }
         bootstrapSessions.close();
+    }
+
+    private GatewayStatusSnapshot statusSnapshot() {
+        GatewayRuntime current = runtime;
+        return current == null ? null : current.statusSnapshot();
     }
 
     @Override
