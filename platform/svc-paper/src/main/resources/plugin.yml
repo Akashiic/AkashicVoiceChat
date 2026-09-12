@@ -1,0 +1,7 @@
+name: AkashicVoiceBridge
+version: 0.1.0-SNAPSHOT
+main: dev.akashic.voice.platform.svc.AkashicVoiceBridgePlugin
+api-version: '1.21'
+depend: [voicechat]
+authors: [RedeAkashic]
+description: Akashic Voice to Simple Voice Chat interoperability adapter

@@ -1,0 +1,7 @@
+# Logical backend ID announced by the Gateway for players currently in this Lobby.
+backend-id: lobby
+
+# Gateway transport is intentionally disabled in the first Gate 6 compile milestone.
+# A secure transport module will replace the disconnected link before integration testing.
+gateway:
+  enabled: false
