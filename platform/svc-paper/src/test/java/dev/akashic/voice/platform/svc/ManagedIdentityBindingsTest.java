@@ -17,6 +17,8 @@ class ManagedIdentityBindingsTest {
         assertTrue(bindings.bind(proxyId, localId));
         assertEquals(1, bindings.size());
         assertTrue(bindings.isManagedLocal(localId));
+        assertTrue(bindings.isSameManagedPlayer(proxyId, localId));
+        assertFalse(bindings.isSameManagedPlayer(UUID.randomUUID(), localId));
         assertEquals(proxyId, bindings.proxyForLocal(localId));
 
         bindings.unbind(proxyId, localId);

@@ -21,6 +21,11 @@ final class ManagedIdentityBindings {
         return localPlayerId != null && localToProxy.containsKey(localPlayerId);
     }
 
+    boolean isSameManagedPlayer(UUID proxyPlayerId, UUID localPlayerId) {
+        if (proxyPlayerId == null || localPlayerId == null) return false;
+        return proxyPlayerId.equals(localToProxy.get(localPlayerId));
+    }
+
     UUID proxyForLocal(UUID localPlayerId) {
         return localToProxy.get(localPlayerId);
     }
