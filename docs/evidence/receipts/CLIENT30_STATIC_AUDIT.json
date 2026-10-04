@@ -1,0 +1,105 @@
+{
+  "state": "PASS",
+  "checks": [
+    {
+      "name": "exact_scope",
+      "pass": true
+    },
+    {
+      "name": "snapshot_no_uuid",
+      "pass": true
+    },
+    {
+      "name": "snapshot_no_byte_array",
+      "pass": true
+    },
+    {
+      "name": "snapshot_no_endpoint",
+      "pass": true
+    },
+    {
+      "name": "snapshot_no_crypto",
+      "pass": true
+    },
+    {
+      "name": "snapshot_no_secret_words",
+      "pass": true
+    },
+    {
+      "name": "hub_uses_aggregate_snapshot",
+      "pass": true
+    },
+    {
+      "name": "hub_no_identity_render",
+      "pass": true
+    },
+    {
+      "name": "hub_drop_warning",
+      "pass": true
+    },
+    {
+      "name": "en_US_offline_unique",
+      "pass": true
+    },
+    {
+      "name": "en_US_connecting_unique",
+      "pass": true
+    },
+    {
+      "name": "en_US_refreshing_unique",
+      "pass": true
+    },
+    {
+      "name": "en_US_online_unique",
+      "pass": true
+    },
+    {
+      "name": "pt_BR_offline_unique",
+      "pass": true
+    },
+    {
+      "name": "pt_BR_connecting_unique",
+      "pass": true
+    },
+    {
+      "name": "pt_BR_refreshing_unique",
+      "pass": true
+    },
+    {
+      "name": "pt_BR_online_unique",
+      "pass": true
+    },
+    {
+      "name": "de_DE_offline_unique",
+      "pass": true
+    },
+    {
+      "name": "de_DE_connecting_unique",
+      "pass": true
+    },
+    {
+      "name": "de_DE_refreshing_unique",
+      "pass": true
+    },
+    {
+      "name": "de_DE_online_unique",
+      "pass": true
+    },
+    {
+      "name": "no_new_status_logging",
+      "pass": true
+    }
+  ],
+  "passed": 22,
+  "failed": 0,
+  "diff": [
+    "src/main/java/dev/akashic/voice/client/gui/GuiVoiceChatHub.java",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClientHolder.java",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClientStatusSnapshot.java",
+    "src/main/resources/assets/akashicvoice/lang/de_DE.lang",
+    "src/main/resources/assets/akashicvoice/lang/en_US.lang",
+    "src/main/resources/assets/akashicvoice/lang/pt_BR.lang",
+    "tools/qa/ClientDiagnosticsSmoke.java"
+  ]
+}

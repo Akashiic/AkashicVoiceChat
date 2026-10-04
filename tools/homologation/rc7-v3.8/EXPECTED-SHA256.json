@@ -1,0 +1,22 @@
+{
+  "checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "release_dir": "../release",
+  "artifacts": {
+    "forge": {
+      "file": "akashicvoice-forge-1.7.10.jar",
+      "sha256": "c0f9d86cb331598c2e0e7c9d7ebf6091fffee18bc94bbdaf6bbf9cbe6d2eb081"
+    },
+    "gateway": {
+      "file": "akashicvoice-gateway-velocity.jar",
+      "sha256": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2"
+    },
+    "paper": {
+      "file": "akashicvoice-svc-paper.jar",
+      "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb"
+    },
+    "addon_api": {
+      "file": "akashicvoice-addon-api.jar",
+      "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347"
+    }
+  }
+}

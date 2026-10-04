@@ -1,0 +1,12 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "bundle": "akashic-voice-rc5-homologation-20260917.zip",
+  "bundle_sha256": "8e26c606cadd06930e50001be08a680cb0b35754908216a70e0c779bda65d6b9",
+  "bundle_bytes": 3392953,
+  "checks": 12,
+  "failed": [],
+  "release_files": 8,
+  "homologation_files": 6,
+  "no_deployment_performed": true
+}

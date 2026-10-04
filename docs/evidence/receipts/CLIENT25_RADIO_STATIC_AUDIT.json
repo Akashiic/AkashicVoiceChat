@@ -1,0 +1,29 @@
+{
+  "state": "PASS",
+  "passed": 22,
+  "failed": [],
+  "checks": {
+    "bounded_channels": true,
+    "bounded_members": true,
+    "bounded_players": true,
+    "immutable_channel_snapshot": true,
+    "immutable_player_snapshot": true,
+    "hotpath_snapshot_lookup": true,
+    "hotpath_no_hashset": true,
+    "hotpath_no_peer_copy": true,
+    "hotpath_no_addon_callback": true,
+    "group_precedes_radio": true,
+    "members_lookup_no_copy": true,
+    "svc_delivery_suppressed": true,
+    "svc_reset_suppressed": true,
+    "radio_authenticates_source": true,
+    "radio_non_spatial": true,
+    "radio_metric_separate": true,
+    "pair_reset": true,
+    "backend_transfer_preserves_tuning": true,
+    "proxy_disconnect_removes_tuning": true,
+    "permission_prune": true,
+    "command_permission": true,
+    "radio_documented": true
+  }
+}

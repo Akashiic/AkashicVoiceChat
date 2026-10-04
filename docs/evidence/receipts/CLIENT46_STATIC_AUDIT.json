@@ -1,0 +1,28 @@
+{
+  "state": "PASS",
+  "checks": {
+    "agent_stops_direct_udp": true,
+    "direct_stops_agent": true,
+    "shutdown_stops_both": true,
+    "bootstrap_fail_closed": true,
+    "psk_required": true,
+    "psk_exact_32": true,
+    "agent_constructor_checks_psk": true,
+    "psk_zeroized_on_close": true,
+    "bounded_control_queue": true,
+    "bounded_media_queue": true,
+    "media_drops_oldest": true,
+    "control_precedes_media": true,
+    "channel_receive_buffer_zeroized": true,
+    "runtime_timeout_bounded": true,
+    "heartbeat_on_timeout": true,
+    "reconnect_backoff_bounded": true,
+    "logout_identity_cleanup": true,
+    "tick_identity_refresh": true,
+    "debug_no_psk_value": true,
+    "config_declares_agent_mode": true
+  },
+  "passed": 20,
+  "total": 20,
+  "failed": []
+}

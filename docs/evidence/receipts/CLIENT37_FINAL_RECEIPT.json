@@ -1,0 +1,22 @@
+{
+  "checkpoint": "AV-MULTIHOP-BACKEND-SOAK-20260915-37",
+  "kind": "QA-only multi-hop transfer qualification over CLIENT36 corrected artifact baseline",
+  "baseline": "reviewed-client36-20260915",
+  "candidate": "integrated-client37",
+  "production_source_diff_count": 0,
+  "test_delta": ["platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewaySessionRestartSoakTest.java"],
+  "focused_soak": {
+    "restart_repetitions": 6,
+    "single_transfer_repetitions": 6,
+    "multihop_repetitions": 3,
+    "hops_per_multihop_repetition": 12,
+    "multihop_transfers_total": 36,
+    "routes": ["lobby", "atm10-normal", "forbidden"],
+    "stale_udp_rejected_before_each_fresh_handshake": true,
+    "active_udp_sessions_between_grant_and_handshake": 0,
+    "single_active_voice_route_after_each_hop": true
+  },
+  "platform": {"state": "PASS", "tests": 170, "suites": 38, "failures": 0, "errors": 0, "skipped": 0, "tasks": 38, "executed": 37},
+  "production_artifacts": "inherited from clean CLIENT36 because production hashes are identical",
+  "progress": {"estimate_percent": 90, "judgment_band": [86, 95]}
+}

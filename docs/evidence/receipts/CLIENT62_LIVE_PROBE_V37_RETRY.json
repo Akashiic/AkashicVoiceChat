@@ -1,0 +1,42 @@
+{
+    "schema_version":  1,
+    "state":  "PASS_RUNTIME_PREREQUISITES",
+    "checkpoint":  "AV-LIVE-CLIENT-PROBE-V37",
+    "observed_at_utc":  "2026-09-17T22:09:26.5718240Z",
+    "artifact":  {
+                     "sha256":  "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+                     "expected_sha256":  "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+                     "matches":  true
+                 },
+    "process":  {
+                    "pid":  9616,
+                    "name":  "javaw",
+                    "start_time":  "2026-09-17T18:05:41.9941734-03:00",
+                    "window_title":  "Minecraft 1.7.10"
+                },
+    "threads":  {
+                    "receive":  true,
+                    "maintenance":  true,
+                    "audio":  true,
+                    "microphone":  true,
+                    "datagram_receive":  true,
+                    "openal_capture":  true
+                },
+    "authenticated_runtime_lifecycle":  true,
+    "log_health":  {
+                       "supplied":  true,
+                       "exists":  true,
+                       "voice_timeout_matches":  0,
+                       "microphone_unavailable_matches":  0,
+                       "packet_handling_failure_matches":  0,
+                       "socket_error_matches":  0
+                   },
+    "remote_media_proven":  false,
+    "two_client_listening_proven":  false,
+    "controlled_backend_restart_proven":  false,
+    "physical_acoustic_quality_proven":  false,
+    "mobile_real_device_proven":  false,
+    "production_canary_proven":  false,
+    "stable_release_approved":  false,
+    "note":  "This probe reads artifact/process/thread/log metadata only. It does not inspect audio payloads or secrets."
+}

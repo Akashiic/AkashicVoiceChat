@@ -1,0 +1,20 @@
+{
+  "checkpoint": "AV-CANARY-INSTALL-PREFLIGHT-20260917-51",
+  "state": "FULLY_GATED_INSTALL_ROLLBACK_TOOLING_NOT_DEPLOYED",
+  "release_under_test": "release-candidate-20260917-rc5",
+  "client50_audit": "PASS",
+  "install_contracts": "10/10 PASS",
+  "partial_activation_recovery": "7/7 PASS",
+  "static_audit": "33/33 PASS",
+  "sealed_rc5_verify": "4/4 PASS",
+  "bundle_v3_1": "33/33 PASS",
+  "bundle_smoke": "8/8 PASS",
+  "bundle": "akashic-voice-rc5-homologation-v3.1-20260917.zip",
+  "bundle_sha256": "16493c0b72001e6860b04f7252d126e115122bf1459b4aca3d69bc5a7282d379",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "live_canary_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 97,
+  "progress_judgment_band": [94, 99]
+}

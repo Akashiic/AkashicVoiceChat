@@ -1,0 +1,74 @@
+{
+  "checkpoint": "AV-PREMIUM-COMPLETION-RC6-20260917-58",
+  "state": "FULLY_AUTOMATED_GATED_RELEASE_CANDIDATE_NOT_DEPLOYED",
+  "candidate": "integrated-client58-premium-completion",
+  "release_candidate": "release-candidate-20260917-rc6",
+  "base_release_candidate": "release-candidate-20260917-rc5",
+  "stable_release_approved": false,
+  "production_deployed": false,
+  "production_delta_files_from_rc5": 23,
+  "wire_changed": false,
+  "gateway_source_changed": false,
+  "paper_source_changed": false,
+  "addon_api_source_changed": false,
+  "features": {
+    "premium_3d_voice_engine": "AUTOMATED_ENGINEERING_COMPLETE_LIVE_LISTENING_OPEN",
+    "environmental_acoustics": "AUTOMATED_ENGINEERING_COMPLETE_PHYSICAL_LISTENING_OPEN",
+    "nametag_talking_suffix": "AUTOMATED_ENGINEERING_COMPLETE_REAL_GAME_VISUAL_ACCEPTANCE_OPEN",
+    "speaker_hotplug_recovery": "AUTOMATED_ENGINEERING_COMPLETE_PHYSICAL_UNPLUG_REPLUG_OPEN",
+    "ptt_visual_latency": "AUTOMATED_ENGINEERING_COMPLETE",
+    "remote_talking_indicator": "FIRST_AUTHENTICATED_AUDIO_FRAME_BY_DESIGN"
+  },
+  "automated_gates": {
+    "spotless": "PASS",
+    "forge_full_build": {"state": "PASS", "executed_tasks": 27},
+    "java8_full_matrix": {"state": "PASS", "compiled_sources": 181, "commands": 52},
+    "platform": {
+      "state": "PASS",
+      "tests": 186,
+      "suites": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_contract_mutations": {"state": "PASS", "detected": 6, "total": 6},
+    "compiled_mutations": {"state": "PASS", "detected": 2, "total": 2},
+    "jar_origin_replay": {
+      "state": "PASS",
+      "production_classes_verified_from_final_jar": 6,
+      "qa_replays": 4
+    },
+    "rc6_seal_preflight": {"state": "PASS", "checks": 33, "passed": 33},
+    "rc6_independent_verify": {"state": "PASS", "checks": 57, "passed": 57},
+    "production_gap_markers": 0
+  },
+  "forge_artifact": {
+    "file": "akashicvoice-forge-1.7.10.jar",
+    "sha256": "aaa7294d6266cabba61fff1c4e3659998944efabdac5157b3f850b4201a36a07",
+    "bytes": 3210751,
+    "classes": 319,
+    "class_major": 52,
+    "jni_classes": 5,
+    "native_binaries": 7
+  },
+  "unchanged_artifacts": {
+    "gateway_sha256": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2",
+    "paper_sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+    "addon_api_sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347"
+  },
+  "real_output_probe": {
+    "java": "Java 8",
+    "detected_default_output": "Fones de ouvido (AirPods Pro Stereo)",
+    "openal_efx_supported": true,
+    "physical_disconnect_reconnect_proven": false
+  },
+  "open_live_gates": [
+    "real AirPods/headset disconnect-reconnect during live Minecraft voice playback",
+    "two real clients/WAN audible speech and backend transfer/restart recovery",
+    "physical cave/room/underwater acoustic listening review and AGC/limiter decision",
+    "real Pojav/Amethyst device input/output, thermal and battery validation",
+    "controlled production canary and operator/player acceptance"
+  ],
+  "progress_estimate_percent_expanded_scope": 97,
+  "progress_judgment_band": [95, 98.5]
+}

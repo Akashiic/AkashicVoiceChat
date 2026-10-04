@@ -1,0 +1,25 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-PREMIUM-LIVE-ACCEPTANCE-V38-20260917-63",
+  "release_checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "variant": "CANARY_TOOLING_V3_8_PRESEAL_QA",
+  "synthetic_evaluator_pass": true,
+  "new_gate_negative_controls": {
+    "hotplug": "physical_output_hotplug_recovery",
+    "environment": "environmental_voice_acoustics",
+    "nametag": "nametag_talking_suffix_visual",
+    "ptt": "ptt_indicator_latency_visual",
+    "agc": "physical_acoustic_quality"
+  },
+  "probe_v38": {
+    "synthetic_pass": "PASS_RUNTIME_PREREQUISITES",
+    "negative_controls": [
+      "HOLD_ARTIFACT_MISMATCH",
+      "HOLD_RUNTIME_INCOMPLETE"
+    ],
+    "secret_copy_count": 0
+  },
+  "live_evidence_proven": false,
+  "deployment_performed": false,
+  "stable_release_approved": false
+}

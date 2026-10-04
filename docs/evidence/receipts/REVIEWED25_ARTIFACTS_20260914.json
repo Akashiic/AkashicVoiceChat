@@ -1,0 +1,37 @@
+{
+  "MOD": {
+    "path": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\reviewed-client25-20260914\\build\\libs\\akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty-dev.jar",
+    "sha256": "8d2b04a191ee8415d77c928c6a4e3b9491e7ce632d3167fdea9d7ca592276936",
+    "class_count": 295,
+    "majors": [
+      52
+    ]
+  },
+  "API": {
+    "path": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\reviewed-client25-20260914\\platform\\addon-api\\build\\libs\\addon-api-0.1.0-SNAPSHOT.jar",
+    "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+    "class_count": 9,
+    "majors": [
+      65
+    ]
+  },
+  "GATEWAY": {
+    "path": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\reviewed-client25-20260914\\platform\\gateway-velocity\\build\\libs\\gateway-velocity-0.1.0-SNAPSHOT.jar",
+    "sha256": "8dd7a2ee5285ec66b300f257e71e660cc3441ed98837b2cbcb176021cab373ad",
+    "class_count": 146,
+    "majors": [
+      52,
+      65,
+      69
+    ]
+  },
+  "PAPER": {
+    "path": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\reviewed-client25-20260914\\platform\\svc-paper\\build\\libs\\svc-paper-0.1.0-SNAPSHOT.jar",
+    "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+    "class_count": 84,
+    "majors": [
+      52,
+      65
+    ]
+  }
+}

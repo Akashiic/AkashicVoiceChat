@@ -1,0 +1,68 @@
+{
+  "state": "PASS",
+  "candidate": "integrated-client58-premium-completion",
+  "mutations": 6,
+  "detected": 6,
+  "results": [
+    {
+      "mutation": "nametag_sneak_range",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.nametagContract(Client58SourceContractSmoke.java:23)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:13)"
+      ]
+    },
+    {
+      "mutation": "ptt_immediate",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.pttContract(Client58SourceContractSmoke.java:41)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:14)"
+      ]
+    },
+    {
+      "mutation": "environment_reverb",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.acousticsContract(Client58SourceContractSmoke.java:49)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:15)"
+      ]
+    },
+    {
+      "mutation": "disconnect_probe",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:60)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    },
+    {
+      "mutation": "shared_quiesce_barrier",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:62)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    },
+    {
+      "mutation": "minecraft_sound_reload",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:77)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:66)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    }
+  ]
+}

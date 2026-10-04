@@ -1,0 +1,44 @@
+{
+  "checkpoint": "AV-BACKEND-TRANSFER-QUALIFICATION-20260915-36",
+  "kind": "QA qualification plus clean artifact-chain rebuild; no production source delta",
+  "baseline": "integrated-client35",
+  "reviewed_candidate": "reviewed-client36-20260915",
+  "source_diff": {
+    "production_changed": [],
+    "test_changed": ["platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewaySessionRestartSoakTest.java"]
+  },
+  "session_lifecycle": {
+    "restart_repetitions": 6,
+    "backend_transfer_repetitions": 6,
+    "transfer_route": "lobby -> forbidden",
+    "old_udp_session_revoked_before_fresh_handshake": true,
+    "old_authenticated_packet_rejected": true,
+    "new_handshake_succeeds": true,
+    "agent_session_leak_detected": false
+  },
+  "qa": {
+    "platform": {"state": "PASS", "tests": 167, "suites": 38, "failures": 0, "errors": 0, "skipped": 0},
+    "forge_root": {"state": "PASS", "tasks": 35, "executed": 35},
+    "java8": {"state": "PASS", "compiled_sources": 161, "commands": 44, "active_changes": 0, "candidate_changes": 0},
+    "dev_jar_runtime": {"state": "PASS", "executions": 44}
+  },
+  "artifacts": {
+    "dev_jar_sha256": "45eaff4062dce5e09d86331123e5c643480b5e1b3c52b066f4f77ce881f04986",
+    "mod_jar_sha256": "e38cfe33d7e722a885425448488ede80807d16a0ea5938631a80f9ddadb47494",
+    "gateway_jar_sha256": "1774d275841dfefd36f4429bcbd4e3b98e51fc45cf74821f5a8c3e3ba46d83d7",
+    "paper_jar_sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+    "distribution_inspection": {"state": "PASS", "java8_classes": 296, "jni": 5, "natives": 7, "notices": 5, "license_inventory": 33, "qa_classes_in_mod": 0}
+  },
+  "artifact_chain_note": {
+    "historical_gateway_and_paper_hashes_are_not_reused": true,
+    "reason": "clean rebuild from production-identical sources exposed stale historical platform artifacts; reviewed CLIENT36 is the corrected artifact reference",
+    "source_change_required": false
+  },
+  "scope_boundaries": {
+    "active_source_promoted": false,
+    "production_deployed": false,
+    "physical_audio_tested": false,
+    "real_mobile_device_tested": false
+  },
+  "progress": {"estimate_percent": 90, "judgment_band": [86, 95]}
+}

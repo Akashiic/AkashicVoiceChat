@@ -1,0 +1,18 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-INSTALL-PREFLIGHT-20260917-51",
+  "bundle": "akashic-voice-rc5-homologation-v3.1-20260917.zip",
+  "bundle_sha256": "16493c0b72001e6860b04f7252d126e115122bf1459b4aca3d69bc5a7282d379",
+  "checks": 8,
+  "passed": 8,
+  "details": [
+    "bundle extracts successfully",
+    "relative release path resolves sealed RC5",
+    "rollback prepares/verifies from extracted kit",
+    "dry-run writes nothing",
+    "explicit install reaches sealed RC5 hashes",
+    "verify-install passes on installed synthetic targets",
+    "rollback restores original hashes",
+    "configuration remains byte-identical"
+  ]
+}

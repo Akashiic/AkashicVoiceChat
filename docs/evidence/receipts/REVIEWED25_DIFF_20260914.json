@@ -1,0 +1,19 @@
+{
+  "state": "PASS",
+  "changed": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/AkashicVoiceGatewayPlugin.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRuntime.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayStatusCommand.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayStatusSnapshot.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpSnapshot.java"
+  ],
+  "added": [
+    "docs/RADIO.md",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRadioCommand.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRadioDirectory.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayRadioDirectoryTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayRadioMediaIntegrationTest.java"
+  ],
+  "removed": []
+}

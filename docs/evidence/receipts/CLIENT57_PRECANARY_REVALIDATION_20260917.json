@@ -1,0 +1,22 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-PRECANARY-REVALIDATION-20260917-57",
+  "release_candidate": "release-candidate-20260917-rc5",
+  "production_artifacts_changed": false,
+  "deployment_performed": false,
+  "live_canary_performed": false,
+  "rc5_artifact_hashes": {
+    "forge": "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+    "gateway": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2",
+    "paper": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+    "addon_api": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347"
+  },
+  "all_release_hashes_match_manifest": true,
+  "homologation_bundle": "akashic-voice-rc5-homologation-v3.5-20260917.zip",
+  "homologation_bundle_sha256": "fba17150a6586cccb8f27e4571aa4222a9be27e4d99379b3276abf4849aa2e90",
+  "blank_evidence_evaluator_exit": 2,
+  "blank_evidence_decision": "HOLD",
+  "fail_closed_confirmed": true,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99]
+}

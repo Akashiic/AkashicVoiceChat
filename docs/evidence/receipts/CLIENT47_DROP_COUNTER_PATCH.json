@@ -1,0 +1,10 @@
+{
+  "src/main/java/dev/akashic/voice/voice/server/agent/LegacyAgentChannel.java": {
+    "before": "ae5d70eaa520747c47e92355dd19329caf4808766d5437d3336feec30cde8c1e",
+    "after": "9d7679aa71140fd79b6c15adf0b829538c8505ccbd1bae1bc8a2ee8868d0d218"
+  },
+  "src/main/java/dev/akashic/voice/voice/server/agent/LegacyGatewayAgent.java": {
+    "before": "c4d2bd2f7374c64d46676d131c8f0c4928c09ac66bb91a83d4ce190a4baacc81",
+    "after": "2f8b9aa703102322110582a2ddf41db965c50add2d68dc46a9a10c1663200bf8"
+  }
+}

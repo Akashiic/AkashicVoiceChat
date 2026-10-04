@@ -1,0 +1,14 @@
+{
+  "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WireProtocol.java": {
+    "before": "8566bc61b39e3843eb799e2881ca0a2c73d91503b5f19a230982023c59e056f4",
+    "after": "ed34f8c31d508b92d9ed40342a6a163d64cbcb1c7802c9189b9760e40c7a3360"
+  },
+  "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/codec/AudioFormatSpec.java": {
+    "before": "0442307cb3264bc865556795a7c391495be7cab10dd338996e6e24b453bfb177",
+    "after": "ab88778993f83dc7f21482b901a0f74f68c1492b09e4eb70dc01cecc3698be7d"
+  },
+  "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionCrypto.java": {
+    "before": "19248191484ff703ffd58c38bb3624f02ebf89a34e03a15b24e170c5cfd6e449",
+    "after": "d3e2c291c5054416d3f9610111dc28db1a55fa3b377f5597d1541ec0037c6d23"
+  }
+}

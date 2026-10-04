@@ -1,0 +1,60 @@
+{
+  "checkpoint": "AV-TALK-CACHE-BOUNDS-20260915-31",
+  "baseline": "integrated-client30",
+  "candidate": "integrated-client31",
+  "state": "VERIFIED_AUTOMATED",
+  "progress_estimate_percent": 86,
+  "production_delta": [
+    "src/main/java/dev/akashic/voice/voice/client/talk/TalkCache.java"
+  ],
+  "qa_delta": [
+    "tools/qa/TalkCacheBoundedSmoke.java"
+  ],
+  "talkcache_sha256": "88cf831d17f1f95302d929b72e956205190563ac232f584222355c4a75a968f9",
+  "talkcache_smoke_sha256": "a5e7162d9497c85aa316dae3ae12b035b16ad6c58dbcda2dfd1a105dd1d285aa",
+  "java8": {
+    "state": "PASS",
+    "compiled_sources": 161,
+    "executions": 44,
+    "exit_code": 0
+  },
+  "legacy_gradle": {
+    "state": "PASS",
+    "exit_code": 0,
+    "actionable_tasks": 27
+  },
+  "platform_gradle": {
+    "state": "PASS",
+    "exit_code": 0,
+    "actionable_tasks": 31,
+    "junit_suites": 36,
+    "junit_tests": 149,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "packaged": {
+    "state": "PASS",
+    "tests": 44,
+    "jar": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\integrated-client31\\build\\libs\\akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty-dev.jar",
+    "sha256": "0b7e6f69510d615ba347c0372e03b8f897e9fc3bfbd495d3fcd23f160b14aab5"
+  },
+  "mutations": {
+    "state": "PASS",
+    "total": 5,
+    "detected": 5,
+    "source_sha256": "88cf831d17f1f95302d929b72e956205190563ac232f584222355c4a75a968f9"
+  },
+  "active_tree_modified_by_gates": false,
+  "intermediate_failures": [
+    "legacy-final: Spotless rejected one declaration wrapping; no logic/compile failure.",
+    "legacy-final-02: Spotless rejected CRLF introduced by a QA edit helper; source normalized to LF."
+  ],
+  "live_gates": {
+    "native_device_audio": false,
+    "two_real_clients_velocity": false,
+    "paper_svc_live_listener": false,
+    "mobile_real_device": false
+  },
+  "sealed_utc": "2026-09-15T05:33:13.356785+00:00"
+}

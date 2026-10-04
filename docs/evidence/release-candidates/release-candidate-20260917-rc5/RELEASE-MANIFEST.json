@@ -1,0 +1,72 @@
+{
+  "checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "state": "AUDIT_ONLY_NOT_DEPLOYED",
+  "production_sources_modified": false,
+  "artifacts": [
+    {
+      "file": "akashicvoice-forge-1.7.10.jar",
+      "sha256": "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+      "bytes": 3192143,
+      "classes": 309,
+      "class_majors": [
+        52
+      ]
+    },
+    {
+      "file": "akashicvoice-gateway-velocity.jar",
+      "sha256": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2",
+      "bytes": 252653,
+      "classes": 146,
+      "class_majors": [
+        52,
+        65,
+        69
+      ]
+    },
+    {
+      "file": "akashicvoice-svc-paper.jar",
+      "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+      "bytes": 128657,
+      "classes": 84,
+      "class_majors": [
+        52,
+        65
+      ]
+    },
+    {
+      "file": "akashicvoice-addon-api.jar",
+      "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+      "bytes": 7581,
+      "classes": 9,
+      "class_majors": [
+        65
+      ]
+    }
+  ],
+  "source_chain": {
+    "candidate": "integrated-client47-agent-observability",
+    "base_release_candidate": "release-candidate-20260916-rc4",
+    "mode": "sealed from fully gated CLIENT47 build artifacts"
+  },
+  "qualification": [
+    "CLIENT47 focused cumulative drop-counter smoke PASS; 2 channel generations; 88 cumulative drops",
+    "CLIENT47 Forge/root final gate PASS",
+    "CLIENT47 actual Java 8 matrix PASS; 168 sources; 47 commands",
+    "CLIENT47 platform PASS; 186 JUnit / 43 suites / zero failures/errors/skips",
+    "CLIENT47 DEV-JAR origin + drop-counter replay PASS",
+    "CLIENT47 drop-counter mutation sensitivity 2/2",
+    "CLIENT47 Forge distribution inspection PASS; 309 Java8 classes; 5 JNI; 7 natives",
+    "CLIENT46 Legacy Forge Agent Java8 to Velocity AgentHub interoperability PASS"
+  ],
+  "open_live_gates": [
+    "real WAN/two-client listening and production cross-server transfer/restart",
+    "physical microphone/speaker quality and acoustic/AGC validation",
+    "real Pojav/Amethyst devices and thermal/battery validation",
+    "production canary deployment and operator/player feedback"
+  ],
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [
+    92,
+    98
+  ]
+}

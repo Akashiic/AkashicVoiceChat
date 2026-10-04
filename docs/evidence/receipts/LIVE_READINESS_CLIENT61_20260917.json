@@ -1,0 +1,20 @@
+{
+  "state": "READY_FOR_FINAL_LIVE_ACCEPTANCE_NOT_STABLE",
+  "checkpoint": "AV-REAL-ROUTE-RECOVERY-EVIDENCE-20260917-61",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "real_public_secure_bootstrap_and_auth": "PASS",
+  "real_backend_route_rebootstrap": "PASS",
+  "real_transport_timeout_reauthentication": "PASS",
+  "real_client_restart_pre_world_privacy": "PASS",
+  "controlled_backend_process_restart": "HOLD",
+  "remote_media_frame_reception": "HOLD",
+  "two_client_listening": "HOLD",
+  "physical_acoustic_agc": "HOLD",
+  "pojav_real_device": "HOLD",
+  "amethyst_real_device": "HOLD",
+  "production_canary_operator_player_review": "HOLD",
+  "stable_release": false,
+  "production_artifacts_changed": false,
+  "progress_estimate_percent": 99,
+  "progress_judgment_band": [98, 99.5]
+}

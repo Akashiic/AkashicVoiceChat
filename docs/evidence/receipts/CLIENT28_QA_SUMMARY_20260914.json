@@ -1,0 +1,22 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-BOUNDED-DECODER-STREAMS-20260914-28",
+  "candidate": "integrated-client28",
+  "progress_percent": 84,
+  "progress_judgment_band": [79, 89],
+  "production_delta_files": 1,
+  "qa_delta_files": 2,
+  "decoder_stream_cap": 256,
+  "actual_java8": {"state": "PASS", "compiled_sources": 158, "runner_steps": 42},
+  "platform_junit": {"tests": 149, "suites": 36, "failures_errors": 0, "skipped": 0},
+  "packaged": {"state": "PASS", "executions": 42,
+    "dev_sha256": "649cc11f1971c8ba5690d46699b3dbfa41261ab15817354cc49fe6382e751ffd"},
+  "mutations": {"state": "PASS", "detected": 5, "total": 5},
+  "distribution": {"classes_java8": 295, "jni": 5, "natives": 7},
+  "reobf_sha256": "1a80fe46dc5a374d09532a76d816a621f42a2a9a6b26cfa37055977de123f9f7",
+  "candidate_changes_during_java8_gate": 0,
+  "active_changes_during_java8_gate": 0,
+  "lock_present": false,
+  "active_source_promoted": false,
+  "production_deployed": false
+}

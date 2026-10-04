@@ -1,0 +1,21 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-PREMIUM-LIVE-ACCEPTANCE-V38-20260917-63",
+  "release_checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "variant": "CANARY_TOOLING_V3_8",
+  "bundle": "akashic-voice-rc7-homologation-v3.8-20260917.zip",
+  "bundle_sha256": "497273cdd235b33e6678604fcc585b49c04fb966c64f36400d159c99ddca1c2e",
+  "bundle_bytes": 3465849,
+  "checks": 59,
+  "passed": 59,
+  "failed": [],
+  "release_files": 7,
+  "homologation_files": 46,
+  "premium_live_gates": 4,
+  "preseal_negative_controls": 5,
+  "production_artifacts_changed_by_tooling": false,
+  "no_deployment_performed": true,
+  "live_acceptance_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent_expanded_scope": 97
+}

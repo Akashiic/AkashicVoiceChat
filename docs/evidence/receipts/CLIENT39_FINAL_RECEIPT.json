@@ -1,0 +1,26 @@
+{
+  "checkpoint": "AV-NAT-HANDSHAKE-BURST-20260915-39",
+  "baseline": "integrated-client37",
+  "candidate": "integrated-client39",
+  "state": "FULL_PLATFORM_GATED",
+  "production_delta": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayHandshakeRateLimiter.java"
+  ],
+  "qa_delta": [
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayRuntimeSoakTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayHandshakeRateLimiterTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayHandshakeNatBurstIntegrationTest.java"
+  ],
+  "platform": {"state": "PASS", "tasks": 38, "executed": 38, "tests": 176, "suites": 40, "failures": 0, "errors": 0, "skipped": 0},
+  "limiter": {"per_ip_burst": 64, "per_ip_rate_per_second": 10, "global_burst": 256, "global_rate_per_second": 128},
+  "nat_integration": {"same_ip_clients": 32, "all_received_challenge": true, "rate_limited": 0},
+  "negative_control": {"mutation": "PER_IP_BURST 64 -> 20", "state": "DETECTED", "failure": "bulk-transfer burst rejected at 20"},
+  "source_scope": {"changes_vs_client37": 4, "production_files": 1, "non_platform_changes": 0, "platform_non_gateway_changes": 0},
+  "artifact_inheritance": {"forge_java8_sources_identical_to_client37": true, "paper_identical_to_client36_reference": true, "addon_api_identical_to_client36_reference": true},
+  "gateway_sha256": "2218962a1b7955ba87ec77c22941b92d7b44c9072368fb4fcf191e49c1ac6254",
+  "paper_sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+  "addon_api_sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+  "active_sources_promoted": false,
+  "production_deployed": false,
+  "progress": {"estimate_percent": 91, "judgment_band": [87, 95]}
+}

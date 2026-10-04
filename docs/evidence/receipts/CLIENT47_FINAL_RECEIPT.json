@@ -1,0 +1,19 @@
+{
+  "checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "state": "FULLY_GATED_RELEASE_CANDIDATE_NOT_DEPLOYED",
+  "candidate": "integrated-client47-agent-observability",
+  "release_candidate": "release-candidate-20260917-rc5",
+  "base_release_candidate": "release-candidate-20260916-rc4",
+  "production_delta_files": 2,
+  "qa_delta_files": 1,
+  "focused_drop_counter": {"state": "PASS", "generations": 2, "cumulative_drops": 88},
+  "format": "PASS",
+  "forge_root": "PASS",
+  "java8": {"state": "PASS", "compiled_sources": 168, "commands": 47},
+  "platform_junit": {"state": "PASS", "tests": 186, "suites": 43, "failures": 0, "errors": 0, "skipped": 0},
+  "packaged_dev_jar": {"state": "PASS", "origin_classes": 2, "smoke_replay": "PASS"},
+  "mutations": {"compiled": 2, "detected": 2},
+  "independent_rc5_verify": {"state": "PASS", "checks": 567, "passed": 567},
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [92, 98]
+}

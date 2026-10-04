@@ -1,0 +1,15 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-INSTALL-PREFLIGHT-20260917-51",
+  "checks": 7,
+  "passed": 7,
+  "details": [
+    "disposable installer mutant forces failure before Paper activation",
+    "Forge and Gateway are touched before the injected failure",
+    "installer returns FAIL_ROLLED_BACK",
+    "touched Forge/Gateway are restored to rollback hashes",
+    "Paper remains at its original hash",
+    "configuration hash remains unchanged",
+    "no temporary stage or old files remain"
+  ]
+}

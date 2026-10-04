@@ -1,0 +1,383 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "checks": 74,
+  "passed": 74,
+  "failed": [],
+  "details": [
+    {
+      "check": "sealed_rc5:forge",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:gateway",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:paper",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:addon_api",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:EXPECTED-SHA256.json",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:verify-install.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:CANARY-EVIDENCE-v3.json",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:evaluate-canary-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:parse-status-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:apply-status-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:prepare-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:verify-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:restore-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:install-canary-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:ROLLBACK-v3.md",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client51_inherited:INSTALL-v3.md",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "flow_15_of_15",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "hardening_3_of_3",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "unique_outdir_guard",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "required_runtime_roles",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "rollback_exactly_three",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "run_id_provenance",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "stage_order_names",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "stage_refuses_overwrite",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "observations_require_cleanup",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "finalizer_rehashes_status",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "finalizer_rehashes_evidence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "planned_values_immutable",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "hold_exit_preserved",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_secret:agent-psk",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_secret:private.?key",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_secret:password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_secret:access.?token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_secret:bootstrap.?secret",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:Stop-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:Start-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:Restart-Service",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:taskkill",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:systemctl",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "new-canary-session-v3.ps1:no_process_control:docker restart",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_secret:agent-psk",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_secret:private.?key",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_secret:password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_secret:access.?token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_secret:bootstrap.?secret",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:Stop-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:Start-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:Restart-Service",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:taskkill",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:systemctl",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "apply-session-status-v3.ps1:no_process_control:docker restart",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_secret:agent-psk",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_secret:private.?key",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_secret:password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_secret:access.?token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_secret:bootstrap.?secret",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:Stop-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:Start-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:Restart-Service",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:taskkill",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:systemctl",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "prepare-observations-v3.ps1:no_process_control:docker restart",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_secret:agent-psk",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_secret:private.?key",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_secret:password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_secret:access.?token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_secret:bootstrap.?secret",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:Stop-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:Start-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:Restart-Service",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:taskkill",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:systemctl",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "evaluate-session-v3.ps1:no_process_control:docker restart",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_runtime_jars_in_tooling",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "production_artifacts_changed": false,
+  "deployment_performed": false,
+  "live_canary_performed": false,
+  "stable_release_approved": false
+}

@@ -1,0 +1,20 @@
+{
+  "changed": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/AkashicVoiceGatewayPlugin.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRuntime.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayStatusCommand.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayStatusSnapshot.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/OutboundStreamEpochs.java"
+  ],
+  "added": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayModerationCommand.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayModerationService.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayModerationStore.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayModerationResetTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayModerationRuntimeTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayModerationServiceTest.java"
+  ],
+  "removed": []
+}

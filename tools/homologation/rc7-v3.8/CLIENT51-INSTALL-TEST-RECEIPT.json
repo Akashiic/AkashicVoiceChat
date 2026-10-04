@@ -1,0 +1,18 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-INSTALL-PREFLIGHT-20260917-51",
+  "checks": 10,
+  "passed": 10,
+  "details": [
+    "dry-run performs zero destination writes",
+    "installed artifacts must still match rollback snapshot",
+    "explicit install replaces exactly three runtime JARs",
+    "installed hashes equal sealed RC5 hashes",
+    "configuration hash remains unchanged",
+    "temporary stage/old files are removed after success",
+    "existing rollback restores all original hashes",
+    "tampered rollback aborts before writes",
+    "missing rollback manifest fails closed",
+    "rollback destination mismatch fails closed"
+  ]
+}

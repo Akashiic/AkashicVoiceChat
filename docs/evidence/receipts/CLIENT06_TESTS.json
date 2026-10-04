@@ -1,0 +1,8 @@
+{
+  "files": {
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayEpoch06Test.java": "7e9065ada748471e0dc475a9ab375494ee2b1a40bb7c10e26fdb6adbb14774f2",
+    "tools/qa/EpochClientFlowSmoke.java": "44cd44426aa66f723793211bcdab448cba0ea898ae544917e4192707ada767d2",
+    "tools/qa/EpochProtocolSmoke.java": "61ce1b01bd6b2736bb98049bbaf5e558b151a2903e8880e941127226f6f50c02"
+  },
+  "active_sources_modified": false
+}

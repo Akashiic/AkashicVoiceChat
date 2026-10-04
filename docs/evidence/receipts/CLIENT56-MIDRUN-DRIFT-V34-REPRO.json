@@ -1,0 +1,7 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-MIDRUN-DRIFT-REPRO-20260917-56",
+  "v3_4_midrun_drift_accepted": true,
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

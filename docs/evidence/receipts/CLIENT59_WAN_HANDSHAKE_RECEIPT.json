@@ -1,0 +1,19 @@
+{
+  "state": "PASS_WITH_SCOPE_LIMIT",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "scope": "real secure UDP handshake from sealed RC5 client; peer locality not attributed",
+  "receive_path": "DatagramSocket.receive -> handleDatagram -> handleInner -> AUTH_ACK",
+  "auth_ack_required_for_authenticated_state": true,
+  "authenticated_state_observed_by_running_mic_capture": true,
+  "secure_udp_handshake_proven": true,
+  "wan_remote_peer_proven": false,
+  "loopback_peer_possible_by_client_fallback": true,
+  "session_bound_media_reception_proven": false,
+  "remote_voice_frames_received_proven": false,
+  "two_client_listening_proven": false,
+  "transfer_restart_proven": false,
+  "packet_payload_interception_performed": false,
+  "audio_content_inspected": false,
+  "production_artifacts_changed": false,
+  "decision": "SECURE_HANDSHAKE_PASS_WAN_ATTRIBUTION_HOLD"
+}

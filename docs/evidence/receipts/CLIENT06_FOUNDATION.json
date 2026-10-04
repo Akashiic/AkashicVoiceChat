@@ -1,0 +1,20 @@
+{
+  "state": "VERIFIED",
+  "before": {
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFrameV3Packet.java": null,
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundResetV3Packet.java": null,
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/StreamEpochTracker.java": null,
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/VoiceCapabilities.java": null,
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WirePacketType.java": "ae3cf932fadeed37206a87200ef948ed6c96056a5b594a30b8968897893a17a5",
+    "src/main/java/dev/akashic/voice/voice/client/groups/ClientGroupCache.java": "c14ead8bf60cf5d5d9670a66200303eca367b5402a5fc757427e18a0f01dc495"
+  },
+  "after": {
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFrameV3Packet.java": "eab6a11386ce4a7e51c7895eb445e3ff7cab8eba04dc5e2791ac0035099d0063",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundResetV3Packet.java": "936b6224f12aae82089e27ed25914a5aed64a912e82f95733b0361b49ae80e72",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/StreamEpochTracker.java": "231eaf822a91afca93d93c8cd4bc5cadfcf7cbcb8a52fa758c48cb7b942b45ff",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/VoiceCapabilities.java": "d894e990828f47a68dbce7352e87b98222eca288de652fc0d188339736fb9b5d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WirePacketType.java": "6998218dd139fb0f7f5dd67bb1cad62b5295260c2391d0cd3b0c52cc5364efc2",
+    "src/main/java/dev/akashic/voice/voice/client/groups/ClientGroupCache.java": "b68c9552cf660d17efcd781d8508ee0b82d0f81d4ce2ddf7df139aa1c29aa646"
+  },
+  "active_sources_modified": false
+}

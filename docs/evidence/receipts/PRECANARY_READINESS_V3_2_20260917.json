@@ -1,0 +1,36 @@
+{
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "qualification": "CANARY_TOOLING_V3_2",
+  "state": "READY_FOR_LIVE_CANARY_NOT_STABLE",
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99],
+  "release_candidate": "release-candidate-20260917-rc5",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "automated_evidence": {
+    "sealed_rc5_artifacts": "4/4 PASS",
+    "client50_rollback_prepare_restore": "16/16 PASS",
+    "client51_install_contracts": "10/10 PASS",
+    "client51_partial_activation_recovery": "7/7 PASS",
+    "client51_static_audit": "33/33 PASS",
+    "client51_bundle_v3_1": "33/33 PASS",
+    "client51_extracted_bundle_smoke": "8/8 PASS",
+    "client52_evidence_chain": "15/15 PASS",
+    "client52_evidence_hardening": "3/3 PASS",
+    "client52_static_audit": "74/74 PASS",
+    "client52_bundle_v3_2": "41/41 PASS",
+    "client52_extracted_bundle_smoke": "12/12 PASS"
+  },
+  "bundle": {
+    "file": "akashic-voice-rc5-homologation-v3.2-20260917.zip",
+    "sha256": "ab88d189471784242906497bb759642690c2ee5d6f25b6728c21de240d76b6ac"
+  },
+  "live_gates_remaining": [
+    "real WAN/two-client listening plus production cross-server transfer/restart",
+    "physical microphone/speaker acoustic and AGC validation",
+    "real Pojav/Amethyst thermal/battery validation",
+    "controlled production canary and operator/player feedback"
+  ],
+  "completion_boundary": "Automated pre-canary engineering is effectively exhausted; remaining completion requires real devices/network/operator evidence."
+}

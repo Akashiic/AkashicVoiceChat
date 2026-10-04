@@ -1,0 +1,30 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STAGE-RUNTIME-BINDING-20260917-56",
+  "bundle": "akashic-voice-rc5-homologation-v3.5-20260917.zip",
+  "bundle_sha256": "fba17150a6586cccb8f27e4571aa4222a9be27e4d99379b3276abf4849aa2e90",
+  "checks": 20,
+  "passed": 20,
+  "details": [
+    "bundle extracts cleanly",
+    "relative release path resolves sealed RC5",
+    "rollback prepares/verifies",
+    "explicit install reaches sealed RC5 hashes",
+    "verify-install PASS",
+    "live runtime hashes are bound into run provenance",
+    "stale PASS receipts are rejected after runtime drift",
+    "runtime restore permits continued evidence flow",
+    "path-substituted install receipt rejected after extraction",
+    "path-binding leaves no evidence directory on failure",
+    "mid-run runtime drift rejected before Baseline",
+    "all three objective stage receipts bind runtime hashes",
+    "final receipt revalidates runtime hashes",
+    "unique evidence run seeded with hash provenance",
+    "Baseline/Restart/Cleanup chain applies in order",
+    "blank observations remain HOLD",
+    "coherent synthetic QA reaches READY_FOR_STABLE_REVIEW",
+    "final report/evidence hashes match receipt",
+    "configuration secret absent from evidence files",
+    "verified rollback restores original runtime hashes"
+  ]
+}

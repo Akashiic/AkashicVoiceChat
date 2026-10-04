@@ -1,0 +1,14 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "scope": "real client native codec availability",
+  "configured_opus_backend": "auto",
+  "configured_opus_bitrate": 48000,
+  "native_jni_module_loaded": true,
+  "native_module_name": "opus_jni_rust.dll",
+  "java_fallback_forced": false,
+  "perceptual_quality_validated": false,
+  "encoded_frame_rate_measured": false,
+  "audio_content_inspected": false,
+  "production_artifacts_changed": false
+}

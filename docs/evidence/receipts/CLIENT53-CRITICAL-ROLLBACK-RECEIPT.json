@@ -1,0 +1,18 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-CRITICAL-ROLLBACK-20260917-53",
+  "checks": 8,
+  "passed": 8,
+  "details": [
+    "activation failure injected before Paper replacement",
+    "automatic Gateway rollback failure injected after Forge/Gateway were touched",
+    "installer exits 3 with CRITICAL_ROLLBACK_FAILED",
+    "rollback_restored is false and error names Gateway",
+    "critical state is not misreported as recovered",
+    "verified external rollback remains valid",
+    "external rollback restores all three original runtime hashes",
+    "configuration remains byte-identical"
+  ],
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

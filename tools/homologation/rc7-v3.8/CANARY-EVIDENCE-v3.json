@@ -1,0 +1,133 @@
+{
+  "schema_version": 3,
+  "checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "state": "NOT_RUN",
+  "operator": "",
+  "started_at": "",
+  "finished_at": "",
+  "artifact": {
+    "verification_state": "NOT_RUN",
+    "verification_receipt": "",
+    "release_manifest_sha256": ""
+  },
+  "environment": {
+    "proxy": "",
+    "legacy_backend": "",
+    "paper_backend": "",
+    "network_path": ""
+  },
+  "baseline": {
+    "gateway_runtime_online": false,
+    "required_routes_up": false,
+    "active_sessions": null,
+    "pending_handshakes": null,
+    "agent_media_queue": null,
+    "agent_control_queue": null,
+    "legacy_agent_connected": false,
+    "legacy_managed_players": null,
+    "legacy_agent_queue": null,
+    "legacy_agent_dropped": null,
+    "legacy_agent_connects": null
+  },
+  "live": {
+    "two_client": {
+      "tester_count": 0,
+      "bidirectional_intelligible": false,
+      "expected_spatial_behavior": false,
+      "duplicate_or_ghost_audio": false
+    },
+    "transfer": {
+      "voice_resumed": false,
+      "session_reauthenticated": false,
+      "route_down_observed": false,
+      "duplicate_or_ghost_audio": false
+    },
+    "restart": {
+      "voice_resumed": false,
+      "agent_connects_after": null,
+      "agent_dropped_after": null,
+      "agent_queue_after": null,
+      "gateway_route_up_after": false
+    },
+    "cleanup": {
+      "active_sessions_final": null,
+      "pending_handshakes_final": null,
+      "legacy_managed_players_final": null,
+      "legacy_agent_queue_final": null,
+      "stale_voice_observed": false
+    },
+    "acoustic": {
+      "performed": false,
+      "normal_speech_intelligible": false,
+      "whisper_intelligible": false,
+      "loud_speech_clipping": false,
+      "pumping_observed": false,
+      "unwanted_echo": false,
+      "background_noise_unusable": false,
+      "notes": "",
+      "agc_limiter_decision": ""
+    },
+    "mobile": {
+      "required_clients": [
+        "Pojav",
+        "Amethyst"
+      ],
+      "devices": []
+    },
+    "canary": {
+      "planned_duration_minutes": 0,
+      "observed_duration_minutes": 0,
+      "planned_tester_count": 0,
+      "observed_tester_count": 0,
+      "crashes": 0,
+      "protocol_disconnects": 0,
+      "operator_accepts": false,
+      "player_negative_feedback_count": 0,
+      "notes": ""
+    },
+    "output_hotplug": {
+      "performed": false,
+      "device_before": "",
+      "device_after": "",
+      "disconnect_observed": false,
+      "reconnect_observed": false,
+      "voice_resumed_without_rejoin": false,
+      "minecraft_audio_resumed": false,
+      "crash_or_hang": false,
+      "duplicate_or_ghost_audio": false,
+      "notes": ""
+    },
+    "environmental_acoustics": {
+      "performed": false,
+      "outdoor_dry": false,
+      "room_effect_audible": false,
+      "cave_effect_audible": false,
+      "underwater_effect_audible": false,
+      "transitions_clean": false,
+      "group_radio_dry": false,
+      "intelligibility_preserved": false,
+      "notes": ""
+    },
+    "nametag_indicator": {
+      "performed": false,
+      "normal_suffix_aligned": false,
+      "sneaking_suffix_aligned": false,
+      "sleeping_suffix_aligned": false,
+      "no_feet_or_world_origin_artifact": false,
+      "tracks_formatted_name_width": false,
+      "notes": ""
+    },
+    "ptt_indicator": {
+      "performed": false,
+      "local_press_no_perceptible_delay": false,
+      "local_release_no_perceptible_delay": false,
+      "remote_start_behavior_acceptable": false,
+      "remote_release_behavior_acceptable": false,
+      "notes": ""
+    }
+  },
+  "final": {
+    "rollback_performed": false,
+    "decision": "HOLD"
+  }
+}

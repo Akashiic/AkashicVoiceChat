@@ -1,0 +1,31 @@
+{
+  "changed": {
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionCrypto.java": {
+      "before": "d3e2c291c5054416d3f9610111dc28db1a55fa3b377f5597d1541ec0037c6d23",
+      "after": "19248191484ff703ffd58c38bb3624f02ebf89a34e03a15b24e170c5cfd6e449",
+      "action": "restore generic crypto baseline"
+    },
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WireProtocol.java": {
+      "before": "ed34f8c31d508b92d9ed40342a6a163d64cbcb1c7802c9189b9760e40c7a3360",
+      "after": "1a2123e641f51edda738ecede00a964a7c1bbb5c7391154a4f743ed8952a180d"
+    },
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": {
+      "before": "89ded30bc7dcdd678f26b9a92ecc2c6aa76221cf5d4b852380a179c9842f268c",
+      "after": "f58acac6e93a711aced2c35821fcecc31b160d5377a8ff90797a6b3020927bd4"
+    },
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServer.java": {
+      "before": "f92aeea18041b43d25015475e1d6e6d5aa2aefc89c3302adabc03228f3baa55b",
+      "after": "8ff41834ae366b15550f1d09844bd9bf20a2de2c7c83487d98d42640759c670a"
+    },
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java": {
+      "before": "0f0c6ac6cb6cf1ed09ab9012d5a9f0a5c5bde69aa786d8a2be7080b7b95be55e",
+      "after": "795dac1d1ea7878717d6cdf7744c9aa4f158595aaaa3c4c2c014d799763fc83b"
+    },
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java": {
+      "before": "95ff7f8406d4daeb7bb0470382d43dfeedbb5abce8adcd67648daa4729feeced",
+      "after": "2063de4f8d594121de74d7faee2bfde91f3970d46d5fb342601613e1df6df18f"
+    }
+  },
+  "design": "1200-byte cap applies only at AV UDP boundaries; SessionCrypto remains transport-agnostic",
+  "agent_tcp_payload_limit_unchanged": 1275
+}

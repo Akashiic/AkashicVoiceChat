@@ -1,0 +1,24 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STANDALONE-RECEIPT-BINDING-20260917-58",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "v35_negative_control": {
+    "fabricated_minimal_pass_receipt_decision": "READY_FOR_STABLE_REVIEW",
+    "report_sha256": "addac349da5a95966cf6aa12dda0f4c65905e3895f9b952393b068087197ad5f"
+  },
+  "v36_legitimate_current_receipt": {
+    "decision": "READY_FOR_STABLE_REVIEW",
+    "artifact_gate_pass": true,
+    "report_sha256": "f5692e8285532c4db68910c40987e1c43f91d7311fdec5e8052b38845557888f"
+  },
+  "v36_negative_cases": {
+    "count": 6,
+    "all_hold": true,
+    "receipt_sha256": "8dc6a0fa626e83b16858d8ee6be89118ef23cca8c6d5acfd7e7144a9bfd8b6fd"
+  },
+  "production_artifacts_changed": false,
+  "deployment_performed": false,
+  "live_canary_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 98
+}

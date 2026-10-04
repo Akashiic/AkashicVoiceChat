@@ -1,0 +1,16 @@
+{
+  "state": "PASS",
+  "kind": "static wiring/localization check, NOT rendered UI",
+  "languages": {
+    "en_US": {
+      "quality_strings": 14,
+      "existing_filter_key_unique": true
+    },
+    "pt_BR": {
+      "quality_strings": 14,
+      "existing_filter_key_unique": true
+    }
+  },
+  "hub_and_back_wired": true,
+  "no_direct_native_or_capture_start": true
+}

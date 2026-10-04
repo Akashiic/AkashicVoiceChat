@@ -1,0 +1,35 @@
+{
+  "checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "qualification": "CANARY_TOOLING_V2_1",
+  "state": "READY_FOR_LIVE_CANARY_NOT_STABLE",
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [92, 98],
+  "release_candidate": "release-candidate-20260917-rc5",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "automated_evidence": {
+    "client47_full_gates": "PASS",
+    "rc5_independent_verify": "567/567 PASS",
+    "rc5_original_bundle_immutable": "PASS",
+    "capture_backend_enumeration": "PASS - 5 entries, no microphone opened",
+    "canary_v2_template_fail_closed": "HOLD as expected",
+    "canary_v2_coherent_synthetic": "READY_FOR_STABLE_REVIEW as expected",
+    "canary_v2_contradiction": "HOLD on drops/reconnect contradiction",
+    "status_parser_normal": "PASS",
+    "status_parser_route_down": "PASS - reflected false",
+    "status_parser_incomplete": "REJECTED as expected",
+    "homologation_v2_1_bundle": "15/15 PASS"
+  },
+  "bundle": {
+    "file": "akashic-voice-rc5-homologation-v2.1-20260917.zip",
+    "sha256": "8194d0c49390c62a0f00a03733da644726c46ea094b4a2249351fdc89d79dd40",
+    "original_rc5_bundle_sha256": "8e26c606cadd06930e50001be08a680cb0b35754908216a70e0c779bda65d6b9"
+  },
+  "live_gates_remaining": [
+    "real WAN/two-client listening plus production cross-server transfer/restart",
+    "physical microphone/speaker acoustic and AGC validation",
+    "real Pojav/Amethyst thermal/battery validation",
+    "production canary and operator/player feedback"
+  ]
+}

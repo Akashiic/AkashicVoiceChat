@@ -1,0 +1,28 @@
+{
+  "state": "PASS",
+  "kind": "STATIC_ONLY_NOT_RENDERED",
+  "languages": {
+    "en_US": {
+      "keys": 15,
+      "duplicates": false
+    },
+    "pt_BR": {
+      "keys": 15,
+      "duplicates": false
+    },
+    "de_DE": {
+      "keys": 15,
+      "duplicates": false
+    }
+  },
+  "hub_touch_wired": true,
+  "release_focus_route_guards_present": true,
+  "no_direct_server_or_audio_start": true,
+  "hub_layout_checked_heights": [
+    150,
+    160,
+    180,
+    240,
+    480
+  ]
+}

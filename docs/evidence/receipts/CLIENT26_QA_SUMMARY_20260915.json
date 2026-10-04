@@ -1,0 +1,24 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-EXTENDED-SOAK-20260915-26",
+  "progress_percent": 82,
+  "progress_band": [77, 87],
+  "production_diff_files": 0,
+  "source_diff_files": 1,
+  "junit": {"tests":149,"suites":36,"failures":0,"errors":0,"skipped":0},
+  "soak": {
+    "repetitions": 3,
+    "clients_per_repetition": 24,
+    "cycles_per_repetition": 10,
+    "frames_per_client_per_cycle": 50,
+    "sender_cadence_ms": 20,
+    "mic_frames_total": 36000,
+    "radio_deliveries_total": 36000,
+    "svc_downlinks_total": 720,
+    "agent_reconnects_total": 27,
+    "test_time_seconds": 36.613
+  },
+  "physical_audio": false,
+  "real_wan": false,
+  "production_deployed": false
+}

@@ -1,0 +1,18 @@
+{
+  "src/main/java/dev/akashic/voice/config/AkashicVoiceConfig.java": {
+    "before": "2a31bc35648b9f3ac7c50e657b0ef49aea292628d34736eb28dc241b79a9af91",
+    "after": "abaf3061bc96bcb68f04a43dd4f4a47e4436dcede4aea4791f9f75b42c2a5724"
+  },
+  "src/main/java/dev/akashic/voice/voice/common/codec/NativeOpusEncoder.java": {
+    "before": "974fd565b762d251a2ba2b184d603761f4cbc7efb913eaa0bbb16562e34b6502",
+    "after": "0d6a03b62a92af6cbcc27900cd22978c6fa6b63e30b9eaaa4e2de0253ea24158"
+  },
+  "src/main/java/dev/akashic/voice/voice/common/codec/ConcentusOpusEncoder.java": {
+    "before": "9a5ada2994ef553d8083a1ae9dd27b82f2166fb3507bb37ed713f0b74bb7d854",
+    "after": "71855200d241a4a937eba3642853b3ff66ef82bce7984ad00e4997684b35fabf"
+  },
+  "src/main/java/dev/akashic/voice/voice/common/codec/OpusCodecFactory.java": {
+    "before": "398f9f006c70a48a4de9017cb656d3f33f8398ccdd64b876d018bc97182d05e8",
+    "after": "58200f5f27863167018a7f54ef8e0330019986117c56bf2769b6a06804307744"
+  }
+}

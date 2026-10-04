@@ -1,0 +1,23 @@
+{
+  "state": "READY_FOR_NEXT_LIVE_GATES_NOT_STABLE",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "sealed_bundle": "akashic-voice-rc5-homologation-v3.6-20260917.zip",
+  "single_real_client_artifact_integrity": "PASS",
+  "single_real_client_fml_load": "PASS",
+  "single_real_client_secure_udp_handshake": "PASS",
+  "single_real_client_sustained_runtime": "PASS",
+  "single_real_client_openal_capture_backend": "PASS",
+  "single_real_client_native_opus_jni": "PASS",
+  "remote_media_frame_reception": "HOLD",
+  "two_client_listening": "HOLD",
+  "backend_transfer_rebootstrap": "HOLD",
+  "controlled_backend_restart": "HOLD",
+  "physical_acoustic_agc": "HOLD",
+  "pojav_real_device": "HOLD",
+  "amethyst_real_device": "HOLD",
+  "production_canary_operator_review": "HOLD",
+  "stable_release": false,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99]
+}

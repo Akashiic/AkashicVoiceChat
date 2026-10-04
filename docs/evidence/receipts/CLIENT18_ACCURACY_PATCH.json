@@ -1,0 +1,9 @@
+{
+  "file": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\integrated-client18\\src\\main\\java\\dev\\akashic\\voice\\voice\\server\\VoiceServer.java",
+  "before": "067de5768041c7e88f235cd907b9585219ac107088857ec941b8739e31ba4c31",
+  "after": "3c1e4eb5098e5f96b42fa99cd15e0a2c98a4f8a3adbbbc9c8b0605ccaa7b50c5",
+  "fixes": [
+    "malformed handshake rejection counters",
+    "delivery success follows actual UDP send success"
+  ]
+}

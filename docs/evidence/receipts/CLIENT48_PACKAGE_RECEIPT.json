@@ -1,0 +1,11 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-EVIDENCE-ENGINE-20260917-48",
+  "file": "akashic-voice-rc5-canary-v3-client48-20260917.zip",
+  "sha256": "973037900bb3ce6ae0730e79c1cf398b4dec677ea1421e9b5fc11b5f848be8f4",
+  "bytes": 10519,
+  "entries": 9,
+  "contains_jars": false,
+  "release_artifacts_modified": false,
+  "production_deployed": false
+}

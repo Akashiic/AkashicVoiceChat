@@ -1,0 +1,12 @@
+{
+    "schema_version":  1,
+    "state":  "HOLD_JSTACK_TIMEOUT",
+    "checkpoint":  "AV-LIVE-CLIENT-PROBE-V37",
+    "artifact":  {
+                     "sha256":  "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+                     "expected_sha256":  "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+                     "matches":  true
+                 },
+    "remote_media_proven":  false,
+    "stable_release_approved":  false
+}

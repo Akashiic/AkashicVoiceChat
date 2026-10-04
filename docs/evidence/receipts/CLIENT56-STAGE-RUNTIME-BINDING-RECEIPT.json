@@ -1,0 +1,15 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STAGE-RUNTIME-BINDING-20260917-56",
+  "checks": 15,
+  "passed": 15,
+  "v3_4_negative_control_reproduced": true,
+  "stage_drift_rejected": true,
+  "install_receipt_tamper_rejected": true,
+  "previous_stage_tamper_rejected": true,
+  "observation_drift_rejected": true,
+  "final_drift_rejected": true,
+  "valid_hold_path_preserved": true,
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

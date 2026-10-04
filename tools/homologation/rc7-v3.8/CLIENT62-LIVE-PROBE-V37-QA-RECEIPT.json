@@ -1,0 +1,17 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-LIVE-CLIENT-PROBE-V37-20260917-62",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "probe_sha256": "0eb910c4c763a9ff0a3271528c8f0ad8a419528bf1aea71d4a7148c2bb019368",
+  "real_live_probe": "PASS_RUNTIME_PREREQUISITES",
+  "negative_controls": {
+    "artifact_mismatch": "HOLD",
+    "runtime_incomplete": "HOLD",
+    "jstack_timeout": "HOLD"
+  },
+  "synthetic_complete": "PASS_RUNTIME_PREREQUISITES",
+  "secret_copy_count": 0,
+  "remote_media_proven": false,
+  "stable_release_approved": false,
+  "production_artifacts_changed": false
+}

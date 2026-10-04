@@ -1,0 +1,46 @@
+{
+  "checkpoint": "AV-PREMIUM-LIVE-ACCEPTANCE-V38-20260917-63",
+  "qualification": "RC7_FULL_AUTOMATED_GATES_PLUS_CANARY_TOOLING_V3_8",
+  "state": "READY_FOR_RC7_LIVE_ACCEPTANCE_NOT_STABLE",
+  "progress_estimate_percent_expanded_scope": 97,
+  "progress_judgment_band": [95, 98.5],
+  "release_candidate": "release-candidate-20260917-rc7",
+  "release_checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "forge_sha256": "c0f9d86cb331598c2e0e7c9d7ebf6091fffee18bc94bbdaf6bbf9cbe6d2eb081",
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "automated_release_gates": {
+    "forge_build": "PASS",
+    "java8_matrix": "184 sources / 54 commands PASS",
+    "platform": "43 suites / 186 tests / 0 failures PASS",
+    "source_mutations": "5/5 detected",
+    "compiled_mutations": "4/4 detected",
+    "jar_origin": "9 production classes / 7 replays PASS",
+    "seal_preflight": "43/43 PASS",
+    "independent_verify": "58/58 PASS"
+  },
+  "homologation_bundle": {
+    "file": "akashic-voice-rc7-homologation-v3.8-20260917.zip",
+    "sha256": "497273cdd235b33e6678604fcc585b49c04fb966c64f36400d159c99ddca1c2e",
+    "seal_checks": "59/59 PASS",
+    "extracted_bundle_smoke": "31/31 PASS",
+    "preseal_new_gate_negative_controls": "5/5 HOLD as expected",
+    "live_acceptance_performed": false
+  },
+  "premium_features": {
+    "premium_3d_voice": "AUTOMATED_COMPLETE_LIVE_LISTENING_OPEN",
+    "environmental_acoustics": "AUTOMATED_COMPLETE_PHYSICAL_LISTENING_OPEN",
+    "nametag_talking_suffix": "AUTOMATED_COMPLETE_REAL_VISUAL_ACCEPTANCE_OPEN",
+    "speaker_hotplug_recovery": "AUTOMATED_COMPLETE_PHYSICAL_UNPLUG_REPLUG_OPEN",
+    "ptt_visual_latency": "AUTOMATED_COMPLETE",
+    "remote_talking_indicator": "FIRST_AUTHENTICATED_AUDIO_FRAME_BY_DESIGN"
+  },
+  "live_gates_remaining": [
+    "physical AirPods/headset disconnect-reconnect during active remote voice playback",
+    "two real clients/WAN audible bidirectional speech plus backend transfer/restart recovery",
+    "physical outdoor/room/cave/underwater acoustic listening plus explicit AGC/limiter decision",
+    "real-game nametag suffix and PTT visual acceptance",
+    "real Pojav/Amethyst input/output, focus, thermal and battery validation",
+    "controlled production canary with operator/player acceptance"
+  ]
+}

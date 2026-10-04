@@ -1,0 +1,6 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-PATH-SUBSTITUTION-REPRO-20260917-55",
+  "v3_3_vulnerability_reproduced": true,
+  "production_artifacts_changed": false
+}

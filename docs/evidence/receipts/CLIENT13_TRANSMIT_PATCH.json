@@ -1,0 +1,10 @@
+{
+  "src/main/java/dev/akashic/voice/voice/client/MicCapture.java": {
+    "before": "17f04cb4488914a786a28c7fb9b54a32e48878556fa939129391a9d55ced597c",
+    "after": "84ae60627e350dc54df9e1fbe8654c1fcdb61306818d35ee528601bd5881071c"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": {
+    "before": "ad055a978b74a4733080809e4524d6e3a7d587308f23994c6d77b238d3e2b1e7",
+    "after": "72c00efd55c8518fece89a6f63a3d8b55eee25bfa2d34f0b3b742e68cec9e937"
+  }
+}

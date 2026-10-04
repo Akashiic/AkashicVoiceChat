@@ -1,0 +1,15 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "scope": "local real-client transport runtime",
+  "voice_receive_thread_in_datagram_socket_receive": true,
+  "minecraft_udp_endpoint_bound": true,
+  "udp_local_port_observed": true,
+  "remote_udp_peer_proven": false,
+  "remote_voice_packet_reception_proven": false,
+  "two_client_voice_proven": false,
+  "transport_interception_performed": false,
+  "packet_payload_inspected": false,
+  "production_artifacts_changed": false,
+  "decision": "CLIENT_TRANSPORT_PASS_REMOTE_WAN_HOLD"
+}

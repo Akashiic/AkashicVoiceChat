@@ -1,0 +1,14 @@
+{
+  "state": "VERIFIED",
+  "before": {
+    "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": "f00eb7a31e743b55e744e73ce953c3c39fc3c4836ea4bfb03e1fc0ab99d8095f",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackChannel.java": "ae14ad9849ec76edcbba015b86195df40581925aaa62da2ed6c1ddc41bd6ef14",
+    "src/main/java/dev/akashic/voice/voice/client/jitter/DecoderStream.java": "cac06ac28dad6fe0ac835e72caf8ff02bacc7f1f989cea6f9d6656d511735a7c"
+  },
+  "after": {
+    "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": "9d929a890a6a35992c0d84002e444859326521bec9435e7c3c5025621ab0f1d1",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackChannel.java": "bfa70133a33c78d36d79b731470a98ffad8636d02974345e9277f00f37446091",
+    "src/main/java/dev/akashic/voice/voice/client/jitter/DecoderStream.java": "958f48f6d893721fd2c80f9b924a1aca69237c93a3fdce3a64747d89331f7024"
+  },
+  "active_sources_modified": false
+}

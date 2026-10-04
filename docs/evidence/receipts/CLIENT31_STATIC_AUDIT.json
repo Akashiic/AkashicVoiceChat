@@ -1,0 +1,17 @@
+{
+  "baseline": "integrated-client30",
+  "candidate": "integrated-client31",
+  "excluded_generated_roots": [
+    "build",
+    ".gradle"
+  ],
+  "production_delta": [
+    "src/main/java/dev/akashic/voice/voice/client/talk/TalkCache.java"
+  ],
+  "production_delta_count": 1,
+  "qa_delta": [
+    "tools/qa/TalkCacheBoundedSmoke.java"
+  ],
+  "qa_delta_count": 1,
+  "talkcache_sha256": "88cf831d17f1f95302d929b72e956205190563ac232f584222355c4a75a968f9"
+}

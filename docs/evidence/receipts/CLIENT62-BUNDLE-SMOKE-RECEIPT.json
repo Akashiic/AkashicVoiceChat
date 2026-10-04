@@ -1,0 +1,16 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-LIVE-CLIENT-PROBE-V37-20260917-62",
+  "bundle": "akashic-voice-rc5-homologation-v3.7-20260917.zip",
+  "bundle_sha256": "2a771baf1feb7b78fb0ebc04a79940622f785ffe8f13837eae9173d0301a331f",
+  "inherited_v3_6_files": 38,
+  "release_artifacts_verified": 4,
+  "bundled_probe_pass": "PASS_RUNTIME_PREREQUISITES",
+  "bundled_probe_holds": [
+    "artifact_mismatch",
+    "runtime_incomplete"
+  ],
+  "secret_copy_count": 0,
+  "remote_media_proven": false,
+  "stable_release_approved": false
+}

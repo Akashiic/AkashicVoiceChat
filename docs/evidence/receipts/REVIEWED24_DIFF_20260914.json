@@ -1,0 +1,26 @@
+{
+  "changed": [
+    "platform/gateway-velocity/build.gradle.kts",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/AkashicVoiceGatewayPlugin.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayModerationCommand.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRuntime.java",
+    "platform/settings.gradle.kts"
+  ],
+  "added": [
+    "docs/ADDON_API.md",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/AkashicVoiceApi.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/AkashicVoiceApiDiscovery.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/AkashicVoiceApiProvider.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoiceEventListener.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoiceListenerRegistration.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoiceModerationEvent.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoicePlayer.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoiceSessionAction.java",
+    "platform/addon-api/src/main/java/dev/akashic/voice/api/VoiceSessionEvent.java",
+    "platform/addon-api/src/test/java/dev/akashic/voice/api/AddonApiContractTest.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayAddonApi.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayAddonApiTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayAddonModerationCommandTest.java"
+  ],
+  "removed": []
+}

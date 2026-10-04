@@ -1,0 +1,159 @@
+{
+  "state": "PASS",
+  "checks": [
+    {
+      "name": "addon_module_registered_once",
+      "pass": true
+    },
+    {
+      "name": "gateway_api_dependency",
+      "pass": true
+    },
+    {
+      "name": "gateway_embeds_addon_api",
+      "pass": true
+    },
+    {
+      "name": "public_api_file_count",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_AkashicVoiceApi",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_AkashicVoiceApi",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_AkashicVoiceApiDiscovery",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_AkashicVoiceApiDiscovery",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_AkashicVoiceApiProvider",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_AkashicVoiceApiProvider",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoiceEventListener",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoiceEventListener",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoiceListenerRegistration",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoiceListenerRegistration",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoiceModerationEvent",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoiceModerationEvent",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoicePlayer",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoicePlayer",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoiceSessionAction",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoiceSessionAction",
+      "pass": true
+    },
+    {
+      "name": "no_platform_import_VoiceSessionEvent",
+      "pass": true
+    },
+    {
+      "name": "no_transport_surface_VoiceSessionEvent",
+      "pass": true
+    },
+    {
+      "name": "connected_event_wired",
+      "pass": true
+    },
+    {
+      "name": "disconnected_event_wired",
+      "pass": true
+    },
+    {
+      "name": "no_addon_callback_in_mic_hot_path",
+      "pass": true
+    },
+    {
+      "name": "no_addon_callback_in_svc_hot_path",
+      "pass": true
+    },
+    {
+      "name": "mute_event_after_service_commit",
+      "pass": true
+    },
+    {
+      "name": "unmute_event_after_service_commit",
+      "pass": true
+    },
+    {
+      "name": "plugin_implements_provider",
+      "pass": true
+    },
+    {
+      "name": "plugin_exposes_api",
+      "pass": true
+    },
+    {
+      "name": "api_activated",
+      "pass": true
+    },
+    {
+      "name": "api_deactivated_failure_and_shutdown",
+      "pass": true
+    },
+    {
+      "name": "api_jar_public_classes",
+      "pass": true
+    },
+    {
+      "name": "api_jar_has_no_platform_packages",
+      "pass": true
+    },
+    {
+      "name": "gateway_embeds_all_api_classes",
+      "pass": true
+    },
+    {
+      "name": "gateway_contains_api_impl",
+      "pass": true
+    },
+    {
+      "name": "external_sample_addon_compiled",
+      "pass": true
+    },
+    {
+      "name": "addon_api_documented",
+      "pass": true
+    }
+  ],
+  "passed": 38,
+  "failed": 0
+}

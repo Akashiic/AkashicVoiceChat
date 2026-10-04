@@ -1,0 +1,46 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-LEGACY-AGENT-RC4-20260916-46",
+  "independent_checks": 567,
+  "passed": 567,
+  "failed": [],
+  "artifacts": {
+    "akashicvoice-addon-api.jar": {
+      "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+      "bytes": 7581,
+      "classes": 9,
+      "class_majors": [
+        65
+      ]
+    },
+    "akashicvoice-forge-1.7.10.jar": {
+      "sha256": "8e5a6fe5de6a2421ef37422a14204ce48fc43382fb8de944ec5b7462c118215e",
+      "bytes": 3191998,
+      "classes": 309,
+      "class_majors": [
+        52
+      ]
+    },
+    "akashicvoice-gateway-velocity.jar": {
+      "sha256": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2",
+      "bytes": 252653,
+      "classes": 146,
+      "class_majors": [
+        52,
+        65,
+        69
+      ]
+    },
+    "akashicvoice-svc-paper.jar": {
+      "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+      "bytes": 128657,
+      "classes": 84,
+      "class_majors": [
+        52,
+        65
+      ]
+    }
+  },
+  "seal_receipt_prewrite_checks": 560,
+  "note": "Original seal recorded checks before four post-seal artifact re-hashes; this verifier recomputes from sealed files only."
+}

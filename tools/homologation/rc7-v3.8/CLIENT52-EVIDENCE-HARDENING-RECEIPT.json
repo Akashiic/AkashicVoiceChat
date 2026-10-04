@@ -1,0 +1,11 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "checks": 3,
+  "passed": 3,
+  "details": [
+    "tampered canonical status hash rejected before evaluation",
+    "verification receipt missing Paper rejected before RunDir creation",
+    "rollback manifest missing Paper rejected before RunDir creation"
+  ]
+}

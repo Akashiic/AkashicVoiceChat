@@ -1,0 +1,26 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "evidence_scope": "single real Technic/Forge 1.7.10 client runtime only",
+  "sealed_forge_sha256": "6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e",
+  "installed_forge_hash_matches_seal": true,
+  "real_client_process_running": true,
+  "fml_mod_discovered": true,
+  "fml_main_class": "dev.akashic.voice.AkashicVoice",
+  "resource_pack_loaded": true,
+  "voice_runtime_threads": [
+    "AkashicVoice-Voice-Client-Recv",
+    "AkashicVoice-Voice-Client-Maintenance",
+    "AkashicVoice-Audio",
+    "AkashicVoice-Mic"
+  ],
+  "openal_capture_thread_observed": true,
+  "source_requires_authenticated_for_mic_start": true,
+  "authenticated_runtime_reached": true,
+  "akashicvoice_error_or_fatal_match": false,
+  "physical_audio_samples_read_by_assistant": false,
+  "human_listening_validation": false,
+  "two_client_validation": false,
+  "production_deployment_performed": false
+}

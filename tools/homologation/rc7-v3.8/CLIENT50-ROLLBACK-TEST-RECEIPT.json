@@ -1,0 +1,16 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-ROLLBACK-PREFLIGHT-20260917-50",
+  "checks": 8,
+  "passed": 8,
+  "details": [
+    "backup manifest created after sealed RC5 artifact verification",
+    "fresh backup verifies PASS",
+    "installed synthetic JARs remain byte-identical",
+    "configuration file is not copied",
+    "existing backup directory is never overwritten",
+    "tampered backup verifies FAIL exit 2",
+    "gateway hash failure is identified",
+    "missing installed JAR fails before backup directory creation"
+  ]
+}

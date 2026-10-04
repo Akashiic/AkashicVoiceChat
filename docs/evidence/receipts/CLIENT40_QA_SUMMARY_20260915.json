@@ -1,0 +1,28 @@
+{
+  "checkpoint": "AV-PROLONGED-SESSION-SOAK-20260915-40",
+  "baseline": "integrated-client39",
+  "state": "QA_QUALIFICATION_PASS_PRODUCTION_IDENTICAL",
+  "production_source_delta": 0,
+  "external_test_only": true,
+  "test_class": "GatewayRuntimeLongSoakTest",
+  "junit": {"tests": 5, "failures": 0, "errors": 0, "skipped": 0, "seconds": 317.841},
+  "load": {
+    "mic_frames": 302400,
+    "radio_deliveries": 302400,
+    "svc_downlinks": 864,
+    "udp_session_openings": 240,
+    "agent_reconnects": 27,
+    "client_backend_transfers": 144
+  },
+  "gateway_sha256": "2218962a1b7955ba87ec77c22941b92d7b44c9072368fb4fcf191e49c1ac6254",
+  "baseline_test_sha256": "bbe9b1d0aabdc95062766371fe99d4d6383356f6fcc2f1842f709d92a30fa11b",
+  "long_test_sha256": "860ea093118bb754a72e89b5581b73ebdc5698098d9af67ebd894c813cc34fcd",
+  "initial_failure": "QA harness treated valid AgentMessage.Ping heartbeat as SpeakerFrame",
+  "corrected_behavior": "reply Pong and continue awaiting functional Agent message; load unchanged",
+  "progress_estimate_percent": 92,
+  "progress_judgment_band": [88, 96],
+  "production_deployed": false,
+  "live_wan_tested": false,
+  "physical_audio_tested": false,
+  "mobile_real_device_tested": false
+}

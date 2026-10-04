@@ -1,0 +1,20 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-REAL-CLIENT-RESTART-LIFECYCLE-20260917-60",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "previous_real_client_authenticated_runtime": true,
+  "previous_process_exited": true,
+  "new_real_forge_1710_process_started": true,
+  "sealed_rc5_still_installed": true,
+  "akashic_voice_resource_pack_loaded": true,
+  "pre_world_observation_seconds": 116,
+  "voice_threads_observed_during_pre_world_window": 0,
+  "microphone_capture_thread_observed_during_pre_world_window": false,
+  "voice_udp_receive_thread_observed_during_pre_world_window": false,
+  "automatic_microphone_open_in_menu": false,
+  "restart_to_new_authenticated_session_proven": false,
+  "production_artifacts_changed": false,
+  "stable_release": false,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99]
+}

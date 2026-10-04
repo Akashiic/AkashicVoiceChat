@@ -1,0 +1,11 @@
+{
+  "state": "VERIFIED",
+  "sha256": {
+    "src/main/java/dev/akashic/voice/voice/client/ClientVoiceBootstrap.java": "eea44a20d354688131e35798cf1c002b24e7bcffa0c0f8ca2d7d4baf473880b5",
+    "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": "ae72ba3ec2d0ccde8c2ea03273337f302a8bdedb1ef276dc482e4e428dcd5cb5",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackChannel.java": "2cfc4b043f92aef4030bf3946cfcee270c4ee14d787651e49a2fc08a5b046498",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackFrame.java": "4fe51169ee6da20e98d1b2459cf6c09dc72b626d042cf88d2d493b6f17700e8c"
+  },
+  "active_modified": false,
+  "normalized_git_crlf": true
+}

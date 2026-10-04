@@ -1,0 +1,18 @@
+{
+  "kind": "STATIC_ONLY_NOT_RENDERED",
+  "languages": {
+    "en_US": {
+      "panel_keys": 12,
+      "hub_keys": 1,
+      "duplicate_panel_keys": false
+    },
+    "pt_BR": {
+      "panel_keys": 12,
+      "hub_keys": 1,
+      "duplicate_panel_keys": false
+    }
+  },
+  "hub_wiring": true,
+  "session_guard": true,
+  "no_direct_audio_or_server_calls": true
+}

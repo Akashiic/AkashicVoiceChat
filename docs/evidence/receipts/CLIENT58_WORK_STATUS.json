@@ -1,0 +1,33 @@
+{
+  "checkpoint": "AV-PREMIUM-COMPLETION-CLIENT58-WIP",
+  "candidate": "integrated-client58-premium-completion",
+  "base": "integrated-client57-visual-acoustics",
+  "sealed_base": "release-candidate-20260917-rc5",
+  "state": "IMPLEMENTING_AND_GATING_NOT_PROMOTED",
+  "last_confirmed_gate": {
+    "name": "focused-client58-02",
+    "state": "PASS",
+    "jdk": "1.8",
+    "compiled_sources": 180,
+    "smokes": 4,
+    "candidate_drift": false,
+    "active_root_drift": false
+  },
+  "post_gate_changes": [
+    "vanilla-aligned nametag suffix including sneak/sleep/range rules",
+    "shared OpenAL recovery quiesce barrier",
+    "barrier and source-contract QA"
+  ],
+  "next_required_steps": [
+    "spotlessApply/check after post-gate edits",
+    "focused Java8 rerun including source-contract smoke",
+    "full Forge build",
+    "full Java8 smoke matrix",
+    "platform regression build",
+    "structural JAR and source-delta verification",
+    "mutation/reviewer pass",
+    "seal RC6 only if all automated gates pass"
+  ],
+  "stable": false,
+  "deployed": false
+}

@@ -1,0 +1,14 @@
+{
+  "src/main/java/dev/akashic/voice/voice/client/MicGate.java": {
+    "before": "7bc5d4d41d958175f573806df0b911008fed66184dd6ea1b08f9312aa4285936",
+    "after": "189e1dd9e5910bac2bb933132bf272046b2a1bf537ac66b349c6b8d87f186922"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/VoiceClientHolder.java": {
+    "before": "dc8d61005e70e6dbfafb9fffb7915fe0fa376f986b2eff963d135013cf258c98",
+    "after": "f44538ac841ae18921df7f53ae6ae28e44b52b017e3f8ba583d6b3b6dd15fcd7"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": {
+    "before": "cdd6fa0c558b279835bb387d5089a37f27fb46aa4fd5c6a5d32d12aa554a3039",
+    "after": "89ded30bc7dcdd678f26b9a92ecc2c6aa76221cf5d4b852380a179c9842f268c"
+  }
+}

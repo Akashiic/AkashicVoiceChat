@@ -1,0 +1,10 @@
+{
+  "state": "PASS_WITH_SCOPE_LIMIT",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "real_minecraft_process": true,
+  "secure_voice_udp_handshake": true,
+  "minecraft_tcp_established_at_attribution_check": false,
+  "production_network_attribution": "UNPROVEN",
+  "local_test_environment_attribution": "UNPROVEN",
+  "decision": "COUNT_AS_REAL_CLIENT_WAN_RUNTIME_NOT_PRODUCTION_CANARY"
+}

@@ -1,0 +1,20 @@
+{
+  "checkpoint": "AV-SESSION-RESTART-SPEAKING-SOAK-20260915-35",
+  "candidate": "integrated-client35",
+  "baseline": "reviewed-client34-20260915",
+  "state": "QA_QUALIFICATION_PASS_PRODUCTION_IDENTICAL",
+  "production_files_changed": 0,
+  "qa_files_added": 1,
+  "repetitions": 6,
+  "each_repetition": "old session authenticates+sends MIC, Gateway restarts on same UDP port, stale session HELLO rejected, fresh session authenticates+sends MIC",
+  "platform_build": "PASS",
+  "platform_junit": {"tests": 161, "suites": 38, "failures": 0, "errors": 0, "skipped": 0},
+  "gateway_artifact_equal_client34": true,
+  "paper_artifact_equal_client34": true,
+  "gateway_sha256": "09357a621d0ac088a2bc371d22feef46742fa0c6f8734fcdb59f018f893637ec",
+  "paper_sha256": "3b3e84e6e563d1fe74b6a8ad624f7297eafdfe5d099088d920cd897e3dda6f2b",
+  "active_sources_promoted": false,
+  "production_deployed": false,
+  "progress_estimate_percent": 89,
+  "progress_judgment_band": [85, 92]
+}

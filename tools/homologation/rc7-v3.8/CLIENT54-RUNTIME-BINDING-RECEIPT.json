@@ -1,0 +1,10 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-LIVE-RUNTIME-BINDING-20260917-54",
+  "checks": 9,
+  "passed": 9,
+  "stale_pass_receipt_rejected": true,
+  "critical_residue_rejected": true,
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

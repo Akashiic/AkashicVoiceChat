@@ -1,0 +1,22 @@
+{
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "state": "FULLY_GATED_PRECANARY_EVIDENCE_CHAIN_NOT_LIVE_VALIDATED",
+  "release_under_test": "release-candidate-20260917-rc5",
+  "production_delta_files": 0,
+  "release_artifact_changes": 0,
+  "evidence_chain_contracts": {"state": "PASS", "checks": 15, "passed": 15},
+  "evidence_chain_hardening": {"state": "PASS", "checks": 3, "passed": 3},
+  "static_audit": {"state": "PASS", "checks": 74, "passed": 74},
+  "bundle_v3_2": {"state": "PASS", "checks": 41, "passed": 41},
+  "extracted_bundle_smoke": {"state": "PASS", "checks": 12, "passed": 12},
+  "bundle": "akashic-voice-rc5-homologation-v3.2-20260917.zip",
+  "bundle_sha256": "ab88d189471784242906497bb759642690c2ee5d6f25b6728c21de240d76b6ac",
+  "objective_evidence_hash_chained": true,
+  "run_identity_unique": true,
+  "synthetic_ready_state_is_not_live_evidence": true,
+  "live_canary_performed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99]
+}

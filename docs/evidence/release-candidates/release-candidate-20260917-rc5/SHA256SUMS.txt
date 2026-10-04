@@ -1,0 +1,4 @@
+6fab0865c2d2c5a0e382e193f35e099aa7e0861ab4317b0c78a91796ef8d553e  akashicvoice-forge-1.7.10.jar
+e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2  akashicvoice-gateway-velocity.jar
+b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb  akashicvoice-svc-paper.jar
+6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347  akashicvoice-addon-api.jar

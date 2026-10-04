@@ -1,0 +1,15 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-LIVE-CLIENT-PROBE-V37-20260917-62",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "variant": "CANARY_TOOLING_V3_7",
+  "inherits_v3_6_files": 38,
+  "inherits_v3_6_byte_identical": true,
+  "live_probe_real_client": "PASS_RUNTIME_PREREQUISITES",
+  "probe_negative_controls": "3 HOLD + 1 synthetic PASS",
+  "probe_secret_copy_count": 0,
+  "remote_media_proven": false,
+  "stable_release_approved": false,
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

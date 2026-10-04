@@ -1,0 +1,105 @@
+{
+  "checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "state": "AUDIT_ONLY_NOT_DEPLOYED",
+  "stable_release_approved": false,
+  "production_deployed": false,
+  "source_candidate": "integrated-client58-premium-hardening-rc7",
+  "base_release_candidate": "release-candidate-20260917-rc6",
+  "production_scope": "Forge/client-only premium hardening over RC6; wire/Gateway/Paper/addon source unchanged",
+  "artifacts": [
+    {
+      "file": "akashicvoice-addon-api.jar",
+      "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+      "bytes": 7581,
+      "classes": 9,
+      "class_majors": [
+        65
+      ]
+    },
+    {
+      "file": "akashicvoice-forge-1.7.10.jar",
+      "sha256": "c0f9d86cb331598c2e0e7c9d7ebf6091fffee18bc94bbdaf6bbf9cbe6d2eb081",
+      "bytes": 3213682,
+      "classes": 321,
+      "class_majors": [
+        52
+      ]
+    },
+    {
+      "file": "akashicvoice-gateway-velocity.jar",
+      "sha256": "e4329bed4f45db66ef80de66590dc88cc51c35c30e241f4704de2dbe0a2b4ec2",
+      "bytes": 252653,
+      "classes": 146,
+      "class_majors": [
+        52,
+        65,
+        69
+      ]
+    },
+    {
+      "file": "akashicvoice-svc-paper.jar",
+      "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+      "bytes": 128657,
+      "classes": 84,
+      "class_majors": [
+        52,
+        65
+      ]
+    }
+  ],
+  "qualification": {
+    "spotless": "PASS",
+    "forge_root_build": "PASS (34 executed tasks)",
+    "java8": {
+      "state": "PASS",
+      "compiled_sources": 184,
+      "commands": 54
+    },
+    "platform": {
+      "state": "PASS",
+      "tests": 186,
+      "suites": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "jar_origin": {
+      "state": "PASS",
+      "origin_classes": 9,
+      "replays": 7
+    },
+    "mutations": {
+      "source": "5/5 detected",
+      "compiled": "4/4 detected"
+    },
+    "forge_distribution": {
+      "classes": 321,
+      "class_major": 52,
+      "jni_classes": 5,
+      "native_binaries": 7
+    }
+  },
+  "implemented_features": [
+    "environment-aware OUTDOOR/ROOM/CAVE/UNDERWATER OpenAL EFX voice acoustics with hysteresis",
+    "vanilla-aligned talking-mic pseudo-suffix for normal/sneaking/sleeping nameplates",
+    "raw keyboard/mouse PTT UI path with immediate local indicator and 120 ms residual window",
+    "OpenAL output health monitoring with ALC_EXT_disconnect/default-device change detection",
+    "shared-context speaker recovery through controlled Minecraft sound-system reload after Akashic quiesce",
+    "voice-owned OpenAL recovery with bounded retry",
+    "output-device/recovery observability in speaker UI",
+    "environmental EFX isolated to positional proximity voice; group/radio remain dry",
+    "output UNAVAILABLE debounce plus bound/default-device migration guard"
+  ],
+  "open_live_gates": [
+    "real AirPods/headset disconnect-reconnect during live Minecraft voice playback",
+    "two real clients/WAN audible speech and backend transfer/restart recovery",
+    "physical cave/room/underwater acoustic listening review and AGC/limiter decision",
+    "real Pojav/Amethyst device input/output, thermal and battery validation",
+    "controlled production canary and operator/player acceptance"
+  ],
+  "progress_estimate_percent_expanded_scope": 97,
+  "progress_judgment_band": [
+    95,
+    98.5
+  ]
+}

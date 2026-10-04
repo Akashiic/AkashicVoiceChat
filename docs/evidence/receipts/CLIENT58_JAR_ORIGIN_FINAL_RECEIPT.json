@@ -1,0 +1,60 @@
+{
+  "state": "PASS",
+  "jar": "C:\\Users\\User\\Desktop\\Codex\\Akashic Voice\\audit\\group-integration-20260913-04\\integrated-client58-premium-completion\\build\\libs\\akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+  "jar_sha256": "aaa7294d6266cabba61fff1c4e3659998944efabdac5157b3f850b4201a36a07",
+  "compiled_only_qa_sources": 5,
+  "origin_classes": 6,
+  "replays": 4,
+  "results": [
+    {
+      "name": "origin",
+      "exit_code": 0,
+      "tail": [
+        "ORIGIN dev.akashic.voice.voice.client.playback.OpenAlOutputHealth -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "ORIGIN dev.akashic.voice.voice.client.playback.OutputRecoveryController -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "ORIGIN dev.akashic.voice.voice.client.playback.VoiceEnvironmentEffects -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "ORIGIN dev.akashic.voice.voice.client.acoustics.AcousticProfileTracker -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "ORIGIN dev.akashic.voice.voice.client.keybinds.PttInputBridge -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "ORIGIN dev.akashic.voice.voice.client.render.SpeakerOverlay -> /C:/Users/User/Desktop/Codex/Akashic Voice/audit/group-integration-20260913-04/integrated-client58-premium-completion/build/libs/akashicvoice-0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty.jar",
+        "CLIENT58_JAR_ORIGIN_OK classes=6"
+      ]
+    },
+    {
+      "name": "premium",
+      "exit_code": 0,
+      "tail": [
+        "CLIENT58_PREMIUM_COMPLETION_OK scenarios=5"
+      ]
+    },
+    {
+      "name": "output_health",
+      "exit_code": 0,
+      "tail": [
+        "OPENAL_OUTPUT_HEALTH_OK default=Fones de ouvido (AirPods Pro Stereo)"
+      ]
+    },
+    {
+      "name": "efx",
+      "exit_code": 0,
+      "tail": [
+        "[21:12:09] [main/INFO]: OpenAL EFX enabled for environmental voice acoustics",
+        "EFX_SUPPORTED=true",
+        "OPENAL_EFX_SMOKE_OK"
+      ]
+    },
+    {
+      "name": "visual_acoustics",
+      "exit_code": 0,
+      "tail": [
+        "PASS covered_compact_space_is_room",
+        "PASS large_enclosed_space_is_cave",
+        "PASS unbounded_covered_space_is_cave",
+        "PASS underwater_overrides_geometry",
+        "PASS invalid_geometry_rejected",
+        "PASS remote_talk_indicator_expires_quickly",
+        "PASS physical_ptt_ui_state_is_immediate",
+        "CLIENT57_VISUAL_ACOUSTICS_OK scenarios=8"
+      ]
+    }
+  ]
+}

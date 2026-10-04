@@ -1,0 +1,22 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "bundle": "akashic-voice-rc5-homologation-v3.2-20260917.zip",
+  "bundle_sha256": "ab88d189471784242906497bb759642690c2ee5d6f25b6728c21de240d76b6ac",
+  "checks": 12,
+  "passed": 12,
+  "details": [
+    "bundle extracts cleanly",
+    "relative release path resolves sealed RC5",
+    "rollback prepares/verifies",
+    "explicit install reaches sealed RC5 hashes",
+    "verify-install PASS",
+    "unique evidence run seeded with hash provenance",
+    "Baseline/Restart/Cleanup chain applies in order",
+    "blank observations remain HOLD",
+    "coherent synthetic QA reaches READY_FOR_STABLE_REVIEW",
+    "final report/evidence hashes match receipt",
+    "configuration secret absent from evidence files",
+    "verified rollback restores original runtime hashes"
+  ]
+}

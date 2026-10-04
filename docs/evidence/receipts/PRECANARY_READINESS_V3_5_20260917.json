@@ -1,0 +1,25 @@
+{
+  "checkpoint": "AV-CANARY-STAGE-RUNTIME-BINDING-20260917-56",
+  "qualification": "CANARY_TOOLING_V3_5",
+  "state": "READY_FOR_LIVE_CANARY_NOT_STABLE",
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [
+    96,
+    99
+  ],
+  "release_candidate": "release-candidate-20260917-rc5",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "bundle": {
+    "file": "akashic-voice-rc5-homologation-v3.5-20260917.zip",
+    "sha256": "fba17150a6586cccb8f27e4571aa4222a9be27e4d99379b3276abf4849aa2e90"
+  },
+  "live_gates_remaining": [
+    "real WAN/two-client listening plus production cross-server transfer/restart",
+    "physical microphone/speaker acoustic and AGC validation",
+    "real Pojav/Amethyst thermal/battery/input validation",
+    "controlled production canary and operator/player feedback"
+  ],
+  "completion_boundary": "Automated pre-canary engineering is exhausted; remaining completion requires real devices/network/operator evidence."
+}

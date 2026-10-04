@@ -1,0 +1,35 @@
+{
+  "state": "PASS",
+  "kind": "STATIC_MTU_SCOPE_AUDIT",
+  "checks": {
+    "udp_target_1200": true,
+    "av_opus_1124": true,
+    "generic_crypto_not_udp_capped": true,
+    "agent_bridge_keeps_1275": true,
+    "udp_in_guard_VoiceClient.java": true,
+    "udp_out_guard_VoiceClient.java": true,
+    "udp_in_guard_VoiceServer.java": true,
+    "udp_out_guard_VoiceServer.java": true,
+    "udp_in_guard_GatewayUdpServer.java": true,
+    "udp_out_guard_GatewayUdpServer.java": true,
+    "gateway_connection_in_guard": true,
+    "gateway_connection_out_guard": true,
+    "svc_bridge_payload_guard": true,
+    "group_bridge_payload_guard": true
+  },
+  "source_sha256": {
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WireProtocol.java": "1a2123e641f51edda738ecede00a964a7c1bbb5c7391154a4f743ed8952a180d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/codec/AudioFormatSpec.java": "ab88778993f83dc7f21482b901a0f74f68c1492b09e4eb70dc01cecc3698be7d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionCrypto.java": "19248191484ff703ffd58c38bb3624f02ebf89a34e03a15b24e170c5cfd6e449",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": "f58acac6e93a711aced2c35821fcecc31b160d5377a8ff90797a6b3020927bd4",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServer.java": "8ff41834ae366b15550f1d09844bd9bf20a2de2c7c83487d98d42640759c670a",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java": "a612ee204bee65b0259eed7b672b87d7722e2c031112171754919a64ef03d7ff",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java": "2063de4f8d594121de74d7faee2bfde91f3970d46d5fb342601613e1df6df18f",
+    "platform/bridge-core/src/main/java/dev/akashic/voice/platform/bridge/BridgeConstants.java": "b83a9860a3059aa83b6a3d265ae62c8895d6beadc4d7ef714640890ac5eba798"
+  },
+  "full_gates_reference": [
+    "mtu-legacy-final-03",
+    "mtu-java8-final-03",
+    "mtu-platform-final-03"
+  ]
+}

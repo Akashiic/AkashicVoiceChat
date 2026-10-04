@@ -1,0 +1,44 @@
+{
+  "state": "PASS",
+  "kind": "CLIENT20_MTU_TELEMETRY_CONSOLIDATION",
+  "checks": {
+    "udp_target_1200": true,
+    "av_opus_1124": true,
+    "generic_crypto_not_udp_capped": true,
+    "agent_bridge_keeps_1275": true,
+    "client_udp_in_out_guards": true,
+    "legacy_udp_in_out_guards": true,
+    "legacy_rx_telemetry_preserved": true,
+    "legacy_tx_telemetry_preserved": true,
+    "telemetry_snapshot_present": true,
+    "avdebug_uses_snapshot": true,
+    "gateway_udp_in_out_guards": true,
+    "gateway_connection_in_out_guards": true,
+    "svc_payload_guard": true,
+    "group_payload_guard": true,
+    "mtu_test_present": true,
+    "telemetry_tests_present": true
+  },
+  "source_sha256": {
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WireProtocol.java": "1a2123e641f51edda738ecede00a964a7c1bbb5c7391154a4f743ed8952a180d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/codec/AudioFormatSpec.java": "ab88778993f83dc7f21482b901a0f74f68c1492b09e4eb70dc01cecc3698be7d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionCrypto.java": "19248191484ff703ffd58c38bb3624f02ebf89a34e03a15b24e170c5cfd6e449",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": "f58acac6e93a711aced2c35821fcecc31b160d5377a8ff90797a6b3020927bd4",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServer.java": "fe5fa79a28685fb7bb89a6b51f546e2b79b555e7b4995ecc4d6c990fd66d9cc3",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServerTelemetry.java": "f71a4205737d5a4760f29a5f2f6d76274fefcf205c9fb09bf019cf027c4f750b",
+    "src/main/java/dev/akashic/voice/command/AvDebugCommand.java": "e47857e9af7a26e834454e1a73f60033f814bbda7ad09e283433484c26b56bcd",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java": "a612ee204bee65b0259eed7b672b87d7722e2c031112171754919a64ef03d7ff",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java": "2063de4f8d594121de74d7faee2bfde91f3970d46d5fb342601613e1df6df18f",
+    "platform/bridge-core/src/main/java/dev/akashic/voice/platform/bridge/BridgeConstants.java": "b83a9860a3059aa83b6a3d265ae62c8895d6beadc4d7ef714640890ac5eba798"
+  },
+  "full_gates": [
+    "merge-legacy",
+    "merge-java8",
+    "merge-platform",
+    "merge-packaged"
+  ],
+  "mutations": [
+    "merge-mtu-mutations:4/4",
+    "merge-telemetry-mutations:8/8"
+  ]
+}

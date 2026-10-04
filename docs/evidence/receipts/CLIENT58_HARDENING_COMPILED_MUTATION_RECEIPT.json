@@ -1,0 +1,60 @@
+{
+  "state": "PASS",
+  "mutations": 4,
+  "compiled": 4,
+  "detected": 4,
+  "results": [
+    {
+      "mutation": "group_radio_efx_leak",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "group/radio inherited environmental effects",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: group/radio inherited environmental effects",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:145)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.acousticRoutingIsolation(Client58PremiumCompletionSmoke.java:73)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:16)"
+      ]
+    },
+    {
+      "mutation": "device_identity_case_sensitive",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "case-only device identity caused recovery",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: case-only device identity caused recovery",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:145)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.outputHealthDecisionPolicy(Client58PremiumCompletionSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:17)"
+      ]
+    },
+    {
+      "mutation": "transparent_migration_forced_reload",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "transparent default migration caused reload",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: transparent default migration caused reload",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:145)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.outputHealthDecisionPolicy(Client58PremiumCompletionSmoke.java:87)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:17)"
+      ]
+    },
+    {
+      "mutation": "physical_disconnect_ignored",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "physical disconnect missed",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: physical disconnect missed",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:145)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.outputHealthDecisionPolicy(Client58PremiumCompletionSmoke.java:91)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:17)"
+      ]
+    }
+  ]
+}

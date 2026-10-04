@@ -1,0 +1,19 @@
+{
+  "src/main/java/dev/akashic/voice/voice/server/VoiceServer.java": {
+    "before": "f92aeea18041b43d25015475e1d6e6d5aa2aefc89c3302adabc03228f3baa55b",
+    "after": "718fff0ab7ed53b561ebc1fb56ed0a9e8039f29e8f75572c515f06b0723433bb"
+  },
+  "src/main/java/dev/akashic/voice/command/AvDebugCommand.java": {
+    "before": "0a572550e647d60644421abc67e36394057699cc56289b87097d0040e01e2b7e",
+    "after": "fdbb14da798b622ff9fb5ffcf21400be6ec9bcba7f66db6399be4ba840f4a611"
+  },
+  "src/main/java/dev/akashic/voice/voice/server/VoiceServerMetricsSnapshot.java": {
+    "new": "11f824f171d54dd8cf23835f01dd000c716ca8c7c17a29320f512daeaca6f932"
+  },
+  "src/main/java/dev/akashic/voice/voice/server/VoiceServerTelemetry.java": {
+    "new": "02b1c9bda6d2fa1e20c1f177c4462ff4e437cb78ff89b1f046ecf1fa57ef33e0"
+  },
+  "tools/qa/VoiceServerTelemetrySmoke.java": {
+    "new": "24d6747f76cf2d1006319e936ed19463d68628e53d001c24ae1ce98e13a4e323"
+  }
+}

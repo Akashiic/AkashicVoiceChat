@@ -1,0 +1,23 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-EVIDENCE-CHAIN-20260917-52",
+  "checks": 15,
+  "passed": 15,
+  "details": [
+    "unique run directory and seed hash",
+    "artifact/install/rollback provenance validated",
+    "out-of-order Restart rejected",
+    "Baseline overwrite rejected",
+    "Baseline hash chain valid",
+    "Restart hash chain valid",
+    "Cleanup hash chain valid",
+    "observation phase gated by Cleanup",
+    "blank observations evaluate HOLD",
+    "objective counter tampering rejected before final output",
+    "coherent synthetic observations reach READY_FOR_STABLE_REVIEW",
+    "all evaluator gates PASS in synthetic case",
+    "final receipt hashes final evidence/report",
+    "configuration secret absent from session files",
+    "test installation restored through verified rollback"
+  ]
+}

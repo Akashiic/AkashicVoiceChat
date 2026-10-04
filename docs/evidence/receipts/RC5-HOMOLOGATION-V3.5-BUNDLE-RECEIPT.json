@@ -1,0 +1,19 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STAGE-RUNTIME-BINDING-20260917-56",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "variant": "CANARY_TOOLING_V3_5",
+  "bundle": "akashic-voice-rc5-homologation-v3.5-20260917.zip",
+  "bundle_sha256": "fba17150a6586cccb8f27e4571aa4222a9be27e4d99379b3276abf4849aa2e90",
+  "bundle_bytes": 3432389,
+  "checks": 49,
+  "passed": 49,
+  "failed": [],
+  "release_files": 8,
+  "homologation_files": 36,
+  "production_artifacts_changed": false,
+  "no_deployment_performed": true,
+  "live_canary_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 98
+}

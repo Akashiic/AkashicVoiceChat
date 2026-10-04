@@ -1,0 +1,16 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-ROLLBACK-PREFLIGHT-20260917-50",
+  "checks": 8,
+  "passed": 8,
+  "details": [
+    "dry-run changes no installed artifact",
+    "explicit restore returns all three JARs to original hashes",
+    "configuration hash remains unchanged",
+    "restore leaves no staging files",
+    "restore report lists forge/gateway/paper",
+    "tampered backup aborts explicit restore",
+    "tampered backup causes zero destination writes",
+    "restore requires explicit ExecuteRollback switch"
+  ]
+}

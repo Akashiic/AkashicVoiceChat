@@ -1,0 +1,10 @@
+{
+  "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackChannel.java": {
+    "before": "bfa70133a33c78d36d79b731470a98ffad8636d02974345e9277f00f37446091",
+    "after": "c2b9e9bd9615b7578d6307d49333182ad13a46f2518800d6773cf054d55d6317"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": {
+    "before": "ee922129c5c2fdbb1e9eb09464f2eff0a47a9f9d756f0f864bb33fbf8d200bca",
+    "after": "f538ee99deb85016ef277ce21ad3e4bf7d7d6a426539847ed651c6297241bc28"
+  }
+}

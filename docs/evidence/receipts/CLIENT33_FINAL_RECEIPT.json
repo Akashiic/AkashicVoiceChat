@@ -1,0 +1,33 @@
+{
+  "checkpoint": "AV-OUTBOUND-EPOCH-RECLAMATION-20260915-33",
+  "baseline": "integrated-client31",
+  "diagnostic_precursor": "integrated-client32",
+  "candidate": "integrated-client33",
+  "state": "VERIFIED_AUTOMATED",
+  "progress_estimate_percent": 87,
+  "progress_judgment_band": [82, 91],
+  "production_delta": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/OutboundStreamEpochs.java"
+  ],
+  "qa_delta": [
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/OutboundStreamEpochReclamationTest.java",
+    "tools/qa/VoiceServerMetricsIntegrationSmoke.java"
+  ],
+  "client32_reproduction": {"tests": 4, "failed": 4, "cause": "retired outbound epoch entries remained in the 4096-entry map"},
+  "focused_final": {"tests": 6, "failures": 0},
+  "java8": {"state": "PASS", "compiled_sources": 161, "executions": 43, "active_changes": 0, "candidate_changes": 0},
+  "legacy_gradle": {"state": "PASS"},
+  "platform_gradle": {"state": "PASS", "actionable_tasks": 38, "executed_tasks": 38, "junit_tests": 155, "junit_suites": 37, "failures": 0, "errors": 0, "skipped": 0},
+  "packaged_dev": {"state": "PASS", "executions": 44, "sha256": "0b7e6f69510d615ba347c0372e03b8f897e9fc3bfbd495d3fcd23f160b14aab5"},
+  "packaged_gateway_probe": {"state": "PASS", "replacement_epoch": 4097, "final_active_entries": 4095},
+  "mutation_sensitivity": {"state": "PASS", "compiled": 6, "detected": 6},
+  "distribution": {"state": "PASS", "mod_sha256": "507e6942a2d0f76a091182e3ba2a6d2752a45129ddd8e5fafe9cf74130bee57f", "mod_classes_java8": 296, "jni_classes": 5, "native_binaries": 7, "license_inventory_entries": 33},
+  "gateway_sha256": "83b387332295b2191a3a432e0de13c6a6d6ce9b8a7f22c896e12d6d637a51f4c",
+  "paper_sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+  "scope_audit": {"changed_files_vs_current_client31": 3, "production_files": 1, "active_tree_promoted": false},
+  "intermediate_failures": [
+    "CLIENT32 focused reclamation test intentionally reproduced the bug: 4/4 failed before the fix.",
+    "First CLIENT33 Java8 matrix failed once in VoiceServerMetricsIntegrationSmoke because the QA waited for activeSessions=0 before sessionsClosed incremented. The production ordering was unchanged; five immediate reruns passed. The smoke was hardened to wait for both metrics, then the full matrix passed."
+  ],
+  "live_gates": {"physical_audio": false, "real_two_client_velocity": false, "wan": false, "mobile_real_device": false, "production_deployed": false}
+}

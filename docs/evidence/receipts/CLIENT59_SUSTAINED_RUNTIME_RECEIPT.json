@@ -1,0 +1,26 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-REAL-CLIENT-RUNTIME-EVIDENCE-20260917-59",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "sample_count": 7,
+  "sample_interval_seconds": 20,
+  "observed_span_seconds": 124,
+  "minecraft_alive_all_samples": true,
+  "required_voice_threads": 4,
+  "required_voice_threads_present_all_samples": true,
+  "negative_log_scan": {
+    "voice_server_timeout": 0,
+    "microphone_open_failure": 0,
+    "capture_failure": 0,
+    "fresh_bootstrap_or_handshake_reset": 0
+  },
+  "audio_content_inspected": false,
+  "gui_input_synthesized": false,
+  "two_client_gate_closed": false,
+  "acoustic_gate_closed": false,
+  "mobile_gate_closed": false,
+  "production_canary_gate_closed": false,
+  "production_artifacts_changed": false,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [96, 99]
+}

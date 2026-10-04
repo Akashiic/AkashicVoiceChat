@@ -1,0 +1,17 @@
+{
+  "checkpoint": "AV-CANARY-STATUS-PARSER-20260917-49",
+  "state": "FULLY_GATED_HOMOLOGATION_INGESTION_NOT_LIVE_VALIDATED",
+  "release_under_test": "release-candidate-20260917-rc5",
+  "production_delta_files": 0,
+  "release_artifact_changes": 0,
+  "pipeline_tests": {"state": "PASS", "checks": 8, "passed": 8},
+  "static_audit": {"state": "PASS", "checks": 23, "passed": 23},
+  "source_evidence_overwrite_forbidden": true,
+  "route_down_fail_closed": true,
+  "missing_agent_counters_rejected": true,
+  "live_canary_performed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [92, 98]
+}

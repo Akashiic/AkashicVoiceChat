@@ -1,0 +1,13 @@
+Akashic Voice homologation bundle
+Commit: 5eb51e1b90a4d151fbdedc0d6245fcbae9dccbec
+Branch: akashic-voice
+Created: 2026-09-12T14:10:58-03:00
+
+Artifacts:
+- akashicvoice-client-server-1.7.10.jar (3082556 bytes)
+- akashicvoice-gateway-velocity-4.0.0.jar (124416 bytes)
+- akashicvoice-svc-bridge-paper-1.21.1.jar (85503 bytes)
+- gateway-config.properties.template (295 bytes)
+- Generate-AgentPsk.ps1 (503 bytes)
+- HOMOLOGATION.md (4944 bytes)
+- paper-bridge-config.yml.template (245 bytes)

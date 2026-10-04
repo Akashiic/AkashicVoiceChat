@@ -1,0 +1,11 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STATUS-PARSER-20260917-49",
+  "file": "akashic-voice-rc5-canary-v3-client49-20260917.zip",
+  "sha256": "c7805e83246b849fb77c04cd18970ebbd10ee49a32457d12fe53fe283abcc281",
+  "bytes": 13292,
+  "entries": 12,
+  "contains_jars": false,
+  "release_artifacts_modified": false,
+  "production_deployed": false
+}

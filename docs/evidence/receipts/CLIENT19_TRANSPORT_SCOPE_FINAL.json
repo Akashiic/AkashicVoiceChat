@@ -1,0 +1,7 @@
+{
+  "gateway": "a612ee204bee65b0259eed7b672b87d7722e2c031112171754919a64ef03d7ff",
+  "mtu_test": "00fb25b1925a22e468e7390474cffee817822f18dfccf549a0e644a2c9c43a1f",
+  "generic_crypto_restored": true,
+  "agent_tcp_max_opus": 1275,
+  "av_udp_max_opus": 1124
+}

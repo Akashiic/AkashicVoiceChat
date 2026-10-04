@@ -1,0 +1,26 @@
+{
+  "checkpoint": "AV-NAT-REBIND-RECEIPT-RECLAMATION-20260915-42",
+  "baseline": "integrated-client39",
+  "candidate": "integrated-client42",
+  "state": "FULL_PLATFORM_GATED_NOT_DEPLOYED",
+  "progress_estimate_percent": 93,
+  "progress_judgment_band": [89, 97],
+  "production_delta": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java"
+  ],
+  "qa_delta": [
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayNatRebindIntegrationTest.java"
+  ],
+  "baseline_negative_control": "PASS: stronger pending-receipt assertion fails on CLIENT39",
+  "focused_nat_tests": {"tests": 3, "state": "PASS", "max_consecutive_rebinds": 32},
+  "platform": {"state": "PASS", "tasks": 38, "executed": 37, "tests": 179, "suites": 41,
+    "failures": 0, "errors": 0, "skipped": 0},
+  "mutations": {"state": "PASS", "compiled_and_detected": 4, "total": 4},
+  "gateway_sha256": "73402ddb9fb2193fbca21b0190517389f1df3c730d8690f13316af984c2e90d1",
+  "server_sha256": "7d88198e48ee453cffe82729e676e86593f6871c57d6ed853109e1b427b455da",
+  "active_source_promoted": false,
+  "production_deployed": false,
+  "physical_audio_tested": false,
+  "real_wan_tested": false,
+  "mobile_real_device_tested": false
+}

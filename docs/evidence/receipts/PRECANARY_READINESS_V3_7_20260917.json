@@ -1,0 +1,31 @@
+{
+  "checkpoint": "AV-LIVE-CLIENT-PROBE-V37-20260917-62",
+  "qualification": "CANARY_TOOLING_V3_7_PLUS_REAL_CLIENT_PROBE",
+  "state": "READY_FOR_FINAL_EXTERNAL_ACCEPTANCE_NOT_STABLE",
+  "progress_estimate_percent": 99,
+  "progress_judgment_band": [98, 99.5],
+  "release_candidate": "release-candidate-20260917-rc5",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "live_client_probe": {
+    "receipt": "CLIENT62_LIVE_PROBE_V37_RETRY.json",
+    "state": "PASS_RUNTIME_PREREQUISITES",
+    "installed_forge_matches_rc5": true,
+    "remote_media_proven": false
+  },
+  "bundle": {
+    "file": "akashic-voice-rc5-homologation-v3.7-20260917.zip",
+    "sha256": "2a771baf1feb7b78fb0ebc04a79940622f785ffe8f13837eae9173d0301a331f",
+    "seal_checks": "55/55 PASS",
+    "extracted_bundle_smoke": "PASS"
+  },
+  "live_gates_remaining": [
+    "controlled backend process restart with voice recovery evidence",
+    "remote media/listening with two real clients",
+    "physical microphone/speaker acoustic and AGC review",
+    "real Pojav/Amethyst thermal, battery and input validation",
+    "controlled production canary with operator/player acceptance"
+  ]
+}

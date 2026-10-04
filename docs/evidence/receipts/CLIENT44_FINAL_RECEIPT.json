@@ -1,0 +1,38 @@
+{
+  "checkpoint": "AV-NAT-REBIND-LOGICAL-LIFECYCLE-20260915-44",
+  "candidate": "integrated-client44",
+  "state": "FULLY_GATED_AUDIT_CANDIDATE_NOT_DEPLOYED",
+  "baseline": "integrated-client43",
+  "production_delta": [
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java"
+  ],
+  "behavior": {
+    "nat_rebind_transport_metrics": "open/close counted per UDP authority change",
+    "logical_lifecycle": "same authenticated grant does not emit disconnect/connect churn",
+    "session_bound_identity": "proxy player + backend + voice identity + session id",
+    "legacy_identity": "proxy player + backend + voice identity with null session id"
+  },
+  "gates": {
+    "focused_gateway_tests": "PASS",
+    "platform_clean_build_no_configuration_cache": "PASS; 38 tasks executed",
+    "platform_junit": {"tests": 185, "suites": 42, "failures": 0, "errors": 0, "skipped": 0},
+    "forge_clean_build_no_configuration_cache": "PASS; 35 tasks executed",
+    "distribution_jar_smoke": "PASS; 296 Java8 classes, 5 JNI, 7 natives, notices/licenses present"
+  },
+  "mutation_sensitivity": {
+    "detected": 5,
+    "total": 5,
+    "mutations": [
+      "connect callback not suppressed on rebind",
+      "disconnect callback not suppressed on rebind",
+      "logical-session match disabled",
+      "transport close metric lost",
+      "session id ignored in logical-session identity"
+    ]
+  },
+  "progress_estimate_percent": 95,
+  "progress_judgment_band": [91, 98],
+  "active_sources_promoted": false,
+  "production_deployed": false
+}

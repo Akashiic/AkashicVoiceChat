@@ -1,0 +1,64 @@
+{
+  "checkpoint": "AV-RELEASE-CANDIDATE-PACKAGING-20260915-43",
+  "state": "AUDIT_ONLY_NOT_DEPLOYED",
+  "production_sources_modified": false,
+  "artifacts": [
+    {
+      "file": "akashicvoice-forge-1.7.10.jar",
+      "sha256": "e38cfe33d7e722a885425448488ede80807d16a0ea5938631a80f9ddadb47494",
+      "bytes": 3163771,
+      "classes": 296,
+      "class_majors": [
+        52
+      ]
+    },
+    {
+      "file": "akashicvoice-gateway-velocity.jar",
+      "sha256": "2218962a1b7955ba87ec77c22941b92d7b44c9072368fb4fcf191e49c1ac6254",
+      "bytes": 251959,
+      "classes": 146,
+      "class_majors": [
+        52,
+        65,
+        69
+      ]
+    },
+    {
+      "file": "akashicvoice-svc-paper.jar",
+      "sha256": "b5e66814edfd8bfb1b197d786ddb9da727a75e9940dad7ca44da9b92b2c21bdb",
+      "bytes": 128657,
+      "classes": 84,
+      "class_majors": [
+        52,
+        65
+      ]
+    },
+    {
+      "file": "akashicvoice-addon-api.jar",
+      "sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+      "bytes": 7581,
+      "classes": 9,
+      "class_majors": [
+        65
+      ]
+    }
+  ],
+  "source_chain": {
+    "forge_mod": "reviewed-client36-20260915; source-identical through CLIENT39",
+    "gateway": "integrated-client39",
+    "paper": "integrated-client39; identical to reviewed CLIENT36",
+    "addon_api": "integrated-client39; identical to reviewed CLIENT36"
+  },
+  "qualification": [
+    "CLIENT39 full platform gated",
+    "CLIENT40 prolonged-session soak PASS",
+    "CLIENT41 NAT rebind PASS",
+    "CLIENT42 client recovery escalation PASS"
+  ],
+  "open_live_gates": [
+    "real WAN/two-client listening",
+    "physical microphone/speaker quality",
+    "real Pojav/Amethyst devices and thermal/battery",
+    "production deployment/operator observation"
+  ]
+}

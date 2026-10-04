@@ -1,0 +1,18 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-STAGE-RUNTIME-BINDING-20260917-56",
+  "checks": 12,
+  "passed": 12,
+  "failed": [],
+  "bundle": "akashic-voice-rc5-homologation-v3.5-20260917.zip",
+  "bundle_sha256": "fba17150a6586cccb8f27e4571aa4222a9be27e4d99379b3276abf4849aa2e90",
+  "production_artifacts_changed": false,
+  "deployment_performed": false,
+  "live_canary_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [
+    96,
+    99
+  ]
+}

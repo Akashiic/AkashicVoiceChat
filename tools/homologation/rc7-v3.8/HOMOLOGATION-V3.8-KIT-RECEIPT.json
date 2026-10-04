@@ -1,0 +1,47 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-PREMIUM-LIVE-ACCEPTANCE-V38-20260917-63",
+  "release_checkpoint": "AV-PREMIUM-HARDENING-RC7-20260917-58",
+  "variant": "CANARY_TOOLING_V3_8",
+  "base_tooling": "homologation-rc5-v3.7-20260917",
+  "base_files": 42,
+  "unchanged_inherited_files": 32,
+  "modified_inherited_files": [
+    "CANARY-EVIDENCE-v3.json",
+    "EXPECTED-SHA256.json",
+    "HOMOLOGATION-v3.md",
+    "INSTALL-v3.md",
+    "LIVE-CLIENT-PROBE-v3.7.md",
+    "evaluate-canary-v3.ps1",
+    "install-canary-v3.ps1",
+    "new-canary-session-v3.ps1",
+    "prepare-rollback-v3.ps1",
+    "probe-live-client.ps1"
+  ],
+  "added_files_before_receipt": [
+    "CLIENT63-V38-PRESEAL-QA-RECEIPT.json",
+    "LIVE-ACCEPTANCE-v3.8.md",
+    "LIVE-CLIENT-PROBE-v3.8.md"
+  ],
+  "powershell_parse": "PASS",
+  "json_parse": "PASS",
+  "operational_rc5_reference_count": 0,
+  "probe_v37_reference_count": 0,
+  "new_premium_gates": [
+    "physical_output_hotplug_recovery",
+    "environmental_voice_acoustics",
+    "nametag_talking_suffix_visual",
+    "ptt_indicator_latency_visual"
+  ],
+  "agc_limiter_decision_required": true,
+  "preseal_qa": {
+    "state": "PASS",
+    "synthetic_evaluator_pass": true,
+    "negative_controls": 5,
+    "probe_v38_synthetic_pass": "PASS_RUNTIME_PREREQUISITES",
+    "live_evidence_proven": false
+  },
+  "production_artifacts_changed_by_tooling": false,
+  "deployment_performed": false,
+  "stable_release_approved": false
+}

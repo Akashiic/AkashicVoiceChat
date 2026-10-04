@@ -1,0 +1,14 @@
+{
+  "src/main/java/dev/akashic/voice/voice/client/playback/SpeakerControls.java": {
+    "before": "c2b92daa2fbcaf45d1982a3bc4905e6102c86a158d2eda3e5c1d8d50f9ea8942",
+    "after": "5025d4409d16db8037895ce67d1df38e688577ec5565006dece8a3b2d4b2acb1"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": {
+    "before": "6422fd72d50bd2f17c0dda20d1582a6a06461b92add684adcbbad9bc4a818849",
+    "after": "7991c85b6b6d119d5f51ac0394a85b25f06e61a235d3b416d6fedfeb9fffef8f"
+  },
+  "src/main/java/dev/akashic/voice/voice/client/jitter/DecoderStream.java": {
+    "before": "2018609a3869eb71b46864ad95acf5445271a88fa34967824c16654dcf968e8b",
+    "after": "0fa55816eb2e9b2c4b6f76e35dabeb425b254d9be6303c56b376ed5d7ea352c6"
+  }
+}

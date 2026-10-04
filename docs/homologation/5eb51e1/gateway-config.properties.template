@@ -1,0 +1,9 @@
+# Akashic Voice Gateway homologation template
+udp-port=24454
+agent-bind-host=127.0.0.1
+agent-port=24456
+allowed-backends=lobby
+
+# Generate a unique 32-byte Base64 secret for this backend.
+# Never reuse a client voice bootstrap secret here.
+agent-psk.lobby.base64=<PASTE_32_BYTE_BASE64_PSK_HERE>

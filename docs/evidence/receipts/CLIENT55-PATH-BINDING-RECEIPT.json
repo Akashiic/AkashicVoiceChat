@@ -1,0 +1,13 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-PATH-BINDING-20260917-55",
+  "checks": 8,
+  "passed": 8,
+  "negative_control_v3_3_reproduced": true,
+  "destination_substitution_rejected": true,
+  "verification_path_substitution_rejected": true,
+  "source_substitution_rejected": true,
+  "valid_flow_preserved": true,
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

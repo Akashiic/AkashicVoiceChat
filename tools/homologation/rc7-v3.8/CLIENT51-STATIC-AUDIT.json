@@ -1,0 +1,176 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-CANARY-INSTALL-PREFLIGHT-20260917-51",
+  "checks": 33,
+  "passed": 33,
+  "failed": [],
+  "details": [
+    {
+      "check": "sealed_rc5:forge",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:gateway",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:paper",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "sealed_rc5:addon_api",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:EXPECTED-SHA256.json",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:verify-install.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:CANARY-EVIDENCE-v3.json",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:evaluate-canary-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:parse-status-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:apply-status-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:prepare-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:verify-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "client50_inherited:restore-rollback-v3.ps1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "explicit_execute_switch",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "rollback_manifest_required",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "dry_run_precedes_staging",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "only_three_runtime_roles",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "rollback_failure_states",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "zero_config_writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_secret_handling:agent-psk",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_secret_handling:private.?key",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_secret_handling:password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_secret_handling:access.?token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_secret_handling:bootstrap.?secret",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:Stop-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:Start-Process",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:Restart-Service",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:taskkill",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:systemctl",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_process_control:docker restart",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "install_tests_10_of_10",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "partial_failure_7_of_7",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no_runtime_jars_in_tooling",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "production_artifacts_changed": false,
+  "deployment_performed": false
+}

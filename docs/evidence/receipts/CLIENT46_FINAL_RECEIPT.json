@@ -1,0 +1,21 @@
+{
+  "checkpoint": "AV-LEGACY-AGENT-RC4-20260916-46",
+  "state": "FULLY_GATED_RELEASE_CANDIDATE_NOT_DEPLOYED",
+  "candidate": "integrated-client46-feedback",
+  "release_candidate": "release-candidate-20260916-rc4",
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [92, 98],
+  "legacy_forge_gate": "PASS",
+  "actual_java8_gate": "PASS",
+  "java8_compiled_sources": 167,
+  "java8_command_records": 46,
+  "platform_gate": "PASS",
+  "platform_junit": {"tests": 186, "suites": 43, "failures": 0, "errors": 0, "skipped": 0},
+  "packaged_devjar_replay": {"state": "PASS", "executions": 46},
+  "agent_mutations": {"compiled": 5, "detected": 5},
+  "static_fail_closed_audit": {"passed": 20, "total": 20},
+  "distribution_jar": {"classes_java8": 309, "jni": 5, "natives": 7, "inventory": 33},
+  "production_deployed": false,
+  "git_tag_created": false,
+  "active_tree_promoted": false
+}

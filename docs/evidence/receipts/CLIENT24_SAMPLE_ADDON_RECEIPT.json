@@ -1,0 +1,9 @@
+{
+  "state": "PASS",
+  "toolchain": "Eclipse Temurin JDK 25.0.3",
+  "compile_model": "Gradle compileOnly addon-api + velocity-api:4.0.0",
+  "source_sha256": "c77d5f4b1ced5e12c7ab62d8cd932e6263fa793dcb5fdf21a4f2221fcfe97f27",
+  "class_sha256": "2ef06759984f7e2c8d49255420b215542fedeeba732d80e3e887e6ad5d81df9b",
+  "addon_api_sha256": "6e73a1f96d96251cc631f6a51e4a1e485022257f1cf0a517dc7781e8ff5de347",
+  "velocity_api_sha256": "faf296a44b39573002590a2c7172c6adea2eb0f65760b452f78a75c9eb308d37"
+}

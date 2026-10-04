@@ -1,33 +1,55 @@
 # Akashic Voice
 
-High-quality spatial voice for Minecraft 1.7.10, engineered for legacy clients without forcing a legacy server stack.
+High-quality spatial voice chat for **Minecraft 1.7.10 (Forge)**, engineered for legacy clients without forcing a legacy server stack. Derived from the MIT-licensed [ProxyChat](https://github.com/Tony20494/ProxyChat) and re-architected for the Rede Akashic / *The End of The Forbidden* environment.
 
-Akashic Voice is derived from the MIT-licensed ProxyChat project and is being re-architected for the Rede Akashic / The End of The Forbidden environment. The client contract is deliberately conservative: Minecraft 1.7.10, Forge 10.13.4.1614, Java 8 bytecode and LWJGL2-compatible audio. The server may run on a modern JVM such as Java 21.
+> **Status (2026-10-04): release candidate RC7, not a stable release.** All automated gates pass; five live-acceptance gates and several field-observed defects remain open. See [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md).
+>
+> Resumo em português: [`docs/PT-BR_RESUMO.md`](docs/PT-BR_RESUMO.md).
 
-## Current engineering status
+## At a glance
 
-This repository is under active development. The current foundation already includes:
+| Item | Value |
+|---|---|
+| Client contract | Minecraft 1.7.10, Forge 10.13.4.1614, Java 8 bytecode (class major 52), LWJGL2-compatible OpenAL |
+| Server contract | Forge/Crucible direct mode (Java 8–21), or Velocity 4.0.0 Gateway (Java 25) + Paper 1.21.1 / Simple Voice Chat bridge (Java 21) |
+| Codec / transport | Opus 48 kHz mono 20 ms frames, 48 kbit/s default; native libopus preferred, Concentus fallback; UDP 24454; HKDF-SHA-256 + AES-128-GCM |
+| Version label in use | `0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty` (**ambiguous**, see [provenance](docs/VERSIONING_AND_PROVENANCE.md)) |
+| Installed JAR identity | RC7 Forge JAR, SHA-256 `c0f9d86cb331598c2e0e7c9d7ebf6091fffee18bc94bbdaf6bbf9cbe6d2eb081` |
+| Planning progress | 99 % core stable-v1 scope (RC5, 98–99.5 %); 97 % expanded premium scope (RC7, 95–98.5 %). Judgment estimates, not measurements |
+| Release / tags | No stable release, no production deployment approved |
 
-- 48 kHz mono Opus voice at a 48 kbit/s default bitrate, with bundled native libopus on supported desktops and pure-Java Concentus fallback;
-- 20 ms / 960-sample audio frames;
-- proximity-based OpenAL 3D playback;
-- push-to-talk, voice activation and always-on capture modes;
-- microphone selection/test UI and voice settings;
-- persistent groups with distance-independent group audio;
-- versioned AV UDP envelope with authenticated media endpoints;
-- HKDF-SHA-256 session derivation and directional AES-128-GCM transport;
-- 64-packet replay windows plus handshake and authenticated-media rate limits;
-- server-authoritative player position for proximity routing;
-- server-authoritative voice identity for offline-mode compatibility;
-- one Opus decoder state per remote speaker;
-- bounded playback queues and reusable OpenAL scratch buffers;
-- per-speaker fixed jitter/reorder rings with duplicate/late handling and Opus PLC;
-- a 128-frame preallocated PCM playback pool to avoid 50 Hz array churn;
-- backend-agnostic microphone capture SPI with JavaSound and LWJGL2/OpenAL Capture implementations;
-- automatic capture fallback plus bounded microphone retry/recovery for device loss and delayed audio readiness;
-- selectable `auto` / `native` / `java` Opus backend with bounded native decoder scratch storage.
+## Documentation map
 
-The Gateway/Simple Voice Chat bridge now passes secure local end-to-end transport QA, including backend-bound bootstrap, agent reconnect, raw-Opus passthrough and proxy UUID ↔ local Bukkit UUID binding. It is **not** claimed production-ready until real Velocity/Paper/SVC clients pass listening, transfer and soak tests. Adaptive jitter tuning and Android/Pojav/Amethyst real-device microphone validation also remain open gates.
+Read in this order when taking over the project:
+
+1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — single source of truth for what exists, what is proven, what is open.
+2. [`docs/HANDOFF.md`](docs/HANDOFF.md) — rules, environment, next actions, how not to break evidence.
+3. [`docs/VERSIONING_AND_PROVENANCE.md`](docs/VERSIONING_AND_PROVENANCE.md) — which build is which; hash table RC1–RC7.
+4. [`docs/HOMOLOGATION.md`](docs/HOMOLOGATION.md) — acceptance protocol and gate status.
+5. [`docs/FIELD_EVIDENCE_2026-10.md`](docs/FIELD_EVIDENCE_2026-10.md) — what 154 real client logs show.
+6. [`docs/HISTORY.md`](docs/HISTORY.md) and [`CHANGELOG.md`](CHANGELOG.md) — chronology from ProxyChat to RC7.
+7. [`docs/ISSUES_REGISTER.md`](docs/ISSUES_REGISTER.md) — tracked issues (mirrors GitHub Issues).
+8. [`docs/BUILD_AND_QA.md`](docs/BUILD_AND_QA.md) — building, JDK matrix, QA runners.
+9. [`docs/RELATED_PROJECTS.md`](docs/RELATED_PROJECTS.md) — sibling projects found on the engineering workstation.
+10. Engineering contracts: [`ARCHITECTURE`](docs/ARCHITECTURE.md), [`AUDIT`](docs/AUDIT.md), [`ROADMAP_STATUS_20260917`](docs/ROADMAP_STATUS_20260917.md), [`CONTINUITY`](docs/CONTINUITY.md), [`PERFORMANCE`](docs/PERFORMANCE.md), [`ADDON_API`](docs/ADDON_API.md), [`RADIO`](docs/RADIO.md), [`platform/README`](platform/README.md).
+11. Evidence archive: [`docs/evidence/INDEX.md`](docs/evidence/INDEX.md) (handoffs CLIENT06–CLIENT63, JSON receipts, RC manifests; production host/port redacted).
+
+## Repository layout
+
+```text
+src/                      Forge 1.7.10 mod (client + Forge/Crucible server), Java 8 source
+shared/client-protocol/   Java 8 wire/crypto source shared by the mod and the platform
+platform/
+  addon-api/              Public addon API v1 (no raw audio, no per-frame callbacks)
+  bridge-core/            Minecraft-independent bridge/session/group models
+  agent-protocol/         Authenticated Paper-agent <-> Gateway protocol (separate key domain)
+  svc-paper/              Paper 1.21.1 adapter built only against the public SVC API 2.6.20
+  gateway-velocity/       Velocity 4.0.0 Gateway: UDP session authority, routes, groups, radio, moderation
+tools/qa/                 Java 8 smokes, JAR inspection, finite QA runners
+docs/                     Engineering documentation, evidence archive, homologation templates
+```
+
+Git history: 20 upstream ProxyChat commits (2026-05-08/09) → 16 Akashic Voice commits (2026-09-11/12) → one snapshot of the uncommitted active tree → RC7 source import → documentation.
 
 ## Runtime contract
 
@@ -39,75 +61,51 @@ The Gateway/Simple Voice Chat bridge now passes secure local end-to-end transpor
 | Crucible/server JVM | Java 8+; Java 21 is the supported Rede Akashic target |
 | Paper/SVC bridge JVM | Java 21 |
 | Velocity Gateway JVM | Java 25 for Velocity 4.0.0 |
-| Client graphics/audio API | LWJGL2-compatible OpenAL playback; JavaSound/OpenAL Capture input |
+| Client graphics/audio API | LWJGL2-compatible OpenAL playback; JavaSound / OpenAL Capture input |
 | Codec | Opus 48 kHz mono, 48 kbit/s default; native libopus preferred in `auto`, Concentus fallback |
 | Default voice transport | UDP 24454 |
-| UniMixins | not required |
-| GTNHLib | not required |
+| UniMixins / GTNHLib | not required |
 | lwjgl3ify | optional environment compatibility, not a dependency |
 | Angelica / Hodgepodge / ArchaicFix / CoreTweaks | compatible targets, not dependencies |
 
-The same legacy mod JAR is intended for client and Forge/Crucible server installation. Cross-version routing is isolated under `platform/`: Paper/SVC, agent protocol and Velocity Gateway are separate server-side artifacts so modern dependencies never contaminate the Java 8 client classpath.
+The same legacy mod JAR is intended for client and Forge/Crucible server installation. Cross-version routing is isolated under `platform/` so modern dependencies never contaminate the Java 8 client classpath.
 
-Codec backend semantics: `auto` tries bundled native libopus and falls back to Concentus if native loading is unavailable; `native` requires native libopus and fails explicitly; `java` forces Concentus. The bundled native artifact currently targets desktop Windows/Linux/macOS architectures, not Android.
+Codec backend semantics: `auto` tries bundled native libopus and falls back to Concentus; `native` requires native libopus and fails explicitly; `java` forces Concentus. The bundled native artifact targets desktop Windows/Linux/macOS, not Android.
 
-## Java 8 verification
+## Feature summary (RC7)
 
-Java 8 support is an audited requirement rather than a build flag. The current source tree has been:
+Implemented in code and covered by automated gates (live acceptance still open where noted in the project state):
 
-- built with modern Gradle while `enableModernJavaSyntax=false`;
-- inspected to confirm class major version 52;
-- smoke-tested for Opus encode/decode on JDK 1.8.0_411;
-- independently recompiled with the actual JDK 8 `javac` against the resolved Forge compile classpath.
+- Secure voice: authenticated UDP handshake, session-bound AES-GCM, replay window, rate limits, server-authoritative identity and position, explicit session UUIDs, UDP datagrams ≤ 1200 bytes.
+- Client audio: per-speaker decoder state, adaptive jitter buffers with Opus PLC, pooled playback, speaker panel (search, per-speaker volume/mute), quality presets with live bitrate, touch/hold-to-talk, per-source voice gain.
+- Premium (RC6/RC7): OpenAL EFX environmental acoustics (OUTDOOR/ROOM/CAVE/UNDERWATER), talking nametag suffix, raw PTT path, OpenAL output hot-plug recovery.
+- Server side: Velocity Gateway with backend-bound bootstrap, Paper/SVC bidirectional bridge (raw Opus fast path, distance/whisper metadata), legacy Forge/Crucible Agent mode (fail-closed), federated groups, cross-server radio, persistent moderation, public Addon API v1.
 
-## Offline-mode identity
+Not claimed: in-band Opus FEC, AGC/limiter, Android-native capture, real-device mobile support, production readiness.
 
-The original ProxyChat bootstrap could authenticate UDP with a client-local UUID that differed from the UUID used by an offline-mode server. Akashic Voice does not guess UUID mode on the client.
+## Security notes
 
-The Minecraft-side bootstrap now returns the authoritative `EntityPlayerMP` UUID together with a 256-bit voice bootstrap secret and UDP port. The client uses exactly that server-issued identity for voice authentication. This design also prepares the protocol for proxy forwarding and future bridge identities.
+Session secrets and agent PSKs are credentials. They must never appear in logs, documentation, checkpoints or test reports. `/avdebug` and `/avgateway status` expose aggregate counters only. See [`SECURITY.md`](SECURITY.md).
 
-Live session secrets are credentials. Akashic Voice does not expose them through `/avdebug` or normal logs.
-
-## Network model
-
-The Minecraft connection bootstraps the voice session; audio then flows over UDP. The bootstrap carries a 256-bit secret and the authoritative server UUID. UDP authentication uses fresh client/server nonces and HMAC proofs; HKDF-SHA-256 derives separate client-to-server and server-to-client AES keys.
-
-After authentication, control and media packets are carried only inside AES-128-GCM envelopes with authenticated protocol headers, monotonically increasing directional counters and a bounded replay window. Plaintext media is rejected.
-
-Proximity routing uses the server's tracked world/dimension/position. Client-reported coordinates are not trusted as an authority. Group audio deliberately bypasses distance/dimension checks and is marked non-spatial for playback.
-
-Malformed or oversized Opus payload declarations are rejected before payload allocation. The client UDP socket is connected to the expected voice endpoint and ignores unrelated datagrams. HELLO traffic is globally/per-IP rate-limited before expensive derivation, and authenticated inbound datagrams have per-session packet/byte budgets before AES-GCM decrypt.
-
-Offline-mode remains a weaker identity root: Akashic Voice can secure the UDP session it bootstraps, but it cannot make an unauthenticated Minecraft login intrinsically trustworthy. Live proxy/offline-mode integration remains a separate release gate.
+Offline-mode remains a weaker identity root: Akashic Voice secures the UDP session it bootstraps but cannot make an unauthenticated Minecraft login intrinsically trustworthy.
 
 ## Building
 
-The build tooling uses JDK 21. This does **not** raise the client runtime requirement; the produced mod targets Java 8 bytecode.
+Build tooling uses JDK 21; the produced mod targets Java 8 bytecode. Details, the JDK matrix and QA runners are in [`docs/BUILD_AND_QA.md`](docs/BUILD_AND_QA.md).
 
 ```text
-./gradlew clean build
+./gradlew clean build                       # Forge mod -> build/libs/
+./gradlew -p platform --console=plain build # Gateway, Paper bridge, addon API (root wrapper, Gradle 9.3.1)
 ```
-
-Artifacts are written to `build/libs/`. Quality-assurance helpers live under `tools/qa/`.
 
 The bundled native Opus dependency is checksum-pinned: `verifyNativeOpusBundle` validates SHA-256 `e4d67fb9aa3158ed5bd17536b78cea20f85862144e7c1cdb1d6f5972cf031c30` before `shadowJar` may package it.
 
-## Development roadmap
-
-The engineering gates are tracked in `docs/AUDIT.md` and `docs/ROADMAP.md`. Major remaining work includes:
-
-1. adaptive jitter tuning, stream telemetry and live gameplay validation;
-2. live in-game allocation/latency/GC profiling and remaining control-path cleanup;
-3. real-device OpenAL/Android capture validation for Pojav/Amethyst-class launchers;
-4. live deployment validation of the implemented Akashic Voice Gateway and bidirectional Simple Voice Chat bridge;
-5. cross-server groups/radio semantics and public addon API.
+> The commands above are documented from the project's build files and QA receipts. They were **not** re-executed when this repository was assembled; see the verification note in `docs/BUILD_AND_QA.md`.
 
 ## Credits and license
 
-Akashic Voice is derived from **ProxyChat** by Julius Meinking, distributed under the MIT License in this repository. The original license notice is preserved.
+Akashic Voice is derived from **ProxyChat** by Julius Meinking (MIT). The original license notice is preserved in `LICENSE`. Upstream history (2026-05-08/09, releases 0.1.0–0.3.1) is preserved in this repository's git history.
 
-The bundled Concentus implementation is distributed under its upstream BSD-style license; its notice is included in `META-INF/licenses/Concentus-LICENSE.txt` inside the built JAR.
+The bundled Concentus implementation is distributed under its upstream BSD-style license (`META-INF/licenses/Concentus-LICENSE.txt` in the built JAR). The optional desktop backend bundles `com.plasmoverse:opus-jni-rust:1.0.4` (MIT) and its native libopus chain; notices and checksum/provenance records are under `META-INF/licenses/native-opus/`.
 
-The optional preferred desktop backend bundles `com.plasmoverse:opus-jni-rust:1.0.4` (MIT) and its native libopus dependency chain. Corresponding third-party notices and checksum/provenance records are included under `META-INF/licenses/native-opus/`.
-
-Simple Voice Chat is used only as an interoperability/behavioral reference where permitted. Akashic Voice must not copy ARR Simple Voice Chat source code; bridge behavior is implemented independently against supported interfaces/protocol behavior.
+Simple Voice Chat is used only as an interoperability/behavioral reference where permitted. Akashic Voice must not copy ARR Simple Voice Chat source code.

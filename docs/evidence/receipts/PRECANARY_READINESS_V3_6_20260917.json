@@ -1,0 +1,25 @@
+{
+  "checkpoint": "AV-CANARY-STANDALONE-RECEIPT-BINDING-20260917-58",
+  "qualification": "CANARY_TOOLING_V3_6",
+  "state": "READY_FOR_LIVE_CANARY_NOT_STABLE",
+  "progress_estimate_percent": 98,
+  "progress_judgment_band": [
+    96,
+    99
+  ],
+  "release_candidate": "release-candidate-20260917-rc5",
+  "production_artifacts_changed": false,
+  "production_deployed": false,
+  "stable_release_approved": false,
+  "bundle": {
+    "file": "akashic-voice-rc5-homologation-v3.6-20260917.zip",
+    "sha256": "7bc26aa13991d1e4f2ae9093d38ef0f7fcd84d60a36dcc2a574b6446879f9b0e"
+  },
+  "live_gates_remaining": [
+    "real WAN/two-client listening plus production cross-server transfer/restart",
+    "physical microphone/speaker acoustic and AGC validation",
+    "real Pojav/Amethyst thermal/battery/input validation",
+    "controlled production canary and operator/player feedback"
+  ],
+  "completion_boundary": "Remaining completion requires real devices/network/operator evidence; v3.6 closes standalone receipt trust."
+}

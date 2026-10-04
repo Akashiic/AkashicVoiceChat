@@ -1,0 +1,31 @@
+{
+  "checkpoint": "AV-EPOCH-CLIENT-20260913-06",
+  "active_sources_modified": false,
+  "partial_archive": true,
+  "prefix_sha256": "582b0ad85d1ff6aa032cb5387cf9b0f4f4c59487b7829f63c0a2b061d8805e3e",
+  "incomplete_file": "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayStreamEpochSmoke.java",
+  "recovered_sha256": {
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayRuntime.java": "2dece02028c3f8eb2e1342d42a4170c901e054e6676b2f6ffcfbb1048cb320b3",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayUdpServer.java": "0f0c6ac6cb6cf1ed09ab9012d5a9f0a5c5bde69aa786d8a2be7080b7b95be55e",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/GatewayVoiceConnection.java": "95ff7f8406d4daeb7bb0470382d43dfeedbb5abce8adcd67648daa4729feeced",
+    "platform/gateway-velocity/src/main/java/dev/akashic/voice/platform/velocity/OutboundStreamEpochs.java": "79c05a23b4a8df4cd6cb6088820800fa1253a6ff49eaa5ed9450089b797f08fd",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": "53618091b8bb8753a2f55a44c3a6f192485caf863a51d60a7042bab51936ddc9",
+    "src/main/java/dev/akashic/voice/voice/client/jitter/DecoderStream.java": "cac06ac28dad6fe0ac835e72caf8ff02bacc7f1f989cea6f9d6656d511735a7c",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackFrame.java": "04cdecd71628a1587199e22e0babf70c7529ac7ff9fa4d9779654f4000eaa904",
+    "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": "f00eb7a31e743b55e744e73ce953c3c39fc3c4836ea4bfb03e1fc0ab99d8095f",
+    "src/main/java/dev/akashic/voice/client/gui/GuiGroup.java": "e20f3c99dbfdd906373569c3a48ad4d4ade4a3a32bbddee9f9a43b04d9533528",
+    "src/main/java/dev/akashic/voice/client/gui/GuiInvitePlayers.java": "54996ebad26115d590f971db4fff94c7fa723cec05a3dde9c4c097f3575ff1bd"
+  },
+  "missing_expected_files": [
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayStreamEpochIntegrationTest.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/platform/velocity/GatewayStreamEpochSmoke.java",
+    "platform/gateway-velocity/src/test/java/dev/akashic/voice/voice/client/jitter/OpusJitterBuffer.java",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFrameV3Packet.java",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundResetV3Packet.java",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/StreamEpochTracker.java",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/VoiceCapabilities.java",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WirePacketType.java",
+    "src/main/java/dev/akashic/voice/voice/client/groups/ClientGroupCache.java",
+    "tools/qa/ClientPersonalGroupSmoke.java"
+  ]
+}

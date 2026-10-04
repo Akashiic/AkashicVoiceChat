@@ -1,0 +1,26 @@
+{
+  "state": "PASS",
+  "checkpoint": "AV-ROADMAP-RECONCILIATION-20260917-62",
+  "release_checkpoint": "AV-LEGACY-AGENT-OBSERVABILITY-RC5-20260917-47",
+  "roadmap_status_file": "docs/ROADMAP_STATUS_20260917.md",
+  "roadmap_status_sha256": "93b18cc5d4abc24f0b7f6e0a8c935fa03e2e44b387d5e83af266d5924aef2b64",
+  "historical_roadmap_sha256_after_notice": "efe03f3083e737b5581062fe6b63f79e33ac279808138a204f585dc8c904ac25",
+  "progress_estimate_percent": 99,
+  "progress_judgment_band": [98, 99.5],
+  "stable_release": false,
+  "production_artifacts_changed": false,
+  "engineering_todo_fixme_notimplemented_found": false,
+  "whisper_distance_end_to_end": true,
+  "adaptive_jitter_production_default": true,
+  "fec_policy": "DEFERRED_VNEXT_BACKEND_PARITY",
+  "agc_limiter_policy": "CONDITIONAL_ON_REAL_ACOUSTIC_EVIDENCE",
+  "fallback_transcoder_policy": "DEFERRED_VNEXT_FAST_PATH_SUPPORTED",
+  "remaining_live_gates": 5,
+  "remaining_live_gate_names": [
+    "controlled backend process restart",
+    "two-client remote media/listening",
+    "physical acoustic/AGC decision",
+    "real mobile Pojav/Amethyst acceptance",
+    "controlled production canary acceptance"
+  ]
+}

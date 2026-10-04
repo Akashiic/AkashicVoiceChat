@@ -1,0 +1,58 @@
+{
+  "state": "PASS",
+  "candidate": "integrated-client58-premium-completion",
+  "mutations": 5,
+  "detected": 5,
+  "results": [
+    {
+      "mutation": "output_unavailable_debounce",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:69)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    },
+    {
+      "mutation": "efx_detach_slot",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.acousticsContract(Client58SourceContractSmoke.java:54)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:15)"
+      ]
+    },
+    {
+      "mutation": "routing_policy_call",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.acousticsContract(Client58SourceContractSmoke.java:53)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:15)"
+      ]
+    },
+    {
+      "mutation": "device_case_insensitive",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:67)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    },
+    {
+      "mutation": "transparent_migration_guard",
+      "exit_code": 1,
+      "detected": true,
+      "tail": [
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.require(Client58SourceContractSmoke.java:85)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.outputRecoveryContract(Client58SourceContractSmoke.java:68)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke.main(Client58SourceContractSmoke.java:16)"
+      ]
+    }
+  ]
+}

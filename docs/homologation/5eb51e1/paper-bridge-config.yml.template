@@ -1,0 +1,9 @@
+# Akashic Voice SVC Bridge homologation template
+backend-id: lobby
+
+gateway:
+  enabled: true
+  host: 127.0.0.1
+  port: 24456
+  # Must match agent-psk.lobby.base64 from the Velocity Gateway config.
+  psk-base64: "<PASTE_32_BYTE_BASE64_PSK_HERE>"

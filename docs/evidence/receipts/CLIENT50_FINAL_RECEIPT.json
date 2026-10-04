@@ -1,0 +1,15 @@
+{
+  "checkpoint": "AV-CANARY-ROLLBACK-PREFLIGHT-20260917-50",
+  "state": "FULLY_GATED_ROLLBACK_PREFLIGHT_NOT_DEPLOYED",
+  "release_under_test": "release-candidate-20260917-rc5",
+  "client50_audit": "PASS",
+  "rollback_prepare_verify": "8/8 PASS",
+  "rollback_restore": "8/8 PASS",
+  "sealed_rc5_hashes_unchanged": true,
+  "configuration_or_psk_copied": false,
+  "deployment_performed": false,
+  "live_canary_performed": false,
+  "stable_release_approved": false,
+  "progress_estimate_percent": 96,
+  "progress_judgment_band": [92, 98]
+}

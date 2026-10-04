@@ -1,0 +1,34 @@
+{
+  "state": "PASS",
+  "mutations": 2,
+  "compiled": 2,
+  "detected": 2,
+  "results": [
+    {
+      "mutation": "recovery_retry_disabled",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "shared retry missing",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: shared retry missing",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:116)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.sharedRecoveryLifecycle(Client58PremiumCompletionSmoke.java:33)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:12)"
+      ]
+    },
+    {
+      "mutation": "acoustic_hysteresis_removed",
+      "compiled": true,
+      "exit_code": 1,
+      "detected": true,
+      "expected_marker": "room switched too early",
+      "tail": [
+        "Exception in thread \"main\" java.lang.AssertionError: room switched too early",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.check(Client58PremiumCompletionSmoke.java:116)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.acousticHysteresis(Client58PremiumCompletionSmoke.java:57)",
+        "\tat dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke.main(Client58PremiumCompletionSmoke.java:14)"
+      ]
+    }
+  ]
+}
