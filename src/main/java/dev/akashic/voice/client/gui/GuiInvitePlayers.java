@@ -59,7 +59,7 @@ public class GuiInvitePlayers extends GuiScreen {
     private void recomputeCandidates() {
         Minecraft mc = Minecraft.getMinecraft();
         UUID myId = mc.thePlayer != null ? mc.thePlayer.getUniqueID() : null;
-        GroupSnapshot myGroup = myId != null ? ClientGroupCache.myGroup(myId) : null;
+        GroupSnapshot myGroup = mc.thePlayer != null ? ClientGroupCache.personalGroup() : null;
         candidates = new ArrayList<>();
         for (RosterEntry e : ClientPlayerRoster.all()) {
             if (myId != null && e.id.equals(myId)) continue;

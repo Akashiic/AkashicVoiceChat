@@ -42,6 +42,27 @@ public final class IconRenderer {
         pop();
     }
 
+    /** Active voice indicator: the same microphone language as the local HUD, with a cyan voice pulse. */
+    public static void drawTalkingMic(int cx, int cy, int size) {
+        push();
+        float w = size * 0.34f;
+        float top = cy - size * 0.30f;
+        float bot = cy + size * 0.18f;
+        color(0.96f, 0.96f, 0.98f);
+        rect(cx - w / 2f, top, cx + w / 2f, bot);
+        color(0.18f, 0.88f, 0.96f);
+        rect(cx - size * 0.28f, bot + size * 0.05f, cx + size * 0.28f, bot + size * 0.11f);
+        rect(cx - size * 0.035f, bot, cx + size * 0.035f, bot + size * 0.08f);
+        GL11.glLineWidth(Math.max(1f, size * 0.12f));
+        GL11.glBegin(GL11.GL_LINES);
+        GL11.glVertex2f(cx + size * 0.30f, cy - size * 0.18f);
+        GL11.glVertex2f(cx + size * 0.39f, cy - size * 0.08f);
+        GL11.glVertex2f(cx + size * 0.30f, cy + size * 0.04f);
+        GL11.glVertex2f(cx + size * 0.39f, cy + size * 0.14f);
+        GL11.glEnd();
+        pop();
+    }
+
     public static void drawSpeaker(int cx, int cy, int size, boolean muted) {
         push();
         if (muted) color(0.50f, 0.50f, 0.50f);

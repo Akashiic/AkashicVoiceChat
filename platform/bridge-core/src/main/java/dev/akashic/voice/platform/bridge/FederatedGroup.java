@@ -19,6 +19,7 @@ public record FederatedGroup(UUID id, String name, UUID ownerId, Set<UUID> membe
         if (!members.contains(ownerId)) {
             throw new IllegalArgumentException("owner must be a member");
         }
+        for (UUID member : members) Objects.requireNonNull(member, "member");
         name = normalized;
         members = Collections.unmodifiableSet(new LinkedHashSet<>(members));
     }

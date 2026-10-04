@@ -12,6 +12,7 @@ import dev.akashic.voice.voice.server.PlayerStateRegistry;
 import dev.akashic.voice.voice.server.SecretRegistry;
 import dev.akashic.voice.voice.server.VoiceServer;
 import dev.akashic.voice.voice.server.VoiceServerHolder;
+import dev.akashic.voice.voice.server.agent.LegacyGatewayAgentHolder;
 import dev.akashic.voice.voice.server.groups.GroupRegistry;
 import dev.akashic.voice.voice.server.groups.GroupRegistryHolder;
 
@@ -29,6 +30,7 @@ public class CommonEvents {
 
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        LegacyGatewayAgentHolder.removeLocalIdentity(event.player.getCommandSenderName(), event.player.getUniqueID());
         SecretRegistry.invalidate(event.player.getUniqueID());
         PlayerStateRegistry.remove(event.player.getUniqueID());
         VoiceServer server = VoiceServerHolder.get();
@@ -50,9 +52,12 @@ public class CommonEvents {
         if (event.phase != TickEvent.Phase.END) return;
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return;
+        GroupRegistry registry = GroupRegistryHolder.get();
+        if (registry != null) registry.maintenanceTick();
         List<EntityPlayerMP> players = server.getConfigurationManager().playerEntityList;
         for (EntityPlayerMP p : players) {
             PlayerStateRegistry.update(p.getUniqueID(), p.dimension, p.posX, p.posY, p.posZ);
+            LegacyGatewayAgentHolder.updateLocalIdentity(p.getCommandSenderName(), p.getUniqueID());
         }
     }
 }

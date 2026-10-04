@@ -3,11 +3,7 @@ package dev.akashic.voice.voice.server.groups;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,8 +29,10 @@ import dev.akashic.voice.voice.common.groups.RosterEntry;
 public final class GroupRegistry {
 
     private final GroupSavedData saved;
-    /** group -> set of invited (pending) playerIds */
-    private final Map<UUID, Set<UUID>> pendingInvites = new HashMap<>();
+    private static final int MAX_GROUP_MEMBERS = 64;
+    private static final int INVITE_MAINTENANCE_TICKS = 100;
+    private final LegacyGroupInviteBook pendingInvites = new LegacyGroupInviteBook();
+    private int inviteMaintenanceTicks;
 
     public GroupRegistry(GroupSavedData saved) {
         this.saved = saved;
@@ -84,25 +82,24 @@ public final class GroupRegistry {
         for (Group other : saved.groups.values()) {
             if (other.members.contains(targetId)) return;
         }
-        pendingInvites.computeIfAbsent(groupId, k -> new HashSet<>())
-            .add(targetId);
-
+        if (g.members.size() >= MAX_GROUP_MEMBERS) return;
         EntityPlayerMP target = findOnline(targetId);
-        if (target != null) {
-            AkashicVoiceChannel.get()
-                .sendTo(
-                    new PacketInviteNotify(groupId, g.name, inviter.getUniqueID(), inviter.getCommandSenderName()),
-                    target);
-        }
+        if (target == null) return;
+        if (!pendingInvites.offer(groupId, inviter.getUniqueID(), targetId)) return;
+        AkashicVoiceChannel.get()
+            .sendTo(
+                new PacketInviteNotify(groupId, g.name, inviter.getUniqueID(), inviter.getCommandSenderName()),
+                target);
     }
 
     public synchronized void respondToInvite(EntityPlayerMP responder, UUID groupId, boolean accepted) {
-        Set<UUID> pending = pendingInvites.get(groupId);
-        if (pending == null || !pending.remove(responder.getUniqueID())) return;
-        if (pending.isEmpty()) pendingInvites.remove(groupId);
-        if (!accepted) return;
+        UUID inviterId = pendingInvites.consume(groupId, responder.getUniqueID());
+        if (inviterId == null || !accepted) return;
         Group g = saved.groups.get(groupId);
-        if (g == null) return;
+        if (g == null || !g.members.contains(inviterId) || g.members.size() >= MAX_GROUP_MEMBERS) return;
+        for (Group other : saved.groups.values()) {
+            if (other.members.contains(responder.getUniqueID())) return;
+        }
         g.members.add(responder.getUniqueID());
         saved.markDirty();
         broadcastGroupState(g);
@@ -113,10 +110,11 @@ public final class GroupRegistry {
         Group g = saved.groups.get(groupId);
         if (g == null) return;
         if (!g.members.remove(player.getUniqueID())) return;
+        pendingInvites.removePlayer(player.getUniqueID());
         saved.markDirty();
         if (g.members.isEmpty()) {
             saved.groups.remove(groupId);
-            pendingInvites.remove(groupId);
+            pendingInvites.removeGroup(groupId);
             AkashicVoice.LOG.info("Group '{}' dissolved (last member left)", g.name);
             // Send empty state to the leaver so client clears the group.
             sendStateTo(player.getUniqueID());
@@ -128,8 +126,13 @@ public final class GroupRegistry {
     }
 
     public synchronized void onPlayerLogout(UUID playerId) {
-        // Pending invites: drop.
-        for (Set<UUID> set : pendingInvites.values()) set.remove(playerId);
+        pendingInvites.removePlayer(playerId);
+    }
+
+    public synchronized void maintenanceTick() {
+        if (++inviteMaintenanceTicks < INVITE_MAINTENANCE_TICKS) return;
+        inviteMaintenanceTicks = 0;
+        pendingInvites.expire();
     }
 
     /* --- broadcasts --- */

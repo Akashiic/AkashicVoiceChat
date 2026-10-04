@@ -40,6 +40,21 @@ class LegacyForgeBootstrapCodecTest {
     }
 
     @Test
+    void sessionResponsePreservesLegacyPrefixAndAppendsUuid() {
+        UUID id = UUID.fromString("01234567-89ab-cdef-0123-456789abcdef");
+        UUID sessionId = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
+        byte[] secret = new byte[32];
+        for (int i = 0; i < secret.length; i++) secret[i] = (byte) (31 - i);
+        byte[] legacy = LegacyForgeBootstrapCodec.encodeResponse(id, secret, 24454);
+        byte[] session = LegacyForgeBootstrapCodec.encodeResponse(id, secret, 24454, sessionId);
+        assertEquals(53, legacy.length);
+        assertEquals(69, session.length);
+        assertArrayEquals(legacy, java.util.Arrays.copyOf(session, legacy.length));
+        ByteBuffer suffix = ByteBuffer.wrap(session, legacy.length, 16);
+        assertEquals(sessionId, new UUID(suffix.getLong(), suffix.getLong()));
+    }
+
+    @Test
     void responseRejectsInvalidInputs() {
         UUID id = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class,

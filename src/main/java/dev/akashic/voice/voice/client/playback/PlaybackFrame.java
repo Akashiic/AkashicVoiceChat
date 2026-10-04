@@ -6,6 +6,12 @@ import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 
 public final class PlaybackFrame {
 
+    long streamEpoch;
+    // Captured at acquisition, not submission: in-flight old PCM must not cross deafening.
+    Object listeningStateToken;
+    UUID controlledSender;
+    Object speakerStateToken;
+
     private final short[] pcm = new short[AudioFormatSpec.FRAME_SAMPLES];
     UUID senderId;
     boolean sourceSpatial;

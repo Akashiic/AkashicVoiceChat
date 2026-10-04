@@ -15,16 +15,19 @@ record GatewayStatusSnapshot(
     long micFramesAccepted,
     long soundFramesSent,
     long groupFramesSent,
+    long radioFramesSent,
     long soundResetsSent,
     long agentMediaDropped,
     int agentMediaQueued,
     int agentControlQueued,
     int federatedGroups,
     int federatedMembers,
+    int radioChannels,
+    int radioMembers,
+    int moderatedPlayers,
+    long moderatedFramesDropped,
     long sessionsOpened,
     long sessionsClosed
 ) {
-    GatewayStatusSnapshot {
-        backendRoutes = Map.copyOf(backendRoutes);
-    }
+    GatewayStatusSnapshot { backendRoutes = Map.copyOf(backendRoutes); }
 }

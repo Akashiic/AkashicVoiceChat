@@ -2,7 +2,8 @@ package dev.akashic.voice.platform.velocity;
 
 import dev.akashic.voice.platform.bridge.FederatedGroup;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,6 +25,10 @@ final class LegacyForgeGroupCodec {
     static final byte ROSTER = 8;
     private static final int MAX_NAME_BYTES = 256;
     private static final int MAX_ENTRIES = 4096;
+    // Conservative project budget, including the discriminator and all nested entries.
+    // Does not assert that 30,000 is Minecraft's exact protocol maximum.
+    static final int MAX_MESSAGE_BYTES = 30_000;
+    private static final int MAX_REQUEST_BYTES = 3 + MAX_NAME_BYTES;
 
     sealed interface Request permits Create, Invite, Respond, Leave {}
     record Create(String name) implements Request {}
@@ -35,7 +40,7 @@ final class LegacyForgeGroupCodec {
     private LegacyForgeGroupCodec() {}
 
     static Request decodeRequest(byte[] data) {
-        if (data == null || data.length < 1) return null;
+        if (data == null || data.length < 1 || data.length > MAX_REQUEST_BYTES) return null;
         ByteBuffer in = ByteBuffer.wrap(data);
         byte discriminator = in.get();
         try {
@@ -160,7 +165,10 @@ final class LegacyForgeGroupCodec {
     }
 
     private static void writeString(DataOutputStream out, String value) throws IOException {
-        byte[] bytes = Objects.requireNonNullElse(value, "").getBytes(StandardCharsets.UTF_8);
+        String normalized = Objects.requireNonNullElse(value, "");
+        // Check before UTF-8 allocation. Byte length is checked as well, not inferred.
+        if (normalized.length() > MAX_NAME_BYTES) throw new IllegalArgumentException("string too long");
+        byte[] bytes = normalized.getBytes(StandardCharsets.UTF_8);
         if (bytes.length > MAX_NAME_BYTES) throw new IllegalArgumentException("string too long");
         out.writeShort(bytes.length);
         out.write(bytes);
@@ -178,13 +186,48 @@ final class LegacyForgeGroupCodec {
     }
 
     private static byte[] write(PacketWriter writer) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream(128);
+        BoundedOutput bytes = new BoundedOutput();
         try (DataOutputStream out = new DataOutputStream(bytes)) {
             writer.write(out);
             out.flush();
             return bytes.toByteArray();
         } catch (IOException failure) {
             throw new IllegalStateException("Could not encode legacy group packet", failure);
+        }
+    }
+
+    /** No backing allocation or partial result may exceed the aggregate message budget. */
+    private static final class BoundedOutput extends OutputStream {
+        private byte[] buffer = new byte[128];
+        private int count;
+
+        private void ensureRoom(int extra) {
+            if (extra < 0 || extra > MAX_MESSAGE_BYTES - count) {
+                throw new IllegalArgumentException("legacy group message exceeds aggregate budget");
+            }
+            int required = count + extra;
+            if (required > buffer.length) {
+                buffer = Arrays.copyOf(buffer,
+                    Math.min(MAX_MESSAGE_BYTES, Math.max(required, buffer.length * 2)));
+            }
+        }
+
+        @Override
+        public void write(int value) {
+            ensureRoom(1);
+            buffer[count++] = (byte) value;
+        }
+
+        @Override
+        public void write(byte[] bytes, int offset, int length) {
+            Objects.checkFromIndexSize(offset, length, bytes.length);
+            ensureRoom(length);
+            System.arraycopy(bytes, offset, buffer, count, length);
+            count += length;
+        }
+
+        byte[] toByteArray() {
+            return Arrays.copyOf(buffer, count);
         }
     }
 }

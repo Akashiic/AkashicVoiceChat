@@ -12,7 +12,7 @@ akashicvoice.gui.hub.group=Group
 akashicvoice.gui.set.title=Voice Chat Settings
 akashicvoice.gui.set.volume=Voice chat volume
 akashicvoice.gui.set.micAmp=Microphone amplification
-akashicvoice.gui.set.noise=Noise suppression
+akashicvoice.gui.set.noise=High-pass filter
 akashicvoice.gui.set.activation=Activation type
 akashicvoice.gui.set.threshold=Voice activation threshold
 akashicvoice.gui.set.enableMicTest=Enable microphone testing
@@ -23,8 +23,11 @@ akashicvoice.gui.set.audio3d.off=Off
 akashicvoice.gui.set.indicators=Speaking indicators
 akashicvoice.gui.set.selectMic=Select microphone
 akashicvoice.gui.set.selectSpeaker=Select speaker
-akashicvoice.gui.set.speakerNote1=Output device selection is not supported in this build.
-akashicvoice.gui.set.speakerNote2=Akashic Voice plays through your system default speaker.
+akashicvoice.gui.set.speakerNote1=Voice output follows the current system default automatically.
+akashicvoice.gui.set.speakerNote2=Disconnect/reconnect or default-device changes trigger recovery.
+akashicvoice.gui.set.speakerDevice=Current output: %s
+akashicvoice.gui.set.speakerUnknown=System default
+akashicvoice.gui.set.speakerRecovering=Recovering voice output...
 
 akashicvoice.gui.group.title=Group
 akashicvoice.gui.group.notInOne=You are not in a group yet.
@@ -55,3 +58,57 @@ akashicvoice.gui.mic=Microphone
 akashicvoice.gui.muted=Muted
 akashicvoice.gui.unmuted=Unmuted
 akashicvoice.gui.volume=Volume
+
+# Session-local individual listening controls
+akashicvoice.gui.hub.players=Player voices
+akashicvoice.gui.speakers.title=Individual voices
+akashicvoice.gui.speakers.session=Relative voice volume; this session only
+akashicvoice.gui.speakers.search=Search by name or UUID
+akashicvoice.gui.speakers.empty=No heard speakers in this list
+akashicvoice.gui.speakers.offline=Voice playback is unavailable
+akashicvoice.gui.speakers.select=Select a speaker to adjust
+akashicvoice.gui.speakers.page=%s / %s  |  %s speakers
+akashicvoice.gui.speakers.mute=Mute
+akashicvoice.gui.speakers.unmute=Unmute
+akashicvoice.gui.speakers.muted=[muted]
+akashicvoice.gui.speakers.reset=Default
+akashicvoice.gui.speakers.small=Increase the game window size
+
+# Named local Opus targets; existing numeric voice.opusBitrate remains authoritative.
+akashicvoice.gui.quality.title=Voice quality
+akashicvoice.gui.quality.economy=Economy
+akashicvoice.gui.quality.balanced=Balanced
+akashicvoice.gui.quality.hd=HD
+akashicvoice.gui.quality.detail=Detail
+akashicvoice.gui.quality.custom=Custom
+akashicvoice.gui.quality.current=Target: %s | %s bit/s
+akashicvoice.gui.quality.apply=Applied on the next encoded voice frame
+akashicvoice.gui.quality.format=48 kHz mono | 20 ms | variable bitrate
+akashicvoice.gui.quality.filter=High-pass filter
+akashicvoice.gui.quality.filterHelp=Reduces DC and low-frequency rumble
+akashicvoice.gui.quality.notDenoiser=Not a general noise remover or RNNoise
+akashicvoice.gui.quality.saveFailed=Changed in memory; saving failed
+akashicvoice.gui.quality.small=Increase window size or reduce GUI scale
+
+# Hold-to-talk surface for mouse/touch launchers
+akashicvoice.gui.touch.title=Hold to talk
+akashicvoice.gui.touch.hold=PRESS AND HOLD TO TALK
+akashicvoice.gui.touch.talking=TALKING - RELEASE TO STOP
+akashicvoice.gui.touch.enablePtt=Enable Push-to-Talk mode
+akashicvoice.gui.touch.pttEnabled=Push-to-Talk mode enabled
+akashicvoice.gui.touch.ready=Ready - press and hold
+akashicvoice.gui.touch.muted=Microphone is muted
+akashicvoice.gui.touch.needsPtt=Enable Push-to-Talk mode first
+akashicvoice.gui.touch.offline=Voice connection is offline
+akashicvoice.gui.touch.connecting=Voice connection is authenticating
+akashicvoice.gui.touch.unfocused=Return focus to the game window
+akashicvoice.gui.touch.holdHint=Leaving the button, releasing, losing focus or changing server stops touch PTT
+akashicvoice.gui.touch.keyboardHint=Physical Push-to-Talk remains independent
+akashicvoice.gui.touch.saveFailed=Mode changed in memory; saving failed
+akashicvoice.gui.touch.small=Increase window size or reduce GUI scale
+
+# Client-side aggregate transport diagnostics
+akashicvoice.gui.hub.status.offline=Voice: offline
+akashicvoice.gui.hub.status.connecting=Voice: connecting | rx %s | streams %s/%s | drops %s
+akashicvoice.gui.hub.status.refreshing=Voice: refreshing session | rx %s | streams %s/%s | drops %s
+akashicvoice.gui.hub.status.online=Voice: online | rx %s | streams %s/%s | drops %s

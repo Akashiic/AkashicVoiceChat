@@ -15,6 +15,13 @@ public final class MicCapture {
     public interface FrameSink {
 
         void onFrame(int sequence, byte[] opusPayload, int payloadLength);
+
+        default boolean sendAuthorizedFrame(int sequence, byte[] opusPayload, int payloadLength,
+            MicGate.TransmissionState authorization) {
+            if (!MicGate.permitsTransmission(authorization)) return false;
+            onFrame(sequence, opusPayload, payloadLength);
+            return true;
+        }
     }
 
     private final FrameSink sink;
@@ -99,6 +106,7 @@ public final class MicCapture {
             double[] highPassState = new double[2];
             int sequence = 0;
             while (current.isRunning()) {
+                MicGate.TransmissionState authorization = MicGate.transmissionState();
                 int read = 0;
                 while (read < pcmBytes.length && current.isRunning()) {
                     int remaining = pcmBytes.length - read;
@@ -119,11 +127,13 @@ public final class MicCapture {
                 }
                 applyAmplification(pcm, AkashicVoiceConfig.micAmplification());
                 if (AkashicVoiceConfig.noiseSuppression()) applyHighPass(pcm, highPassState);
-                if (!MicGate.shouldTransmit(pcm)) continue;
+                if (!MicGate.shouldTransmit(pcm, authorization)) continue;
                 int length = current.encode(pcm, opusOut);
                 if (!current.isRunning()) return;
-                sink.onFrame(sequence++, opusOut, length);
-                MicGate.markTransmitted();
+                if (sink.sendAuthorizedFrame(sequence, opusOut, length, authorization)) {
+                    sequence++;
+                    MicGate.markTransmitted();
+                }
             }
         } catch (InterruptedException expected) {
             Thread.currentThread()

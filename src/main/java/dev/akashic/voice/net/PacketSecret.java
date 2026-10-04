@@ -17,16 +17,24 @@ public class PacketSecret implements IMessage {
     private UUID playerId;
     private byte[] masterSecret;
     private int udpPort;
+    private UUID sessionId;
 
     public PacketSecret() {}
 
     public PacketSecret(UUID playerId, byte[] masterSecret, int udpPort) {
+        this(playerId, masterSecret, udpPort, null);
+    }
+
+    public PacketSecret(UUID playerId, byte[] masterSecret, int udpPort, UUID sessionId) {
+        if (playerId == null) throw new IllegalArgumentException("playerId");
         if (masterSecret == null || masterSecret.length != SessionKeys.MASTER_SECRET_BYTES) {
             throw new IllegalArgumentException("invalid master secret");
         }
+        if (udpPort < 1 || udpPort > 65_535) throw new IllegalArgumentException("invalid UDP port");
         this.playerId = playerId;
         this.masterSecret = Arrays.copyOf(masterSecret, masterSecret.length);
         this.udpPort = udpPort;
+        this.sessionId = sessionId;
     }
 
     public UUID getPlayerId() {
@@ -41,12 +49,19 @@ public class PacketSecret implements IMessage {
         return udpPort;
     }
 
+    public UUID getSessionId() {
+        return sessionId;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         playerId = new UUID(buf.readLong(), buf.readLong());
         masterSecret = new byte[SessionKeys.MASTER_SECRET_BYTES];
         buf.readBytes(masterSecret);
         udpPort = buf.readInt();
+        int remaining = buf.readableBytes();
+        if (remaining != 0 && remaining != 16) throw new IllegalArgumentException("invalid session id suffix");
+        if (remaining == 16) sessionId = new UUID(buf.readLong(), buf.readLong());
     }
 
     @Override
@@ -55,6 +70,10 @@ public class PacketSecret implements IMessage {
         buf.writeLong(playerId.getLeastSignificantBits());
         buf.writeBytes(masterSecret);
         buf.writeInt(udpPort);
+        if (sessionId != null) {
+            buf.writeLong(sessionId.getMostSignificantBits());
+            buf.writeLong(sessionId.getLeastSignificantBits());
+        }
     }
 
     public static class Handler implements IMessageHandler<PacketSecret, IMessage> {
@@ -64,11 +83,14 @@ public class PacketSecret implements IMessage {
             byte[] secret = msg.getMasterSecret();
             try {
                 VoiceClientHolder.stop();
-                ClientSecretCache.store(msg.getPlayerId(), secret, msg.getUdpPort());
+                ClientSecretCache.store(msg.getPlayerId(), secret, msg.getUdpPort(), msg.getSessionId());
             } finally {
                 Arrays.fill(secret, (byte) 0);
             }
-            AkashicVoice.LOG.info("Received voice bootstrap (port {})", msg.getUdpPort());
+            AkashicVoice.LOG.info(
+                "Received voice bootstrap (port {}, session-bound={})",
+                msg.getUdpPort(),
+                msg.getSessionId() != null);
             return null;
         }
     }

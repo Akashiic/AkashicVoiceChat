@@ -6,26 +6,40 @@ import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.LongSupplier;
 
 final class GatewayHandshakeRateLimiter {
     private static final double GLOBAL_RATE = 128.0;
     private static final double GLOBAL_BURST = 256.0;
     private static final double PER_IP_RATE = 10.0;
-    private static final double PER_IP_BURST = 20.0;
+    private static final double PER_IP_BURST = 64.0;
     private static final int MAX_IP_BUCKETS = 4096;
     private static final long BUCKET_IDLE_NANOS = 60_000_000_000L;
     private static final long PRUNE_INTERVAL_NANOS = 10_000_000_000L;
 
     private final Map<InetAddress, Bucket> buckets = new HashMap<>();
-    private double globalTokens = GLOBAL_BURST;
-    private long globalLastNanos = System.nanoTime();
-    private long lastPruneNanos = globalLastNanos;
+    private final LongSupplier nanoTime;
+    private double globalTokens;
+    private long globalLastNanos;
+    private long lastPruneNanos;
+
+    GatewayHandshakeRateLimiter() {
+        this(System::nanoTime);
+    }
+
+    GatewayHandshakeRateLimiter(LongSupplier nanoTime) {
+        this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
+        globalTokens = GLOBAL_BURST;
+        globalLastNanos = nanoTime.getAsLong();
+        lastPruneNanos = globalLastNanos;
+    }
 
     synchronized boolean allow(SocketAddress remote) {
         if (!(remote instanceof InetSocketAddress inet)) return false;
         InetAddress address = inet.getAddress();
         if (address == null) return false;
-        long now = System.nanoTime();
+        long now = nanoTime.getAsLong();
         refillGlobal(now);
         if (globalTokens < 1.0) return false;
         if (now - lastPruneNanos >= PRUNE_INTERVAL_NANOS || buckets.size() >= MAX_IP_BUCKETS) {

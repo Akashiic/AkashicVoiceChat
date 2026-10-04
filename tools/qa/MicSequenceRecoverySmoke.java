@@ -74,16 +74,20 @@ public final class MicSequenceRecoverySmoke {
         }
     }
 
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final DatagramSocket receiver;
         final DatagramSocket sender;
         final VoiceClient client;
         final SessionCrypto clientCrypto;
         final SessionCrypto serverCrypto;
-        final Method sendMethod;
+        final MicCapture.FrameSink sink;
+        final MicGate.Mode previousMode = MicGate.mode();
+        final boolean previousMute = MicGate.isMuted();
         final byte[] opus = {1, 2, 3, 4};
 
         Fixture() throws Exception {
+            MicGate.setMode(MicGate.Mode.ALWAYS);
+            MicGate.setMuted(false);
             InetAddress loopback = InetAddress.getLoopbackAddress();
             receiver = new DatagramSocket(0, loopback);
             receiver.setSoTimeout(2_000);
@@ -104,8 +108,9 @@ public final class MicSequenceRecoverySmoke {
             Field outbound = VoiceClient.class.getDeclaredField("outboundPacket");
             outbound.setAccessible(true);
             ((DatagramPacket) outbound.get(client)).setSocketAddress(receiver.getLocalSocketAddress());
-            sendMethod = VoiceClient.class.getDeclaredMethod("onMicFrame", int.class, byte[].class, int.class);
-            sendMethod.setAccessible(true);
+            Method create = VoiceClient.class.getDeclaredMethod("createCaptureSink", SessionCrypto.class);
+            create.setAccessible(true);
+            sink = (MicCapture.FrameSink) create.invoke(client, clientCrypto);
         }
 
         void set(String name, Object value) throws Exception {
@@ -115,11 +120,15 @@ public final class MicSequenceRecoverySmoke {
         }
 
         void send(int captureSequence) throws Exception {
-            sendMethod.invoke(client, captureSequence, opus, opus.length);
+            sink.sendAuthorizedFrame(captureSequence, opus, opus.length, MicGate.transmissionState());
         }
 
         MicFramePacket frame(int captureSequence) throws Exception {
             send(captureSequence);
+            return receiveFrame();
+        }
+
+        MicFramePacket receiveFrame() throws Exception {
             DatagramPacket wire = new DatagramPacket(new byte[1500], 1500);
             receiver.receive(wire);
             ByteBuffer plain = ByteBuffer.allocate(1500);
@@ -145,6 +154,8 @@ public final class MicSequenceRecoverySmoke {
 
         @Override
         public void close() {
+            MicGate.setMode(previousMode);
+            MicGate.setMuted(previousMute);
             sender.close();
             receiver.close();
             clientCrypto.close();

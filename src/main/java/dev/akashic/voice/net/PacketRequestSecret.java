@@ -27,15 +27,21 @@ public class PacketRequestSecret implements IMessage {
 
         @Override
         public PacketSecret onMessage(PacketRequestSecret msg, MessageContext ctx) {
+            // In Agent mode the Velocity Gateway is the only bootstrap authority.
+            // If its route is down, fail closed instead of exposing backend UDP.
+            if (AkashicVoiceConfig.agentMode()) return null;
             EntityPlayerMP player = ctx.getServerHandler().playerEntity;
             UUID playerId = player.getUniqueID();
-            byte[] secret = SecretRegistry.getOrCreate(playerId);
             int port = AkashicVoiceConfig.voicePort();
-            try {
-                AkashicVoice.LOG.info("Issued voice bootstrap to {} (port {})", player.getCommandSenderName(), port);
-                return new PacketSecret(playerId, secret, port);
-            } finally {
-                Arrays.fill(secret, (byte) 0);
+            try (SecretRegistry.Material material = SecretRegistry.getOrCreateMaterial(playerId)) {
+                byte[] secret = material.secretCopy();
+                try {
+                    AkashicVoice.LOG
+                        .info("Issued voice bootstrap to {} (port {})", player.getCommandSenderName(), port);
+                    return new PacketSecret(playerId, secret, port, material.sessionId());
+                } finally {
+                    Arrays.fill(secret, (byte) 0);
+                }
             }
         }
     }

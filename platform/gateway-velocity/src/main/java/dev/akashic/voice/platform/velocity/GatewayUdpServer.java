@@ -5,7 +5,9 @@ import dev.akashic.voice.platform.bridge.BridgeStreamReset;
 import dev.akashic.voice.platform.bridge.ManagedPlayer;
 import dev.akashic.voice.platform.bridge.PositionSnapshot;
 import dev.akashic.voice.platform.bridge.SpatialKind;
+import dev.akashic.voice.voice.common.VoiceCapabilities;
 import dev.akashic.voice.voice.common.HandshakePackets;
+import dev.akashic.voice.voice.common.SessionHandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
 import dev.akashic.voice.voice.common.SoundFramePacket;
@@ -13,6 +15,7 @@ import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
 import dev.akashic.voice.voice.common.crypto.SessionCrypto;
+import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -60,6 +63,7 @@ final class GatewayUdpServer implements AutoCloseable {
     private final AtomicLong micFramesAccepted = new AtomicLong();
     private final AtomicLong soundFramesSent = new AtomicLong();
     private final AtomicLong groupFramesSent = new AtomicLong();
+    private final AtomicLong radioFramesSent = new AtomicLong();
     private final AtomicLong soundResetsSent = new AtomicLong();
     private final AtomicLong sessionsOpened = new AtomicLong();
     private final AtomicLong sessionsClosed = new AtomicLong();
@@ -105,8 +109,8 @@ final class GatewayUdpServer implements AutoCloseable {
         return new GatewayUdpSnapshot(
             byVoiceIdentity.size(), pending,
             helloRateLimited.get(), mediaRateLimited.get(), encryptedRejected.get(),
-            micFramesAccepted.get(), soundFramesSent.get(), groupFramesSent.get(), soundResetsSent.get(),
-            sessionsOpened.get(), sessionsClosed.get());
+            micFramesAccepted.get(), soundFramesSent.get(), groupFramesSent.get(), radioFramesSent.get(),
+            soundResetsSent.get(), sessionsOpened.get(), sessionsClosed.get());
     }
 
     boolean hasConnection(UUID proxyPlayerId, String backendName) {
@@ -159,10 +163,21 @@ final class GatewayUdpServer implements AutoCloseable {
     }
 
     private void handleDatagram(DatagramPacket packet) {
+        if (!WireProtocol.isNormalDatagramLength(packet.getLength())) return;
         ByteBuffer datagram = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
         byte outerType = WireProtocol.peekHeader(datagram);
         SocketAddress remote = packet.getSocketAddress();
 
+        if (outerType == WireProtocol.OUTER_SESSION_HELLO) {
+            if (datagram.remaining() != SessionHandshakePackets.HELLO_BYTES) return;
+            if (!handshakeRateLimiter.allow(remote)) {
+                helloRateLimited.incrementAndGet();
+                return;
+            }
+            SessionHandshakePackets.Hello hello = SessionHandshakePackets.readHello(datagram);
+            if (hello != null) handleSessionHello(hello, remote);
+            return;
+        }
         if (outerType == WireProtocol.OUTER_HELLO) {
             if (datagram.remaining() != HandshakePackets.HELLO_BYTES) return;
             if (!handshakeRateLimiter.allow(remote)) {
@@ -173,12 +188,18 @@ final class GatewayUdpServer implements AutoCloseable {
             if (hello != null) handleHello(hello, remote);
             return;
         }
+        if (outerType == WireProtocol.OUTER_SESSION_AUTH_RESPONSE) {
+            SessionHandshakePackets.AuthResponse response = SessionHandshakePackets.readAuthResponse(datagram);
+            if (response != null) handleSessionAuthResponse(response, remote);
+            return;
+        }
         if (outerType == WireProtocol.OUTER_AUTH_RESPONSE) {
             HandshakePackets.AuthResponse response = HandshakePackets.readAuthResponse(datagram);
             if (response != null) handleAuthResponse(response, remote);
             return;
         }
-        if (outerType != WireProtocol.OUTER_ENCRYPTED) return;
+        if (outerType != WireProtocol.OUTER_ENCRYPTED
+            && outerType != WireProtocol.OUTER_SESSION_ENCRYPTED) return;
 
         GatewayVoiceConnection connection = byAddress.get(remote);
         if (connection == null) return;
@@ -201,6 +222,10 @@ final class GatewayUdpServer implements AutoCloseable {
             case WirePacketType.KEEPALIVE -> {
                 KeepAlivePacket keepAlive = KeepAlivePacket.read(buf);
                 if (keepAlive != null) connection.sendKeepAlive(socket, keepAlive.timestamp);
+            }
+            case WirePacketType.CAPABILITIES -> {
+                int features = VoiceCapabilities.read(buf);
+                if (features >= 0) connection.offerCapabilities(socket, features);
             }
             case WirePacketType.MIC_FRAME -> {
                 MicFramePacket mic = MicFramePacket.read(buf);
@@ -246,9 +271,38 @@ final class GatewayUdpServer implements AutoCloseable {
         }
     }
 
+    private void handleSessionHello(SessionHandshakePackets.Hello hello, SocketAddress remote) {
+        try (BootstrapSessionRegistry.SessionMaterial material =
+                 bootstrapSessions.findByVoiceIdentity(hello.playerId, hello.sessionId)) {
+            if (material == null) return;
+            long nowMillis = System.currentTimeMillis();
+            sweepPending(nowMillis);
+            synchronized (pendingLock) {
+                GatewayPendingHandshake existing = pendingHandshakes.get(remote);
+                if (existing != null && !existing.isExpired(nowMillis)
+                    && existing.matches(hello.playerId, hello.sessionId, hello.clientNonce)) {
+                    sendChallenge(existing); return;
+                }
+                if (existing != null) { pendingHandshakes.remove(remote); existing.close(); }
+                if (pendingHandshakes.size() >= MAX_PENDING_HANDSHAKES) return;
+                GatewayPendingHandshake pending = GatewayPendingHandshake
+                    .createSessionBound(material, remote, hello.clientNonce, random);
+                pendingHandshakes.put(remote, pending);
+                sendChallenge(pending);
+            }
+        } finally {
+            Arrays.fill(hello.clientNonce, (byte) 0);
+        }
+    }
+
     private void sendChallenge(GatewayPendingHandshake pending) {
-        ByteBuffer buffer = ByteBuffer.allocate(HandshakePackets.CHALLENGE_BYTES);
-        HandshakePackets.writeChallenge(buffer, pending.serverNonce, pending.serverProof);
+        ByteBuffer buffer = ByteBuffer.allocate(pending.sessionId != null
+            ? SessionHandshakePackets.CHALLENGE_BYTES : HandshakePackets.CHALLENGE_BYTES);
+        if (pending.sessionId != null) {
+            SessionHandshakePackets.writeChallenge(buffer, pending.sessionId, pending.serverNonce, pending.serverProof);
+        } else {
+            HandshakePackets.writeChallenge(buffer, pending.serverNonce, pending.serverProof);
+        }
         sendRaw(buffer, pending.remoteAddress);
     }
 
@@ -258,7 +312,7 @@ final class GatewayUdpServer implements AutoCloseable {
         try {
             synchronized (pendingLock) {
                 GatewayPendingHandshake pending = pendingHandshakes.get(remote);
-                if (pending == null) return;
+                if (pending == null || pending.sessionId != null) return;
                 if (pending.isExpired(System.currentTimeMillis())) {
                     pendingHandshakes.remove(remote);
                     pending.close();
@@ -277,10 +331,42 @@ final class GatewayUdpServer implements AutoCloseable {
                 connected = new GatewayVoiceConnection(
                     pending.proxyPlayerId, pending.playerName, pending.backendName, pending.voiceIdentity, remote, crypto);
                 displaced = installConnection(connected);
+                discardActivatedReceipts(displaced);
                 connected.sendAuthAck(socket);
             }
-            notifyDisplaced(displaced);
-            notifyConnected(connected);
+            boolean logicalRebind = notifyDisplaced(displaced, connected);
+            notifyConnected(connected, logicalRebind);
+        } finally {
+            Arrays.fill(response.clientProof, (byte) 0);
+        }
+    }
+
+    private void handleSessionAuthResponse(SessionHandshakePackets.AuthResponse response, SocketAddress remote) {
+        GatewayVoiceConnection connected = null;
+        List<GatewayVoiceConnection> displaced = List.of();
+        try {
+            synchronized (pendingLock) {
+                GatewayPendingHandshake pending = pendingHandshakes.get(remote);
+                if (pending == null || pending.sessionId == null || !pending.sessionId.equals(response.sessionId)) return;
+                if (pending.isExpired(System.currentTimeMillis())) {
+                    pendingHandshakes.remove(remote); pending.close(); return;
+                }
+                if (!pending.verifyClientProof(response.clientProof)) return;
+                if (pending.isActivated()) {
+                    GatewayVoiceConnection existing = byVoiceIdentity.get(pending.voiceIdentity);
+                    if (existing != null && remote.equals(existing.remoteAddress)) existing.sendAuthAck(socket);
+                    return;
+                }
+                SessionCrypto crypto = pending.activate();
+                if (crypto == null) return;
+                connected = new GatewayVoiceConnection(pending.proxyPlayerId, pending.playerName, pending.backendName,
+                    pending.voiceIdentity, pending.sessionId, remote, crypto);
+                displaced = installConnection(connected);
+                discardActivatedReceipts(displaced);
+                connected.sendAuthAck(socket);
+            }
+            boolean logicalRebind = notifyDisplaced(displaced, connected);
+            notifyConnected(connected, logicalRebind);
         } finally {
             Arrays.fill(response.clientProof, (byte) 0);
         }
@@ -322,16 +408,50 @@ final class GatewayUdpServer implements AutoCloseable {
             removed |= byAddress.remove(connection.remoteAddress, connection);
         }
         if (!removed) return;
+        discardActivatedReceipt(connection);
         connection.close();
         notifyDisconnected(connection);
     }
 
-    private void notifyDisplaced(List<GatewayVoiceConnection> displaced) {
-        for (GatewayVoiceConnection connection : displaced) notifyDisconnected(connection);
+    private void discardActivatedReceipts(List<GatewayVoiceConnection> displaced) {
+        for (GatewayVoiceConnection connection : displaced) discardActivatedReceipt(connection);
     }
 
-    private void notifyConnected(GatewayVoiceConnection connection) {
+    private void discardActivatedReceipt(GatewayVoiceConnection connection) {
+        if (connection == null) return;
+        synchronized (pendingLock) {
+            GatewayPendingHandshake pending = pendingHandshakes.get(connection.remoteAddress);
+            if (pending == null || !pending.isActivated()) return;
+            if (!pending.proxyPlayerId.equals(connection.proxyPlayerId)
+                || !pending.voiceIdentity.equals(connection.voiceIdentity)) return;
+            if (pendingHandshakes.remove(connection.remoteAddress, pending)) pending.close();
+        }
+    }
+
+    private boolean notifyDisplaced(List<GatewayVoiceConnection> displaced,
+                                    GatewayVoiceConnection replacement) {
+        boolean logicalRebind = false;
+        for (GatewayVoiceConnection connection : displaced) {
+            if (sameLogicalSession(connection, replacement)) {
+                sessionsClosed.incrementAndGet();
+                logicalRebind = true;
+            } else {
+                notifyDisconnected(connection);
+            }
+        }
+        return logicalRebind;
+    }
+
+    private static boolean sameLogicalSession(GatewayVoiceConnection first, GatewayVoiceConnection second) {
+        return first.proxyPlayerId.equals(second.proxyPlayerId)
+            && first.backendName.equals(second.backendName)
+            && first.voiceIdentity.equals(second.voiceIdentity)
+            && java.util.Objects.equals(first.sessionId, second.sessionId);
+    }
+
+    private void notifyConnected(GatewayVoiceConnection connection, boolean logicalRebind) {
         sessionsOpened.incrementAndGet();
+        if (logicalRebind) return;
         safeListener(() -> listener.onConnected(
             connection.proxyPlayerId, connection.backendName, connection.voiceIdentity));
     }
@@ -390,6 +510,7 @@ final class GatewayUdpServer implements AutoCloseable {
             if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) return false;
         }
 
+        if (delivery.opusUnsafe().length > AudioFormatSpec.MAX_OPUS_PAYLOAD) return false;
         SoundFrameV2Packet packet = new SoundFrameV2Packet(
             delivery.senderId(),
             spatial,
@@ -400,19 +521,36 @@ final class GatewayUdpServer implements AutoCloseable {
             spatial ? delivery.distance() : 0F,
             (int) delivery.sequence(),
             delivery.opusUnsafe());
-        boolean sent = connection.sendSoundV2(socket, packet);
+        boolean sent = connection.sendSoundV2(socket, packet, delivery.channelId());
         if (sent) soundFramesSent.incrementAndGet();
         return sent;
     }
 
-    boolean sendGroupFrame(UUID recipientId, UUID senderId, long sequence, byte[] opus) {
+    boolean sendGroupFrame(UUID recipientId, UUID senderId, UUID sourceIdentity, long sequence, byte[] opus) {
         if (recipientId == null || senderId == null || opus == null || recipientId.equals(senderId)) return false;
+        if (opus.length == 0 || opus.length > AudioFormatSpec.MAX_OPUS_PAYLOAD) return false;
+        GatewayVoiceConnection sender = byProxyPlayer.get(senderId);
+        if (sender == null || !sender.voiceIdentity.equals(sourceIdentity)) return false;
         GatewayVoiceConnection connection = byProxyPlayer.get(recipientId);
         if (connection == null) return false;
         SoundFramePacket packet = new SoundFramePacket(
             senderId, false, 0F, 0F, 0F, (int) sequence, opus);
-        boolean sent = connection.sendSound(socket, packet);
+        boolean sent = connection.sendSound(socket, packet, sender.streamIncarnation);
         if (sent) groupFramesSent.incrementAndGet();
+        return sent;
+    }
+
+    boolean sendRadioFrame(UUID recipientId, UUID senderId, UUID sourceIdentity, long sequence, byte[] opus) {
+        if (recipientId == null || senderId == null || opus == null || recipientId.equals(senderId)) return false;
+        if (opus.length == 0 || opus.length > AudioFormatSpec.MAX_OPUS_PAYLOAD) return false;
+        GatewayVoiceConnection sender = byProxyPlayer.get(senderId);
+        if (sender == null || !sender.voiceIdentity.equals(sourceIdentity)) return false;
+        GatewayVoiceConnection connection = byProxyPlayer.get(recipientId);
+        if (connection == null) return false;
+        SoundFramePacket packet = new SoundFramePacket(
+            senderId, false, 0F, 0F, 0F, (int) sequence, opus);
+        boolean sent = connection.sendSound(socket, packet, sender.streamIncarnation);
+        if (sent) radioFramesSent.incrementAndGet();
         return sent;
     }
 
@@ -420,11 +558,31 @@ final class GatewayUdpServer implements AutoCloseable {
         if (backendName == null || reset == null) return false;
         GatewayVoiceConnection connection = byProxyPlayer.get(reset.recipientId());
         if (connection == null || !backendName.equals(connection.backendName)) return false;
-        boolean sent = connection.sendSoundReset(socket, reset.senderId());
+        boolean sent = connection.sendSoundReset(socket, reset.senderId(), reset.channelId());
         if (sent) soundResetsSent.incrementAndGet();
         return sent;
     }
 
+    boolean hardResetPair(UUID recipientId, UUID senderId) {
+        if (recipientId == null || senderId == null || recipientId.equals(senderId)) return false;
+        GatewayVoiceConnection connection = byProxyPlayer.get(recipientId);
+        if (connection == null) return false;
+        boolean sent = connection.sendHardReset(socket, senderId);
+        if (sent) soundResetsSent.incrementAndGet();
+        return sent;
+    }
+
+    int hardResetSender(UUID senderId) {
+        if (senderId == null) return 0;
+        int sent = 0;
+        for (GatewayVoiceConnection connection : byVoiceIdentity.values()) {
+            if (connection.sendHardReset(socket, senderId)) {
+                soundResetsSent.incrementAndGet();
+                sent++;
+            }
+        }
+        return sent;
+    }
     void disconnectBackend(String backendName) {
         if (backendName == null) return;
         for (GatewayVoiceConnection connection : byVoiceIdentity.values()) {
@@ -459,10 +617,11 @@ final class GatewayUdpServer implements AutoCloseable {
 
     private void sendRaw(ByteBuffer buffer, SocketAddress target) {
         DatagramSocket current = socket;
-        if (current == null || current.isClosed()) return;
+        int length = buffer.position();
+        if (current == null || current.isClosed() || !WireProtocol.isNormalDatagramLength(length)) return;
         try {
             DatagramPacket packet = new DatagramPacket(
-                buffer.array(), buffer.arrayOffset(), buffer.position(), target);
+                buffer.array(), buffer.arrayOffset(), length, target);
             current.send(packet);
         } catch (IOException error) {
             if (running) reportError(error);

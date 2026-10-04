@@ -2,7 +2,6 @@ package dev.akashic.voice.client.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -61,7 +60,4 @@ public final class PlayerHead {
         }
         return DEFAULT_SKIN;
     }
-
-    @SuppressWarnings("unused")
-    private static void unusedSilenceGui(Gui ignored) {} // placeholder so import chain stays consistent
 }

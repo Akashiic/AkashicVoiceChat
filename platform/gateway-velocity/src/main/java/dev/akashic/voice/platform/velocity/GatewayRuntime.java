@@ -9,11 +9,16 @@ import dev.akashic.voice.platform.bridge.ManagedPlayer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.IntSupplier;
+import java.util.function.Predicate;
 
 final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listener, AutoCloseable {
     interface Listener {
@@ -25,11 +30,17 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     private final BootstrapSessionRegistry bootstrapSessions;
     private final BackendRouteRegistry routes = new BackendRouteRegistry();
     private final FederatedGroupDirectory groups = new FederatedGroupDirectory();
+    private final GatewayRadioDirectory radios = new GatewayRadioDirectory();
     private final GatewayUdpServer udp;
     private final AgentHub agents;
     private final Listener listener;
     private final Set<String> configuredBackends;
     private volatile boolean running;
+    private volatile Predicate<UUID> groupAudioEligibility = ignored -> true;
+    private volatile Predicate<UUID> transmitEligibility = ignored -> true;
+    private volatile GatewayAddonApi addonApi;
+    private volatile IntSupplier moderatedPlayerCount = () -> 0;
+    private final AtomicLong moderatedFramesDropped = new AtomicLong();
 
     GatewayRuntime(int udpPort, InetSocketAddress agentBind, Map<String, byte[]> agentPsks,
                    BootstrapSessionRegistry bootstrapSessions, Listener listener) {
@@ -60,9 +71,15 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
         return running && udp.hasConnection(proxyPlayerId, backendName);
     }
 
-    BootstrapGrant grantFor(UUID proxyPlayerId, String playerName, String backendName) {
+    synchronized BootstrapGrant grantFor(UUID proxyPlayerId, String playerName, String backendName) {
         if (!isBackendReady(backendName)) return null;
-        return bootstrapSessions.grantFor(proxyPlayerId, playerName, backendName, udp.localPort());
+        int port = udp.localPort();
+        if (!bootstrapSessions.matches(proxyPlayerId, playerName, backendName, port)) {
+            // Revoke the old transport before rotating bootstrap authority. This closes the
+            // transfer window where stale media could still route to the previous backend.
+            udp.disconnectProxyPlayer(proxyPlayerId);
+        }
+        return bootstrapSessions.grantFor(proxyPlayerId, playerName, backendName, port);
     }
 
     int udpPort() {
@@ -77,6 +94,68 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
         return groups;
     }
 
+    void setGroupAudioEligibility(Predicate<UUID> eligibility) {
+        groupAudioEligibility = Objects.requireNonNull(eligibility, "eligibility");
+    }
+
+    void setModeration(Predicate<UUID> transmitEligibility, IntSupplier mutedCount) {
+        this.transmitEligibility = Objects.requireNonNull(transmitEligibility, "transmitEligibility");
+        this.moderatedPlayerCount = Objects.requireNonNull(mutedCount, "mutedCount");
+    }
+
+    synchronized void setAddonApi(GatewayAddonApi addonApi) {
+        if (running) throw new IllegalStateException("runtime already started");
+        this.addonApi = Objects.requireNonNull(addonApi, "addonApi");
+    }
+
+    int hardResetSpeaker(UUID senderId) {
+        return udp.hardResetSender(senderId);
+    }
+
+    private boolean shareActiveGroup(UUID sender, UUID recipient) {
+        Predicate<UUID> eligibility = groupAudioEligibility;
+        return eligibility.test(sender) && eligibility.test(recipient) && groups.haveCommonGroup(sender, recipient);
+    }
+
+    private boolean shareDirectAudio(UUID sender, UUID recipient) {
+        return shareActiveGroup(sender, recipient) || radios.sameChannel(sender, recipient);
+    }
+
+    GatewayRadioDirectory.TuneOutcome tuneRadio(UUID playerId, String channel) {
+        Set<UUID> before = radios.peers(playerId);
+        GatewayRadioDirectory.TuneOutcome outcome = radios.tune(playerId, channel);
+        if (outcome.changed()) resetRadioTransitions(playerId, before, radios.peers(playerId));
+        return outcome;
+    }
+
+    Optional<String> leaveRadio(UUID playerId) {
+        Set<UUID> before = radios.peers(playerId);
+        Optional<String> previous = radios.leave(playerId);
+        if (previous.isPresent()) resetRadioTransitions(playerId, before, Set.of());
+        return previous;
+    }
+
+    Optional<String> radioChannel(UUID playerId) { return radios.channel(playerId); }
+    Set<UUID> radioMembers(String channel) { return radios.members(channel); }
+
+    void pruneRadio(Predicate<UUID> keep) {
+        Objects.requireNonNull(keep, "keep");
+        for (UUID playerId : radios.tunedPlayers()) if (!keep.test(playerId)) leaveRadio(playerId);
+    }
+
+    void removeRadioPlayer(UUID playerId) { leaveRadio(playerId); }
+
+    private void resetRadioTransitions(UUID playerId, Set<UUID> before, Set<UUID> after) {
+        HashSet<UUID> changed = new HashSet<>(before);
+        changed.addAll(after);
+        for (UUID peer : changed) {
+            if (before.contains(peer) == after.contains(peer)) continue;
+            if (shareActiveGroup(playerId, peer)) continue;
+            udp.hardResetPair(peer, playerId);
+            udp.hardResetPair(playerId, peer);
+        }
+    }
+
     GatewayStatusSnapshot statusSnapshot() {
         GatewayUdpSnapshot metrics = udp.snapshot();
         TreeMap<String, Boolean> backendRoutes = new TreeMap<>();
@@ -87,9 +166,11 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
             running, udp.localPort(), agents.localPort(),
             metrics.activeSessions(), metrics.pendingHandshakes(), backendRoutes,
             metrics.helloRateLimited(), metrics.mediaRateLimited(), metrics.encryptedRejected(),
-            metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.groupFramesSent(), metrics.soundResetsSent(),
+            metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.groupFramesSent(), metrics.radioFramesSent(),
+            metrics.soundResetsSent(),
             agents.droppedMediaFrames(), agents.queuedMediaMessages(), agents.queuedControlMessages(),
-            groups.groupCount(), groups.memberCount(),
+            groups.groupCount(), groups.memberCount(), radios.channelCount(), radios.memberCount(),
+            moderatedPlayerCount.getAsInt(), moderatedFramesDropped.get(),
             metrics.sessionsOpened(), metrics.sessionsClosed());
     }
 
@@ -100,14 +181,15 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
 
     @Override
     public void onConnected(UUID proxyPlayerId, String backendName, UUID voiceIdentity) {
-        BackendRouteRegistry.Route route = routes.readyRoute(backendName);
-        if (route == null) return;
         BootstrapSessionRegistry.SessionMaterial material = null;
         try {
             material = bootstrapSessions.findByVoiceIdentity(voiceIdentity);
             if (material == null) return;
-            route.sendAttach(new ManagedPlayer(
-                proxyPlayerId, backendName, material.playerName()));
+            ManagedPlayer player = new ManagedPlayer(proxyPlayerId, backendName, material.playerName());
+            GatewayAddonApi api = addonApi;
+            if (api != null) api.connected(player.playerId(), player.playerName(), player.backendId());
+            BackendRouteRegistry.Route route = routes.readyRoute(backendName);
+            if (route != null) route.sendAttach(player);
         } finally {
             if (material != null) material.close();
         }
@@ -115,6 +197,8 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
 
     @Override
     public void onDisconnected(UUID proxyPlayerId, String backendName, UUID voiceIdentity) {
+        GatewayAddonApi api = addonApi;
+        if (api != null) api.disconnected(proxyPlayerId);
         BackendRouteRegistry.Route route = routes.readyRoute(backendName);
         if (route != null) route.sendDetach(proxyPlayerId);
     }
@@ -122,16 +206,27 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     @Override
     public void onMicFrame(UUID proxyPlayerId, String backendName, UUID voiceIdentity,
                            long sequence, byte[] opus) {
+        if (!transmitEligibility.test(proxyPlayerId)) {
+            moderatedFramesDropped.incrementAndGet();
+            return;
+        }
         BackendRouteRegistry.Route route = routes.readyRoute(backendName);
         if (route != null) {
             route.sendFrame(new AkashicSpeakerFrame(proxyPlayerId, sequence, false, opus));
         }
-        FederatedGroup group = groups.groupFor(proxyPlayerId).orElse(null);
-        if (group == null) return;
-        for (UUID memberId : group.members()) {
-            if (!memberId.equals(proxyPlayerId)) {
-                udp.sendGroupFrame(memberId, proxyPlayerId, sequence, opus);
+        Predicate<UUID> groupEligibility = groupAudioEligibility;
+        boolean senderGroupEligible = groupEligibility.test(proxyPlayerId);
+        FederatedGroup group = senderGroupEligible ? groups.groupFor(proxyPlayerId).orElse(null) : null;
+        Set<UUID> groupMembers = group == null ? Set.of() : group.members();
+        for (UUID memberId : groupMembers) {
+            if (!memberId.equals(proxyPlayerId) && groupEligibility.test(memberId)) {
+                udp.sendGroupFrame(memberId, proxyPlayerId, voiceIdentity, sequence, opus);
             }
+        }
+        for (UUID memberId : radios.membersForPlayer(proxyPlayerId)) {
+            if (memberId.equals(proxyPlayerId)) continue;
+            if (senderGroupEligible && groupMembers.contains(memberId) && groupEligibility.test(memberId)) continue;
+            udp.sendRadioFrame(memberId, proxyPlayerId, voiceIdentity, sequence, opus);
         }
     }
 
@@ -159,12 +254,17 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
 
     @Override
     public void onSvcDelivery(String backendName, BridgeDelivery delivery) {
-        if (groups.haveCommonGroup(delivery.senderId(), delivery.recipientId())) return;
+        if (!transmitEligibility.test(delivery.senderId())) {
+            moderatedFramesDropped.incrementAndGet();
+            return;
+        }
+        if (shareDirectAudio(delivery.senderId(), delivery.recipientId())) return;
         udp.sendBridgeDelivery(backendName, delivery);
     }
 
     @Override
     public void onSvcReset(String backendName, BridgeStreamReset reset) {
+        if (shareDirectAudio(reset.senderId(), reset.recipientId())) return;
         udp.sendBridgeReset(backendName, reset);
     }
 
@@ -175,12 +275,14 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     @Override
     public synchronized void close() {
         if (!running) {
+            radios.clear();
             agents.close();
             udp.close();
             routes.close();
             return;
         }
         running = false;
+        radios.clear();
         agents.close();
         udp.close();
         routes.close();

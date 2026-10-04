@@ -23,9 +23,14 @@ import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
+import dev.akashic.voice.voice.common.SessionHandshakePackets;
 import dev.akashic.voice.voice.common.SoundFramePacket;
 import dev.akashic.voice.voice.common.SoundFrameV2Packet;
+import dev.akashic.voice.voice.common.SoundFrameV3Packet;
 import dev.akashic.voice.voice.common.SoundResetPacket;
+import dev.akashic.voice.voice.common.SoundResetV3Packet;
+import dev.akashic.voice.voice.common.StreamEpochTracker;
+import dev.akashic.voice.voice.common.VoiceCapabilities;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
 import dev.akashic.voice.voice.common.crypto.HandshakeProof;
@@ -48,10 +53,12 @@ public final class VoiceClient {
     private static final long KEEPALIVE_INTERVAL_NANOS = 1_000_000_000L;
     private static final long SERVER_TIMEOUT_NANOS = 8_000_000_000L;
     private static final long MAINTENANCE_SLEEP_MILLIS = 20L;
+    static final int MAX_DECODER_STREAMS = 256;
     private static final long STREAM_IDLE_NANOS = 30_000_000_000L;
     private static final long MIC_RETRY_NANOS = 3_000_000_000L;
 
     private final UUID playerId;
+    private final UUID sessionId;
     private final byte[] masterSecret;
     private final InetAddress serverHost;
     private final int serverPort;
@@ -64,12 +71,21 @@ public final class VoiceClient {
     private final DatagramPacket outboundPacket = new DatagramPacket(new byte[0], 0);
     private final Map<UUID, DecoderStream> decoderStreams = new ConcurrentHashMap<>();
     private final AtomicLong receivedFrames = new AtomicLong();
+    private final AtomicLong decoderStreamCapacityDrops = new AtomicLong();
+    private final StreamEpochTracker remoteEpochs = new StreamEpochTracker();
+    private final AtomicLong nextPlaybackEpoch = new AtomicLong();
+    private SessionCrypto streamCrypto;
+    private volatile SessionCrypto capabilityCrypto;
+    private volatile boolean capabilitiesAcknowledged;
+    private int capabilityOffers;
+    private long lastCapabilityOffer;
     // Guarded by sendLock. Capture restarts must not rewind a live remote stream.
     private int nextMicSequence;
 
     private DatagramSocket socket;
     private SocketAddress serverAddress;
     private volatile MicCapture micCapture;
+    private volatile MicCapture.FrameSink activeCaptureSink;
     private AudioPlayback playback;
     private Thread receiveThread;
     private Thread maintenanceThread;
@@ -92,11 +108,16 @@ public final class VoiceClient {
     private volatile boolean micFailureLogged;
 
     public VoiceClient(UUID playerId, byte[] masterSecret, InetAddress serverHost, int serverPort) {
+        this(playerId, masterSecret, serverHost, serverPort, null);
+    }
+
+    public VoiceClient(UUID playerId, byte[] masterSecret, InetAddress serverHost, int serverPort, UUID sessionId) {
         if (playerId == null || serverHost == null) throw new IllegalArgumentException("null voice client input");
         if (masterSecret == null || masterSecret.length != SessionKeys.MASTER_SECRET_BYTES) {
             throw new IllegalArgumentException("invalid master secret");
         }
         this.playerId = playerId;
+        this.sessionId = sessionId;
         this.masterSecret = Arrays.copyOf(masterSecret, masterSecret.length);
         this.serverHost = serverHost;
         this.serverPort = serverPort;
@@ -179,6 +200,21 @@ public final class VoiceClient {
         return receivedFrames.get();
     }
 
+    public long decoderStreamCapacityDropCount() {
+        return decoderStreamCapacityDrops.get();
+    }
+
+    public VoiceClientStatusSnapshot statusSnapshot() {
+        return new VoiceClientStatusSnapshot(
+            true,
+            authenticated,
+            freshBootstrapRequired,
+            receivedFrames.get(),
+            decoderStreamCapacityDrops.get(),
+            decoderStreams.size(),
+            MAX_DECODER_STREAMS);
+    }
+
     private void receiveLoop() {
         byte[] buffer = new byte[MAX_DATAGRAM_BYTES];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -230,6 +266,7 @@ public final class VoiceClient {
                 continue;
             }
 
+            sendCapabilities(now);
             drainDecoderStreams(now);
             reconcileMicCapture(now);
             if (micCapture == null && now - lastMicAttemptNanos >= MIC_RETRY_NANOS) {
@@ -249,14 +286,22 @@ public final class VoiceClient {
 
     private void handleDatagram(DatagramPacket packet) {
         if (!serverAddress.equals(packet.getSocketAddress())) return;
+        if (!WireProtocol.isNormalDatagramLength(packet.getLength())) return;
         ByteBuffer datagram = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
         byte outerType = WireProtocol.peekHeader(datagram);
-        if (outerType == WireProtocol.OUTER_CHALLENGE) {
+        if (sessionId != null && outerType == WireProtocol.OUTER_SESSION_CHALLENGE) {
+            SessionHandshakePackets.Challenge challenge = SessionHandshakePackets.readChallenge(datagram);
+            if (challenge != null) handleSessionChallenge(challenge);
+            return;
+        }
+        if (sessionId == null && outerType == WireProtocol.OUTER_CHALLENGE) {
             HandshakePackets.Challenge challenge = HandshakePackets.readChallenge(datagram);
             if (challenge != null) handleChallenge(challenge);
             return;
         }
-        if (outerType != WireProtocol.OUTER_ENCRYPTED) return;
+        byte expectedEncrypted = sessionId != null ? WireProtocol.OUTER_SESSION_ENCRYPTED
+            : WireProtocol.OUTER_ENCRYPTED;
+        if (outerType != expectedEncrypted) return;
 
         SessionCrypto currentCrypto = crypto;
         if (currentCrypto == null) return;
@@ -266,19 +311,40 @@ public final class VoiceClient {
         } catch (IllegalStateException ignored) {
             return;
         }
-        if (!opened) return;
+        if (!opened || currentCrypto != crypto) return;
         lastServerPacketNanos = System.nanoTime();
-        handleInner(decryptBuffer);
+        handleInner(decryptBuffer, currentCrypto);
     }
 
-    private void handleInner(ByteBuffer buf) {
+    private void handleInner(ByteBuffer buf, SessionCrypto expectedCrypto) {
         if (!buf.hasRemaining()) return;
         byte type = buf.get();
         if (!authenticated && type != WirePacketType.AUTH_ACK) return;
+        if (type != WirePacketType.AUTH_ACK && !acceptStreamSession(expectedCrypto)) return;
         switch (type) {
             case WirePacketType.AUTH_ACK: {
                 AuthAckPacket ack = AuthAckPacket.read(buf);
-                if (ack != null) handleAuthAck(ack);
+                if (ack != null) {
+                    handleAuthAck(ack);
+                    if (authenticated) sendCapabilities(System.nanoTime());
+                }
+                break;
+            }
+            case WirePacketType.CAPABILITIES_ACK: {
+                int features = VoiceCapabilities.read(buf);
+                if (features >= 0 && expectedCrypto == capabilityCrypto && expectedCrypto == crypto) {
+                    capabilitiesAcknowledged = true;
+                }
+                break;
+            }
+            case WirePacketType.SOUND_FRAME_V3: {
+                SoundFrameV3Packet sound = SoundFrameV3Packet.read(buf);
+                if (sound != null) handleEpochFrame(sound, expectedCrypto);
+                break;
+            }
+            case WirePacketType.SOUND_RESET_V3: {
+                SoundResetV3Packet reset = SoundResetV3Packet.read(buf);
+                if (reset != null) handleEpochReset(reset, expectedCrypto);
                 break;
             }
             case WirePacketType.KEEPALIVE:
@@ -286,22 +352,94 @@ public final class VoiceClient {
                 break;
             case WirePacketType.SOUND_FRAME: {
                 SoundFramePacket sound = SoundFramePacket.read(buf);
-                if (sound != null) handleSoundFrame(sound);
+                if (sound != null && !remoteEpochs.hasEpoch(sound.senderId)) handleSoundFrame(sound);
                 break;
             }
             case WirePacketType.SOUND_FRAME_V2: {
                 SoundFrameV2Packet sound = SoundFrameV2Packet.read(buf);
-                if (sound != null) handleSoundFrame(sound);
+                if (sound != null && !remoteEpochs.hasEpoch(sound.senderId)) handleSoundFrame(sound);
                 break;
             }
             case WirePacketType.SOUND_RESET: {
                 SoundResetPacket reset = SoundResetPacket.read(buf);
-                if (reset != null) handleSoundReset(reset.senderId);
+                if (reset != null && !remoteEpochs.hasEpoch(reset.senderId)) handleSoundReset(reset.senderId);
                 break;
             }
             default:
                 break;
         }
+    }
+
+    private boolean acceptStreamSession(SessionCrypto expected) {
+        synchronized (remoteEpochs) {
+            if (expected == null || expected != crypto || !authenticated) return false;
+            if (streamCrypto != expected) {
+                clearDecoderStreamsLocked();
+                remoteEpochs.clear();
+                streamCrypto = expected;
+            }
+            return true;
+        }
+    }
+
+    private void sendCapabilities(long now) {
+        synchronized (sendLock) {
+            SessionCrypto current = crypto;
+            if (!authenticated || current == null) return;
+            if (capabilityCrypto != current) {
+                capabilityCrypto = current;
+                capabilitiesAcknowledged = false;
+                capabilityOffers = 0;
+                lastCapabilityOffer = 0L;
+            }
+            if (capabilitiesAcknowledged || capabilityOffers >= 3) return;
+            if (capabilityOffers > 0 && now - lastCapabilityOffer < 1_000_000_000L) return;
+            innerSendBuffer.clear();
+            VoiceCapabilities.write(innerSendBuffer, false, VoiceCapabilities.SUPPORTED);
+            sealAndSendLocked(current);
+            capabilityOffers++;
+            lastCapabilityOffer = now;
+        }
+    }
+
+    private void handleEpochFrame(SoundFrameV3Packet packet, SessionCrypto expected) {
+        synchronized (remoteEpochs) {
+            if (!acceptStreamSession(expected) || capabilityCrypto != expected) return;
+            UUID sender = packet.frame.senderId;
+            StreamEpochTracker.Decision decision = remoteEpochs.frame(sender, packet.epoch);
+            if (decision == StreamEpochTracker.Decision.REJECT) return;
+            if (decision == StreamEpochTracker.Decision.NEW) {
+                DecoderStream old = decoderStreams.remove(sender);
+                if (old != null) {
+                    old.close();
+                    retirePlayback(sender, old);
+                }
+            }
+            DecoderStream stream = streamFor(sender);
+            if (stream == null) return;
+            stream.offer(packet.frame, System.nanoTime(), playback);
+            receivedFrames.incrementAndGet();
+            TalkCache.markSpeaking(sender);
+        }
+    }
+
+    private void handleEpochReset(SoundResetV3Packet packet, SessionCrypto expected) {
+        synchronized (remoteEpochs) {
+            if (!acceptStreamSession(expected) || capabilityCrypto != expected) return;
+            if (!remoteEpochs.reset(packet.senderId, packet.epoch)) return;
+            DecoderStream stream = decoderStreams.remove(packet.senderId);
+            if (stream != null) {
+                stream.close();
+                retirePlayback(packet.senderId, stream);
+            }
+        }
+    }
+
+    private void retirePlayback(UUID senderId, DecoderStream stream) {
+        AudioPlayback output = playback;
+        if (output == null) return;
+        if (stream.playbackEpoch() > 0) output.retireStream(senderId, stream.playbackEpoch());
+        else output.dropChannel(senderId);
     }
 
     private void handleChallenge(HandshakePackets.Challenge challenge) {
@@ -328,6 +466,50 @@ public final class VoiceClient {
                             .computeClient(keys, playerId, nonceSnapshot, challenge.serverNonce);
                         SessionCrypto nextCrypto = SessionCrypto.forClient(keys);
                         SessionCrypto previousCrypto = crypto;
+                        MicGate.cancelTouchPtt();
+                        crypto = nextCrypto;
+                        if (previousCrypto != null) previousCrypto.close();
+                        clearArray(serverNonce);
+                        clearArray(clientProof);
+                        serverNonce = Arrays.copyOf(challenge.serverNonce, challenge.serverNonce.length);
+                        clientProof = proof;
+                        handshakeStage = HandshakeStage.AUTH_RESPONSE;
+                        stageSinceNanos = System.nanoTime();
+                        sendResponse = true;
+                    } finally {
+                        keys.close();
+                    }
+                }
+            }
+        } finally {
+            clearArray(challenge.serverNonce);
+            clearArray(challenge.serverProof);
+        }
+        if (sendResponse) sendAuthResponse();
+    }
+
+    private void handleSessionChallenge(SessionHandshakePackets.Challenge challenge) {
+        boolean sendResponse = false;
+        try {
+            if (!sessionId.equals(challenge.sessionId)) return;
+            synchronized (handshakeLock) {
+                if (handshakeStage == HandshakeStage.AUTHENTICATED) return;
+                if (handshakeStage == HandshakeStage.AUTH_RESPONSE) {
+                    sendResponse = serverNonce != null && Arrays.equals(serverNonce, challenge.serverNonce);
+                } else {
+                    byte[] nonceSnapshot = clientNonce;
+                    if (nonceSnapshot == null) return;
+                    SessionKeys keys = SessionKeys
+                        .derive(masterSecret, nonceSnapshot, challenge.serverNonce, sessionId);
+                    try {
+                        if (!HandshakeProof
+                            .verifyServer(keys, playerId, nonceSnapshot, challenge.serverNonce, challenge.serverProof))
+                            return;
+                        byte[] proof = HandshakeProof
+                            .computeClient(keys, playerId, nonceSnapshot, challenge.serverNonce);
+                        SessionCrypto nextCrypto = SessionCrypto.forClient(keys, sessionId);
+                        SessionCrypto previousCrypto = crypto;
+                        MicGate.cancelTouchPtt();
                         crypto = nextCrypto;
                         if (previousCrypto != null) previousCrypto.close();
                         clearArray(serverNonce);
@@ -378,6 +560,7 @@ public final class VoiceClient {
     private synchronized void reconcileMicCapture(long nowNanos) {
         MicCapture current = micCapture;
         if (current == null || current.isRunning()) return;
+        activeCaptureSink = null;
         current.stop();
         if (micCapture == current) micCapture = null;
         lastMicAttemptNanos = nowNanos;
@@ -388,12 +571,13 @@ public final class VoiceClient {
         lastMicAttemptNanos = System.nanoTime();
         try {
             MicCapture created = new MicCapture(
-                this::onMicFrame,
+                createCaptureSink(crypto),
                 dev.akashic.voice.config.AkashicVoiceConfig.selectedMicDevice());
             created.start();
             micCapture = created;
             micFailureLogged = false;
         } catch (AudioCaptureException | RuntimeException e) {
+            activeCaptureSink = null;
             micCapture = null;
             if (!micFailureLogged) {
                 micFailureLogged = true;
@@ -405,19 +589,46 @@ public final class VoiceClient {
     }
 
     private synchronized void stopMicCapture() {
+        MicGate.cancelTouchPtt();
+        activeCaptureSink = null;
         MicCapture capture = micCapture;
         micCapture = null;
         if (capture != null) capture.stop();
     }
 
-    private void onMicFrame(int ignoredCaptureSequence, byte[] opusPayload, int payloadLength) {
-        if (!authenticated) return;
+    private MicCapture.FrameSink createCaptureSink(final SessionCrypto expectedCrypto) {
+        java.util.Objects.requireNonNull(expectedCrypto, "expectedCrypto");
+        MicCapture.FrameSink created = new MicCapture.FrameSink() {
+
+            @Override
+            public void onFrame(int sequence, byte[] payload, int length) {
+                sendAuthorizedFrame(sequence, payload, length, MicGate.transmissionState());
+            }
+
+            @Override
+            public boolean sendAuthorizedFrame(int sequence, byte[] payload, int length,
+                MicGate.TransmissionState authorization) {
+                return transmitMicFrame(this, expectedCrypto, authorization, payload, length);
+            }
+        };
+        activeCaptureSink = created;
+        return created;
+    }
+
+    private boolean transmitMicFrame(MicCapture.FrameSink origin, SessionCrypto expectedCrypto,
+        MicGate.TransmissionState authorization, byte[] payload, int length) {
+        if (!authenticated || origin != activeCaptureSink || !MicGate.permitsTransmission(authorization)) return false;
         synchronized (sendLock) {
             SessionCrypto currentCrypto = crypto;
-            if (currentCrypto == null || !authenticated) return;
+            if (currentCrypto == null || currentCrypto != expectedCrypto
+                || !authenticated
+                || origin != activeCaptureSink
+                || !MicGate.permitsTransmission(authorization)) return false;
+            // Final dispatch boundary. An already-dispatched datagram cannot be recalled.
             innerSendBuffer.clear();
-            MicFramePacket.write(innerSendBuffer, nextMicSequence++, opusPayload, payloadLength);
+            MicFramePacket.write(innerSendBuffer, nextMicSequence++, payload, length);
             sealAndSendLocked(currentCrypto);
+            return true;
         }
     }
 
@@ -425,12 +636,16 @@ public final class VoiceClient {
         DecoderStream stream = decoderStreams.remove(senderId);
         if (stream != null) stream.close();
         AudioPlayback currentPlayback = playback;
-        if (currentPlayback != null) currentPlayback.dropChannel(senderId);
+        if (currentPlayback != null && stream != null) {
+            if (stream.playbackEpoch() > 0) currentPlayback.retireStream(senderId, stream.playbackEpoch());
+            else currentPlayback.dropChannel(senderId);
+        }
     }
 
     private void handleSoundFrame(SoundFramePacket pkt) {
         long count = receivedFrames.incrementAndGet();
         DecoderStream stream = streamFor(pkt.senderId);
+        if (stream == null) return;
         stream.offer(pkt, System.nanoTime(), playback);
         TalkCache.markSpeaking(pkt.senderId);
         if (count == 1 || count % 250 == 0) {
@@ -441,6 +656,7 @@ public final class VoiceClient {
     private void handleSoundFrame(SoundFrameV2Packet pkt) {
         long count = receivedFrames.incrementAndGet();
         DecoderStream stream = streamFor(pkt.senderId);
+        if (stream == null) return;
         stream.offer(pkt, System.nanoTime(), playback);
         TalkCache.markSpeaking(pkt.senderId);
         if (count == 1 || count % 250 == 0) {
@@ -449,15 +665,17 @@ public final class VoiceClient {
     }
 
     private DecoderStream streamFor(UUID senderId) {
-        DecoderStream existing = decoderStreams.get(senderId);
-        if (existing != null) return existing;
-        DecoderStream created = new DecoderStream(senderId);
-        DecoderStream raced = decoderStreams.putIfAbsent(senderId, created);
-        if (raced != null) {
-            created.close();
-            return raced;
+        synchronized (remoteEpochs) {
+            DecoderStream existing = decoderStreams.get(senderId);
+            if (existing != null) return existing;
+            if (decoderStreams.size() >= MAX_DECODER_STREAMS) {
+                decoderStreamCapacityDrops.incrementAndGet();
+                return null;
+            }
+            DecoderStream created = new DecoderStream(senderId, nextPlaybackEpoch.incrementAndGet());
+            decoderStreams.put(senderId, created);
+            return created;
         }
-        return created;
     }
 
     private void drainDecoderStreams(long nowNanos) {
@@ -472,7 +690,7 @@ public final class VoiceClient {
             } catch (RuntimeException ignored) {
                 // best-effort cleanup
             }
-            if (playback != null) playback.dropChannel(senderId);
+            retirePlayback(senderId, stream);
         }
     }
 
@@ -482,7 +700,8 @@ public final class VoiceClient {
         lastHandshakeAttemptNanos = System.nanoTime();
         synchronized (sendLock) {
             handshakeSendBuffer.clear();
-            HandshakePackets.writeHello(handshakeSendBuffer, playerId, nonce);
+            if (sessionId != null) SessionHandshakePackets.writeHello(handshakeSendBuffer, sessionId, playerId, nonce);
+            else HandshakePackets.writeHello(handshakeSendBuffer, playerId, nonce);
             sendRawLocked(handshakeSendBuffer);
         }
     }
@@ -493,7 +712,8 @@ public final class VoiceClient {
         lastHandshakeAttemptNanos = System.nanoTime();
         synchronized (sendLock) {
             handshakeSendBuffer.clear();
-            HandshakePackets.writeAuthResponse(handshakeSendBuffer, proof);
+            if (sessionId != null) SessionHandshakePackets.writeAuthResponse(handshakeSendBuffer, sessionId, proof);
+            else HandshakePackets.writeAuthResponse(handshakeSendBuffer, proof);
             sendRawLocked(handshakeSendBuffer);
         }
     }
@@ -526,9 +746,10 @@ public final class VoiceClient {
 
     private void sendRawLocked(ByteBuffer buf) {
         DatagramSocket currentSocket = socket;
-        if (currentSocket == null || currentSocket.isClosed()) return;
+        int length = buf.position();
+        if (currentSocket == null || currentSocket.isClosed() || !WireProtocol.isNormalDatagramLength(length)) return;
         try {
-            outboundPacket.setData(buf.array(), 0, buf.position());
+            outboundPacket.setData(buf.array(), 0, length);
             currentSocket.send(outboundPacket);
         } catch (IOException e) {
             if (running) AkashicVoice.LOG.debug("UDP send failed", e);
@@ -588,6 +809,12 @@ public final class VoiceClient {
     }
 
     private void clearDecoderStreams() {
+        synchronized (remoteEpochs) {
+            clearDecoderStreamsLocked();
+        }
+    }
+
+    private void clearDecoderStreamsLocked() {
         for (Map.Entry<UUID, DecoderStream> entry : decoderStreams.entrySet()) {
             UUID senderId = entry.getKey();
             DecoderStream stream = entry.getValue();
@@ -597,7 +824,7 @@ public final class VoiceClient {
             } catch (RuntimeException ignored) {
                 // best-effort cleanup
             }
-            if (playback != null) playback.dropChannel(senderId);
+            retirePlayback(senderId, stream);
         }
     }
 

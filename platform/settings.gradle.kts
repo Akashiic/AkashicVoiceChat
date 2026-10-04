@@ -4,6 +4,7 @@ plugins {
 
 rootProject.name = "akashic-voice-platform"
 
+include("addon-api")
 include("client-protocol")
 include("bridge-core")
 include("agent-protocol")

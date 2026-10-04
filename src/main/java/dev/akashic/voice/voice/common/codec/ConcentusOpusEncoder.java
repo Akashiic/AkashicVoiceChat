@@ -19,6 +19,11 @@ public final class ConcentusOpusEncoder implements OpusEncoder {
         }
     }
 
+    /** Invoked only by the encoding worker between frames. */
+    public void setBitrate(int bitrate) {
+        delegate.setBitrate(dev.akashic.voice.config.VoiceQualityPreset.requireValidBitrate(bitrate));
+    }
+
     @Override
     public int encode(short[] pcm, byte[] out) {
         try {

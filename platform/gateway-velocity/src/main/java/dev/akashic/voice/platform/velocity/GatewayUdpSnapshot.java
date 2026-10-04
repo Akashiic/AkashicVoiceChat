@@ -9,6 +9,7 @@ record GatewayUdpSnapshot(
     long micFramesAccepted,
     long soundFramesSent,
     long groupFramesSent,
+    long radioFramesSent,
     long soundResetsSent,
     long sessionsOpened,
     long sessionsClosed

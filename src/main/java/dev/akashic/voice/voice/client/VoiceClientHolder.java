@@ -13,8 +13,18 @@ public final class VoiceClientHolder {
     private VoiceClientHolder() {}
 
     public static synchronized boolean connect(UUID playerId, byte[] masterSecret, InetAddress host, int udpPort) {
+        return connect(playerId, masterSecret, host, udpPort, null);
+    }
+
+    public static synchronized boolean connect(UUID playerId, UUID sessionId, byte[] masterSecret, InetAddress host,
+        int udpPort) {
+        return connect(playerId, masterSecret, host, udpPort, sessionId);
+    }
+
+    public static synchronized boolean connect(UUID playerId, byte[] masterSecret, InetAddress host, int udpPort,
+        UUID sessionId) {
         stop();
-        VoiceClient client = new VoiceClient(playerId, masterSecret, host, udpPort);
+        VoiceClient client = new VoiceClient(playerId, masterSecret, host, udpPort, sessionId);
         try {
             client.start();
             instance = client;
@@ -27,6 +37,7 @@ public final class VoiceClientHolder {
     }
 
     public static synchronized void stop() {
+        MicGate.cancelTouchPtt();
         if (instance == null) return;
         instance.stop();
         instance = null;
@@ -34,6 +45,11 @@ public final class VoiceClientHolder {
 
     public static VoiceClient get() {
         return instance;
+    }
+
+    public static VoiceClientStatusSnapshot statusSnapshot() {
+        VoiceClient current = instance;
+        return current != null ? current.statusSnapshot() : VoiceClientStatusSnapshot.disconnected();
     }
 
     public static synchronized void notifyMicChanged() {

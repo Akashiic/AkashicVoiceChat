@@ -1,7 +1,5 @@
 package dev.akashic.voice.client.gui;
 
-import java.util.UUID;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -32,8 +30,7 @@ public class GuiGroup extends GuiScreen {
     @Override
     public void initGui() {
         Minecraft mc = Minecraft.getMinecraft();
-        UUID myId = mc.thePlayer != null ? mc.thePlayer.getUniqueID() : null;
-        myGroup = myId != null ? ClientGroupCache.myGroup(myId) : null;
+        myGroup = mc.thePlayer != null ? ClientGroupCache.personalGroup() : null;
 
         buttonList.clear();
         int cx = width / 2;
@@ -97,8 +94,7 @@ public class GuiGroup extends GuiScreen {
     @Override
     public void updateScreen() {
         // Refresh group state if the server pushed an update while we sit here.
-        UUID myId = mc.thePlayer != null ? mc.thePlayer.getUniqueID() : null;
-        GroupSnapshot now = myId != null ? ClientGroupCache.myGroup(myId) : null;
+        GroupSnapshot now = mc.thePlayer != null ? ClientGroupCache.personalGroup() : null;
         boolean wasIn = myGroup != null;
         boolean isIn = now != null;
         myGroup = now;

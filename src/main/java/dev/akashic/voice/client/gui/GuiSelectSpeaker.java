@@ -4,11 +4,9 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
-/**
- * Speaker selection screen — placeholder. Output device selection on top of LWJGL 2's
- * OpenAL is non-trivial (system default only without an ALC reinit). For now we let
- * the user know and keep the system default.
- */
+import dev.akashic.voice.voice.client.playback.AudioPlayback;
+
+/** Shows the auto-follow output endpoint and live recovery state. */
 public class GuiSelectSpeaker extends GuiScreen {
 
     private final GuiScreen parent;
@@ -50,6 +48,23 @@ public class GuiSelectSpeaker extends GuiScreen {
             cx,
             height / 2 + 2,
             0xFFAAAAAA);
+        AudioPlayback playback = AudioPlayback.get();
+        String device = playback != null ? playback.outputDeviceName()
+            : I18n.format("akashicvoice.gui.set.speakerUnknown");
+        drawCenteredString(
+            fontRendererObj,
+            I18n.format("akashicvoice.gui.set.speakerDevice", device),
+            cx,
+            height / 2 + 18,
+            0xFFFFFFFF);
+        if (playback != null && playback.isOutputRecovering()) {
+            drawCenteredString(
+                fontRendererObj,
+                I18n.format("akashicvoice.gui.set.speakerRecovering"),
+                cx,
+                height / 2 + 34,
+                0xFFFFCC55);
+        }
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 }

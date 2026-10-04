@@ -22,10 +22,14 @@ import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.net.AkashicVoiceChannel;
 import dev.akashic.voice.net.PacketInviteNotify;
 import dev.akashic.voice.net.PacketRequestSecret;
+import dev.akashic.voice.voice.client.acoustics.AcousticEnvironmentSampler;
+import dev.akashic.voice.voice.client.acoustics.AcousticProfile;
+import dev.akashic.voice.voice.client.acoustics.AcousticProfileTracker;
 import dev.akashic.voice.voice.client.groups.ClientGroupCache;
 import dev.akashic.voice.voice.client.groups.ClientPlayerRoster;
 import dev.akashic.voice.voice.client.groups.PendingInviteQueue;
 import dev.akashic.voice.voice.client.keybinds.AkashicVoiceKeybinds;
+import dev.akashic.voice.voice.client.keybinds.PttInputBridge;
 import dev.akashic.voice.voice.client.playback.AudioPlayback;
 
 public final class ClientVoiceBootstrap {
@@ -37,6 +41,8 @@ public final class ClientVoiceBootstrap {
     private volatile boolean wizardShown = false;
     private volatile long lastBootstrapRequestNanos;
     private volatile long unauthenticatedSinceNanos;
+    private int acousticSampleTicks = 4;
+    private final AcousticProfileTracker acousticTracker = new AcousticProfileTracker();
     private static volatile boolean rebootstrapRequested;
 
     private ClientVoiceBootstrap() {}
@@ -102,6 +108,8 @@ public final class ClientVoiceBootstrap {
             rebootstrapRequested = false;
             lastBootstrapRequestNanos = 0L;
             unauthenticatedSinceNanos = 0L;
+            acousticSampleTicks = 4;
+            acousticTracker.reset();
             return;
         }
 
@@ -115,6 +123,8 @@ public final class ClientVoiceBootstrap {
             VoiceClientHolder.stop();
             lastBootstrapRequestNanos = 0L;
             unauthenticatedSinceNanos = 0L;
+            acousticSampleTicks = 4;
+            acousticTracker.reset();
             AkashicVoice.LOG.info("Voice route changed; requesting a fresh bootstrap");
         }
 
@@ -193,8 +203,12 @@ public final class ClientVoiceBootstrap {
                 byte[] secret = ClientSecretCache.getMasterSecret();
                 if (secret != null) {
                     try {
-                        if (VoiceClientHolder
-                            .connect(ClientSecretCache.getPlayerId(), secret, host, ClientSecretCache.getUdpPort())) {
+                        if (VoiceClientHolder.connect(
+                            ClientSecretCache.getPlayerId(),
+                            secret,
+                            host,
+                            ClientSecretCache.getUdpPort(),
+                            ClientSecretCache.getSessionId())) {
                             ClientSecretCache.clear();
                             lastBootstrapRequestNanos = 0L;
                             unauthenticatedSinceNanos = 0L;
@@ -211,20 +225,37 @@ public final class ClientVoiceBootstrap {
             MicGate.toggleMute();
         }
 
-        // PTT (continuous state).
-        boolean pttDown = isKeyDown(AkashicVoiceKeybinds.PTT);
-        if (pttDown != MicGate.isPttPressed()) {
-            MicGate.setPttPressed(pttDown);
-        }
+        // PTT tick reconciliation remains as a fallback for missed raw input events.
+        PttInputBridge.syncNow();
 
         // Listener position + audio config update.
         AudioPlayback p = AudioPlayback.get();
         if (p == null) return;
+        if (p.claimSharedOutputReload()) {
+            try {
+                mc.getSoundHandler()
+                    .onResourceManagerReload(mc.getResourceManager());
+                p.sharedOutputReloadIssued();
+                AkashicVoice.LOG.info("Minecraft sound system reload issued for voice output recovery");
+            } catch (Throwable failure) {
+                p.sharedOutputReloadFailed();
+                AkashicVoice.LOG.warn("Minecraft sound system reload failed during voice output recovery", failure);
+            }
+        }
         p.setMaxDistance(AkashicVoiceConfig.voiceRadius());
         p.setReferenceDistance((float) AkashicVoiceConfig.referenceDistance());
-        float gain = MicGate.isDeafened() ? 0f : (float) AkashicVoiceConfig.playbackVolume();
-        p.setListenerGain(gain);
-        p.setSpatial("normal".equals(AkashicVoiceConfig.audio3dMode()));
+        p.setDeafened(MicGate.isDeafened());
+        p.setListenerGain((float) AkashicVoiceConfig.playbackVolume());
+        boolean spatial = "normal".equals(AkashicVoiceConfig.audio3dMode());
+        p.setSpatial(spatial);
+        if (!spatial || !AkashicVoiceConfig.environmentalAcoustics()) {
+            acousticTracker.reset();
+            p.setAcousticProfile(AcousticProfile.OUTDOOR);
+            acousticSampleTicks = 4;
+        } else if (++acousticSampleTicks >= 5) {
+            acousticSampleTicks = 0;
+            p.setAcousticProfile(acousticTracker.update(AcousticEnvironmentSampler.sample(player)));
+        }
         float pitchRad = (float) Math.toRadians(player.rotationPitch);
         float yawRad = (float) Math.toRadians(player.rotationYaw);
         p.updateListener((float) player.posX, (float) player.posY, (float) player.posZ, pitchRad, yawRad);

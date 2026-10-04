@@ -11,6 +11,7 @@ public final class LegacyForgeBootstrapCodec {
     public static final byte REBOOTSTRAP_DISCRIMINATOR = 9;
     public static final int MASTER_SECRET_BYTES = 32;
     public static final int RESPONSE_BYTES = 1 + 16 + MASTER_SECRET_BYTES + 4;
+    public static final int SESSION_RESPONSE_BYTES = RESPONSE_BYTES + 16;
 
     private LegacyForgeBootstrapCodec() {
     }
@@ -21,6 +22,16 @@ public final class LegacyForgeBootstrapCodec {
 
     public static byte[] encodeRebootstrap() {
         return new byte[] {REBOOTSTRAP_DISCRIMINATOR};
+    }
+
+    public static byte[] encodeResponse(UUID voiceIdentity, byte[] masterSecret, int udpPort, UUID sessionId) {
+        Objects.requireNonNull(sessionId, "sessionId");
+        byte[] legacy = encodeResponse(voiceIdentity, masterSecret, udpPort);
+        ByteBuffer out = ByteBuffer.allocate(SESSION_RESPONSE_BYTES);
+        out.put(legacy);
+        out.putLong(sessionId.getMostSignificantBits());
+        out.putLong(sessionId.getLeastSignificantBits());
+        return out.array();
     }
 
     public static byte[] encodeResponse(UUID voiceIdentity, byte[] masterSecret, int udpPort) {

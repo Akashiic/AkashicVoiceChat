@@ -15,6 +15,7 @@ public final class DecoderStream implements AutoCloseable {
     private static final int MAX_DRAIN_PER_CALL = 16;
 
     private final UUID senderId;
+    private long playbackEpoch;
     private final OpusDecoder decoder;
     private final OpusJitterBuffer jitter;
     private final short[] discardPcm = new short[AudioFormatSpec.FRAME_SAMPLES];
@@ -27,9 +28,22 @@ public final class DecoderStream implements AutoCloseable {
     private boolean lastWhispering;
     private long lastPacketNanos;
     private long decodeErrorCount;
+    private boolean closed;
+    private Object listeningIdentity;
+    private Object speakerListeningIdentity;
 
     public DecoderStream(UUID senderId) {
+        this(senderId, 0L);
+    }
+
+    public DecoderStream(UUID senderId, long playbackEpoch) {
         this(senderId, OpusCodecFactory.createDecoder(), new OpusJitterBuffer());
+        if (playbackEpoch < 0) throw new IllegalArgumentException("Invalid playback epoch");
+        this.playbackEpoch = playbackEpoch;
+    }
+
+    public long playbackEpoch() {
+        return playbackEpoch;
     }
 
     DecoderStream(UUID senderId, OpusDecoder decoder, OpusJitterBuffer jitter) {
@@ -39,7 +53,7 @@ public final class DecoderStream implements AutoCloseable {
     }
 
     public synchronized void offer(SoundFramePacket packet, long nowNanos, AudioPlayback playback) {
-        if (!senderId.equals(packet.senderId)) return;
+        if (closed || !senderId.equals(packet.senderId)) return;
         offer(
             packet.sequence,
             packet.isSpatial(),
@@ -56,7 +70,7 @@ public final class DecoderStream implements AutoCloseable {
     }
 
     public synchronized void offer(SoundFrameV2Packet packet, long nowNanos, AudioPlayback playback) {
-        if (!senderId.equals(packet.senderId)) return;
+        if (closed || !senderId.equals(packet.senderId)) return;
         offer(
             packet.sequence,
             packet.isSpatial(),
@@ -74,6 +88,7 @@ public final class DecoderStream implements AutoCloseable {
 
     private void offer(int sequence, boolean spatial, float x, float y, float z, float maxDistance, boolean whispering,
         byte[] opus, int offset, int length, long nowNanos, AudioPlayback playback) {
+        reconcilePlaybackBoundary(playback, nowNanos);
         boolean accepted = jitter
             .offer(sequence, spatial, x, y, z, maxDistance, whispering, opus, offset, length, nowNanos);
         if (accepted) lastPacketNanos = nowNanos;
@@ -81,6 +96,26 @@ public final class DecoderStream implements AutoCloseable {
     }
 
     public synchronized void drain(long nowNanos, AudioPlayback playback) {
+        if (closed) return;
+        reconcilePlaybackBoundary(playback, nowNanos);
+        drainBuffered(nowNanos, playback);
+    }
+
+    private void reconcilePlaybackBoundary(AudioPlayback playback, long nowNanos) {
+        if (playback == null) return;
+        Object nextListening = playback.listeningIdentity();
+        Object nextSpeaker = playback.speakerListeningIdentity(senderId);
+        if (listeningIdentity != null
+            && (listeningIdentity != nextListening || speakerListeningIdentity != nextSpeaker)) {
+            // Drain the bounded encoded backlog into discard PCM; keep decoder and sequence state.
+            // The future timestamp only releases held jitter slots. This does not sleep or reschedule audio.
+            drainBuffered(nowNanos + 1_000_000_000L, null);
+        }
+        listeningIdentity = nextListening;
+        speakerListeningIdentity = nextSpeaker;
+    }
+
+    private void drainBuffered(long nowNanos, AudioPlayback playback) {
         for (int i = 0; i < MAX_DRAIN_PER_CALL; i++) {
             OpusJitterBuffer.ReadyKind kind = jitter.next(nowNanos);
             if (kind == OpusJitterBuffer.ReadyKind.NONE) return;
@@ -90,7 +125,7 @@ public final class DecoderStream implements AutoCloseable {
     }
 
     private void decodeExpected(OpusJitterBuffer.ReadyKind kind, AudioPlayback playback) {
-        PlaybackFrame frame = playback != null ? playback.acquireFrame() : null;
+        PlaybackFrame frame = playback != null ? playback.acquireFrame(senderId) : null;
         short[] pcm = frame != null ? frame.pcm() : discardPcm;
         int decoded;
         try {
@@ -124,7 +159,16 @@ public final class DecoderStream implements AutoCloseable {
             playback.releaseFrame(frame);
             return;
         }
-        playback.submitFrame(frame, senderId, lastSpatial, lastX, lastY, lastZ, lastMaxDistance, lastWhispering);
+        playback.submitFrame(
+            frame,
+            senderId,
+            lastSpatial,
+            lastX,
+            lastY,
+            lastZ,
+            lastMaxDistance,
+            lastWhispering,
+            playbackEpoch);
     }
 
     public synchronized boolean isIdle(long nowNanos, long timeoutNanos) {
@@ -153,6 +197,8 @@ public final class DecoderStream implements AutoCloseable {
 
     @Override
     public synchronized void close() {
+        if (closed) return;
+        closed = true;
         jitter.reset();
         decoder.close();
     }

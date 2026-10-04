@@ -15,6 +15,7 @@ class BootstrapSessionRegistryTest {
             BootstrapGrant first = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             BootstrapGrant second = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             assertEquals(first.voiceIdentity(), second.voiceIdentity());
+            assertEquals(first.sessionId(), second.sessionId());
             assertArrayEquals(first.masterSecretCopy(), second.masterSecretCopy());
             assertEquals(1, registry.size());
 
@@ -22,6 +23,7 @@ class BootstrapSessionRegistryTest {
             assertEquals(0, registry.size());
             BootstrapGrant rotated = registry.grantFor(proxyId, "TestPlayer", "lobby", 24454);
             assertNotEquals(first.voiceIdentity(), rotated.voiceIdentity());
+            assertNotEquals(first.sessionId(), rotated.sessionId());
         }
     }
 
@@ -42,7 +44,10 @@ class BootstrapSessionRegistryTest {
             assertEquals("TestPlayer", material.playerName());
             assertEquals("lobby", material.backendName());
             assertEquals(grant.voiceIdentity(), material.voiceIdentity());
+            assertEquals(grant.sessionId(), material.sessionId());
             assertArrayEquals(grant.masterSecretCopy(), material.secretCopy());
+            assertNotNull(registry.findByVoiceIdentity(grant.voiceIdentity(), grant.sessionId()));
+            assertNull(registry.findByVoiceIdentity(grant.voiceIdentity(), UUID.randomUUID()));
         }
     }
 }

@@ -12,7 +12,7 @@ akashicvoice.gui.hub.group=Gruppe
 akashicvoice.gui.set.title=Voice-Chat-Einstellungen
 akashicvoice.gui.set.volume=Lautstärke
 akashicvoice.gui.set.micAmp=Mikrofon-Verstärkung
-akashicvoice.gui.set.noise=Rauschunterdrückung
+akashicvoice.gui.set.noise=Hochpassfilter
 akashicvoice.gui.set.activation=Aktivierungstyp
 akashicvoice.gui.set.threshold=Aktivierungsschwelle
 akashicvoice.gui.set.enableMicTest=Mikrofon-Test aktivieren
@@ -23,8 +23,11 @@ akashicvoice.gui.set.audio3d.off=Aus
 akashicvoice.gui.set.indicators=Sprech-Indikator über Köpfen
 akashicvoice.gui.set.selectMic=Mikrofon wählen
 akashicvoice.gui.set.selectSpeaker=Lautsprecher wählen
-akashicvoice.gui.set.speakerNote1=Auswahl des Ausgabegeräts wird in dieser Version nicht unterstützt.
-akashicvoice.gui.set.speakerNote2=Akashic Voice spielt über das System-Standardgerät ab.
+akashicvoice.gui.set.speakerNote1=Die Sprachausgabe folgt automatisch dem aktuellen System-Standardgerät.
+akashicvoice.gui.set.speakerNote2=Trennen, Verbinden oder Standardgerätewechsel startet die Wiederherstellung.
+akashicvoice.gui.set.speakerDevice=Aktuelle Ausgabe: %s
+akashicvoice.gui.set.speakerUnknown=Systemstandard
+akashicvoice.gui.set.speakerRecovering=Sprachausgabe wird wiederhergestellt...
 
 akashicvoice.gui.group.title=Gruppe
 akashicvoice.gui.group.notInOne=Du bist in keiner Gruppe.
@@ -55,3 +58,26 @@ akashicvoice.gui.mic=Mikrofon
 akashicvoice.gui.muted=Stumm
 akashicvoice.gui.unmuted=Aktiv
 akashicvoice.gui.volume=Lautstärke
+
+# Halten-zum-Sprechen Oberfläche
+akashicvoice.gui.touch.title=Zum Sprechen halten
+akashicvoice.gui.touch.hold=ZUM SPRECHEN GEDRÜCKT HALTEN
+akashicvoice.gui.touch.talking=DU SPRICHST - LOSLASSEN ZUM STOPPEN
+akashicvoice.gui.touch.enablePtt=Push-to-Talk-Modus aktivieren
+akashicvoice.gui.touch.pttEnabled=Push-to-Talk-Modus aktiv
+akashicvoice.gui.touch.ready=Bereit - drücken und halten
+akashicvoice.gui.touch.muted=Mikrofon ist stummgeschaltet
+akashicvoice.gui.touch.needsPtt=Zuerst Push-to-Talk aktivieren
+akashicvoice.gui.touch.offline=Sprachverbindung ist offline
+akashicvoice.gui.touch.connecting=Sprachverbindung wird authentifiziert
+akashicvoice.gui.touch.unfocused=Spielfenster wieder fokussieren
+akashicvoice.gui.touch.holdHint=Verlassen, Loslassen, Fokusverlust oder Serverwechsel stoppt Touch-PTT
+akashicvoice.gui.touch.keyboardHint=Physisches Push-to-Talk bleibt unabhängig
+akashicvoice.gui.touch.saveFailed=Modus im Speicher geändert; Speichern fehlgeschlagen
+akashicvoice.gui.touch.small=Fenster vergrößern oder GUI-Skalierung reduzieren
+
+# Aggregierte Transportdiagnose auf dem Client
+akashicvoice.gui.hub.status.offline=Voice: offline
+akashicvoice.gui.hub.status.connecting=Voice: verbindet | rx %s | Streams %s/%s | verworfen %s
+akashicvoice.gui.hub.status.refreshing=Voice: Sitzung wird erneuert | rx %s | Streams %s/%s | verworfen %s
+akashicvoice.gui.hub.status.online=Voice: online | rx %s | Streams %s/%s | verworfen %s

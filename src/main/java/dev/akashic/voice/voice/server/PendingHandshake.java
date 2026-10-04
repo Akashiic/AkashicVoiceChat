@@ -15,6 +15,7 @@ final class PendingHandshake implements AutoCloseable {
     static final long TIMEOUT_MILLIS = 10_000L;
 
     final UUID playerId;
+    final UUID sessionId;
     final SocketAddress remoteAddress;
     final byte[] clientNonce;
     final byte[] serverNonce;
@@ -24,9 +25,10 @@ final class PendingHandshake implements AutoCloseable {
     private SessionCrypto crypto;
     private boolean activated;
 
-    private PendingHandshake(UUID playerId, SocketAddress remoteAddress, byte[] clientNonce, byte[] serverNonce,
-        byte[] serverProof, byte[] expectedClientProof, SessionCrypto crypto) {
+    private PendingHandshake(UUID playerId, UUID sessionId, SocketAddress remoteAddress, byte[] clientNonce,
+        byte[] serverNonce, byte[] serverProof, byte[] expectedClientProof, SessionCrypto crypto) {
         this.playerId = playerId;
+        this.sessionId = sessionId;
         this.remoteAddress = remoteAddress;
         this.clientNonce = Arrays.copyOf(clientNonce, clientNonce.length);
         this.serverNonce = Arrays.copyOf(serverNonce, serverNonce.length);
@@ -47,6 +49,31 @@ final class PendingHandshake implements AutoCloseable {
             SessionCrypto crypto = SessionCrypto.forServer(keys);
             return new PendingHandshake(
                 playerId,
+                null,
+                remoteAddress,
+                clientNonce,
+                serverNonce,
+                serverProof,
+                clientProof,
+                crypto);
+        } finally {
+            keys.close();
+        }
+    }
+
+    static PendingHandshake create(UUID playerId, UUID sessionId, SocketAddress remoteAddress, byte[] masterSecret,
+        byte[] clientNonce, SecureRandom random) {
+        if (sessionId == null) throw new IllegalArgumentException("sessionId");
+        byte[] serverNonce = new byte[SessionKeys.HANDSHAKE_NONCE_BYTES];
+        random.nextBytes(serverNonce);
+        SessionKeys keys = SessionKeys.derive(masterSecret, clientNonce, serverNonce, sessionId);
+        try {
+            byte[] serverProof = HandshakeProof.computeServer(keys, playerId, clientNonce, serverNonce);
+            byte[] clientProof = HandshakeProof.computeClient(keys, playerId, clientNonce, serverNonce);
+            SessionCrypto crypto = SessionCrypto.forServer(keys, sessionId);
+            return new PendingHandshake(
+                playerId,
+                sessionId,
                 remoteAddress,
                 clientNonce,
                 serverNonce,
@@ -59,7 +86,13 @@ final class PendingHandshake implements AutoCloseable {
     }
 
     boolean matches(UUID playerId, byte[] clientNonce) {
-        return this.playerId.equals(playerId) && Arrays.equals(this.clientNonce, clientNonce);
+        return sessionId == null && this.playerId.equals(playerId) && Arrays.equals(this.clientNonce, clientNonce);
+    }
+
+    boolean matches(UUID playerId, UUID sessionId, byte[] clientNonce) {
+        return this.sessionId != null && this.sessionId.equals(sessionId)
+            && this.playerId.equals(playerId)
+            && Arrays.equals(this.clientNonce, clientNonce);
     }
 
     boolean verifyClientProof(byte[] proof) {

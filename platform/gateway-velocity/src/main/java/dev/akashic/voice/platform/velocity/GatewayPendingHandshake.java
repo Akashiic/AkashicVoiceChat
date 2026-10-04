@@ -17,6 +17,7 @@ final class GatewayPendingHandshake implements AutoCloseable {
     final String playerName;
     final String backendName;
     final UUID voiceIdentity;
+    final UUID sessionId;
     final SocketAddress remoteAddress;
     final byte[] clientNonce;
     final byte[] serverNonce;
@@ -26,13 +27,14 @@ final class GatewayPendingHandshake implements AutoCloseable {
     private SessionCrypto crypto;
     private boolean activated;
 
-    private GatewayPendingHandshake(UUID proxyPlayerId, String playerName, String backendName, UUID voiceIdentity, SocketAddress remoteAddress,
-                                    byte[] clientNonce, byte[] serverNonce, byte[] serverProof,
+    private GatewayPendingHandshake(UUID proxyPlayerId, String playerName, String backendName, UUID voiceIdentity,
+                                    UUID sessionId, SocketAddress remoteAddress, byte[] clientNonce, byte[] serverNonce, byte[] serverProof,
                                     byte[] expectedClientProof, SessionCrypto crypto) {
         this.proxyPlayerId = proxyPlayerId;
         this.playerName = playerName;
         this.backendName = backendName;
         this.voiceIdentity = voiceIdentity;
+        this.sessionId = sessionId;
         this.remoteAddress = remoteAddress;
         this.clientNonce = Arrays.copyOf(clientNonce, clientNonce.length);
         this.serverNonce = Arrays.copyOf(serverNonce, serverNonce.length);
@@ -59,7 +61,7 @@ final class GatewayPendingHandshake implements AutoCloseable {
                 keys, material.voiceIdentity(), clientNonce, serverNonce);
             SessionCrypto crypto = SessionCrypto.forServer(keys);
             return new GatewayPendingHandshake(
-                material.proxyPlayerId(), material.playerName(), material.backendName(), material.voiceIdentity(), remoteAddress,
+                material.proxyPlayerId(), material.playerName(), material.backendName(), material.voiceIdentity(), null, remoteAddress,
                 clientNonce, serverNonce, serverProof, clientProof, crypto);
         } finally {
             keys.close();
@@ -70,8 +72,34 @@ final class GatewayPendingHandshake implements AutoCloseable {
         }
     }
 
+    static GatewayPendingHandshake createSessionBound(BootstrapSessionRegistry.SessionMaterial material,
+                                          SocketAddress remoteAddress, byte[] clientNonce, SecureRandom random) {
+        byte[] secret = material.secretCopy();
+        byte[] serverNonce = new byte[SessionKeys.HANDSHAKE_NONCE_BYTES];
+        random.nextBytes(serverNonce);
+        SessionKeys keys = SessionKeys.derive(secret, clientNonce, serverNonce, material.sessionId());
+        byte[] serverProof = null; byte[] clientProof = null;
+        try {
+            serverProof = HandshakeProof.computeServer(keys, material.voiceIdentity(), clientNonce, serverNonce);
+            clientProof = HandshakeProof.computeClient(keys, material.voiceIdentity(), clientNonce, serverNonce);
+            SessionCrypto crypto = SessionCrypto.forServer(keys, material.sessionId());
+            return new GatewayPendingHandshake(material.proxyPlayerId(), material.playerName(), material.backendName(),
+                material.voiceIdentity(), material.sessionId(), remoteAddress, clientNonce, serverNonce,
+                serverProof, clientProof, crypto);
+        } finally {
+            keys.close(); Arrays.fill(secret, (byte) 0); Arrays.fill(serverNonce, (byte) 0);
+            if (serverProof != null) Arrays.fill(serverProof, (byte) 0);
+            if (clientProof != null) Arrays.fill(clientProof, (byte) 0);
+        }
+    }
+
     boolean matches(UUID voiceIdentity, byte[] clientNonce) {
-        return this.voiceIdentity.equals(voiceIdentity) && Arrays.equals(this.clientNonce, clientNonce);
+        return sessionId == null && this.voiceIdentity.equals(voiceIdentity) && Arrays.equals(this.clientNonce, clientNonce);
+    }
+
+    boolean matches(UUID voiceIdentity, UUID sessionId, byte[] clientNonce) {
+        return this.sessionId != null && this.sessionId.equals(sessionId)
+            && this.voiceIdentity.equals(voiceIdentity) && Arrays.equals(this.clientNonce, clientNonce);
     }
 
     boolean verifyClientProof(byte[] proof) {

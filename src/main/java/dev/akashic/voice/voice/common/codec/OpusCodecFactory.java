@@ -12,17 +12,19 @@ public final class OpusCodecFactory {
     private OpusCodecFactory() {}
 
     public static synchronized OpusEncoder createEncoder() {
+        final int bitrate = AkashicVoiceConfig.opusBitrate();
         if (shouldTryNative()) {
             try {
-                OpusEncoder encoder = new NativeOpusEncoder(AkashicVoiceConfig.opusBitrate());
+                NativeOpusEncoder encoder = new NativeOpusEncoder(bitrate);
                 lastEncoderBackend = "native-libopus";
-                return encoder;
+                return new LiveBitrateEncoder(encoder, encoder::setBitrate, AkashicVoiceConfig::opusBitrate, bitrate);
             } catch (Throwable t) {
                 handleNativeFailure(t, "encoder");
             }
         }
         lastEncoderBackend = "java-concentus";
-        return new ConcentusOpusEncoder(AkashicVoiceConfig.opusBitrate());
+        ConcentusOpusEncoder encoder = new ConcentusOpusEncoder(bitrate);
+        return new LiveBitrateEncoder(encoder, encoder::setBitrate, AkashicVoiceConfig::opusBitrate, bitrate);
     }
 
     public static synchronized OpusDecoder createDecoder() {

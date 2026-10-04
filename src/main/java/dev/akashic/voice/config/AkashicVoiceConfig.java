@@ -7,6 +7,11 @@ import net.minecraftforge.common.config.Configuration;
 public final class AkashicVoiceConfig {
 
     public static final int DEFAULT_VOICE_PORT = 24454;
+    public static final String DEFAULT_SERVER_MODE = "direct";
+    public static final String DEFAULT_AGENT_BACKEND_ID = "legacy";
+    public static final String DEFAULT_AGENT_GATEWAY_HOST = "127.0.0.1";
+    public static final int DEFAULT_AGENT_GATEWAY_PORT = 24456;
+    public static final String DEFAULT_AGENT_PSK_BASE64 = "";
     public static final int DEFAULT_VOICE_RADIUS = 48;
     public static final int DEFAULT_OPUS_BITRATE = 48_000;
     public static final String DEFAULT_OPUS_BACKEND = "auto";
@@ -14,7 +19,7 @@ public final class AkashicVoiceConfig {
     public static final String DEFAULT_ACTIVATION_MODE = "ptt";
     public static final double DEFAULT_THRESHOLD_DB = -50.0;
     public static final boolean DEFAULT_DEBUG_SELF_ECHO = false;
-    public static final double DEFAULT_PLAYBACK_VOLUME = 1.0; // shown to user as 100% - applied as listener gain
+    public static final double DEFAULT_PLAYBACK_VOLUME = 1.0; // shown as 100% - applied to voice sources only
     public static final double DEFAULT_MIC_AMPLIFICATION = 1.0;
     public static final boolean DEFAULT_NOISE_SUPPRESSION = false;
     public static final String DEFAULT_AUDIO_3D_MODE = "normal";
@@ -23,12 +28,18 @@ public final class AkashicVoiceConfig {
     public static final String DEFAULT_SELECTED_SPEAKER_MIXER = "";
     public static final boolean DEFAULT_FIRST_RUN_COMPLETE = false;
     public static final boolean DEFAULT_SHOW_SPEAKER_INDICATORS = true;
+    public static final boolean DEFAULT_ENVIRONMENTAL_ACOUSTICS = true;
 
     private static Configuration cfg;
 
     private static int voicePort = DEFAULT_VOICE_PORT;
+    private static String serverMode = DEFAULT_SERVER_MODE;
+    private static String agentBackendId = DEFAULT_AGENT_BACKEND_ID;
+    private static String agentGatewayHost = DEFAULT_AGENT_GATEWAY_HOST;
+    private static int agentGatewayPort = DEFAULT_AGENT_GATEWAY_PORT;
+    private static String agentPskBase64 = DEFAULT_AGENT_PSK_BASE64;
     private static int voiceRadius = DEFAULT_VOICE_RADIUS;
-    private static int opusBitrate = DEFAULT_OPUS_BITRATE;
+    private static volatile int opusBitrate = DEFAULT_OPUS_BITRATE;
     private static String opusBackend = DEFAULT_OPUS_BACKEND;
     private static String captureBackend = DEFAULT_CAPTURE_BACKEND;
     private static String activationMode = DEFAULT_ACTIVATION_MODE;
@@ -36,13 +47,14 @@ public final class AkashicVoiceConfig {
     private static boolean debugSelfEcho = DEFAULT_DEBUG_SELF_ECHO;
     private static double playbackVolume = DEFAULT_PLAYBACK_VOLUME;
     private static double micAmplification = DEFAULT_MIC_AMPLIFICATION;
-    private static boolean noiseSuppression = DEFAULT_NOISE_SUPPRESSION;
+    private static volatile boolean noiseSuppression = DEFAULT_NOISE_SUPPRESSION;
     private static String audio3dMode = DEFAULT_AUDIO_3D_MODE;
     private static double referenceDistance = DEFAULT_REFERENCE_DISTANCE;
     private static String selectedMicMixer = DEFAULT_SELECTED_MIC_MIXER;
     private static String selectedSpeakerMixer = DEFAULT_SELECTED_SPEAKER_MIXER;
     private static boolean firstRunComplete = DEFAULT_FIRST_RUN_COMPLETE;
     private static boolean showSpeakerIndicators = DEFAULT_SHOW_SPEAKER_INDICATORS;
+    private static volatile boolean environmentalAcoustics = DEFAULT_ENVIRONMENTAL_ACOUSTICS;
 
     private AkashicVoiceConfig() {}
 
@@ -50,8 +62,41 @@ public final class AkashicVoiceConfig {
         cfg = new Configuration(configFile);
         cfg.load();
 
-        voicePort = cfg
-            .getInt("voicePort", "voice", DEFAULT_VOICE_PORT, 1024, 65535, "UDP port the voice server binds to.");
+        voicePort = cfg.getInt(
+            "voicePort",
+            "voice",
+            DEFAULT_VOICE_PORT,
+            1024,
+            65535,
+            "UDP port used only when serverMode=direct.");
+        serverMode = cfg.getString(
+            "serverMode",
+            "voice",
+            DEFAULT_SERVER_MODE,
+            "Server transport: direct opens local voice UDP; agent routes voice only through the Gateway.",
+            new String[] { "direct", "agent" });
+        agentBackendId = cfg.getString(
+            "backendId",
+            "agent",
+            DEFAULT_AGENT_BACKEND_ID,
+            "Logical backend ID configured in the Gateway (for example forbidden-1).");
+        agentGatewayHost = cfg.getString(
+            "gatewayHost",
+            "agent",
+            DEFAULT_AGENT_GATEWAY_HOST,
+            "Gateway Agent TCP host. Prefer loopback/private networking; no public inbound port is required here.");
+        agentGatewayPort = cfg.getInt(
+            "gatewayPort",
+            "agent",
+            DEFAULT_AGENT_GATEWAY_PORT,
+            1,
+            65535,
+            "Gateway Agent TCP port (the Gateway's agent-port).");
+        agentPskBase64 = cfg.getString(
+            "pskBase64",
+            "agent",
+            DEFAULT_AGENT_PSK_BASE64,
+            "32 random PSK bytes encoded as Base64. Must match agent-psk.<backend>.base64 on Velocity.");
         voiceRadius = cfg.getInt(
             "voiceRadius",
             "voice",
@@ -98,14 +143,13 @@ public final class AkashicVoiceConfig {
             -80.0,
             0.0)
             .getDouble();
-        playbackVolume = cfg
-            .get(
-                "client",
-                "playbackVolume",
-                DEFAULT_PLAYBACK_VOLUME,
-                "Master listener gain (1.0 = 100%). Applied to all incoming voices.",
-                0.0,
-                3.0)
+        playbackVolume = cfg.get(
+            "client",
+            "playbackVolume",
+            DEFAULT_PLAYBACK_VOLUME,
+            "Voice-only gain (1.0 = 100%, maximum 3.0). Preserves the game master volume; legacy drivers may clip boosted peaks.",
+            0.0,
+            3.0)
             .getDouble();
         micAmplification = cfg
             .get(
@@ -120,7 +164,7 @@ public final class AkashicVoiceConfig {
             "noiseSuppression",
             "client",
             DEFAULT_NOISE_SUPPRESSION,
-            "Apply a basic high-pass noise gate to the mic before encoding. (Lightweight; not RNNoise.)");
+            "Legacy key retained. Enables only a one-pole high-pass filter for DC/low-frequency rumble; not noise gating or RNNoise.");
         audio3dMode = cfg.getString(
             "audio3dMode",
             "client",
@@ -150,7 +194,7 @@ public final class AkashicVoiceConfig {
             "selectedSpeakerMixer",
             "client",
             DEFAULT_SELECTED_SPEAKER_MIXER,
-            "Name of the audio Mixer used for speaker output. Empty = system default. (Currently informational; OpenAL picks the system default.)");
+            "Legacy compatibility key. Voice output follows the current system-default OpenAL device and recovers when that default changes.");
 
         firstRunComplete = cfg.getBoolean(
             "firstRunComplete",
@@ -161,7 +205,12 @@ public final class AkashicVoiceConfig {
             "showSpeakerIndicators",
             "client",
             DEFAULT_SHOW_SPEAKER_INDICATORS,
-            "Show the green speaking indicator above other players' heads.");
+            "Show a microphone icon beside speaking players' nametags.");
+        environmentalAcoustics = cfg.getBoolean(
+            "environmentalAcoustics",
+            "client",
+            DEFAULT_ENVIRONMENTAL_ACOUSTICS,
+            "Apply room/cave reverb and underwater filtering when OpenAL EFX is available.");
 
         if (cfg.hasChanged()) {
             cfg.save();
@@ -172,6 +221,16 @@ public final class AkashicVoiceConfig {
         if (cfg == null) return;
         cfg.get("voice", "voicePort", DEFAULT_VOICE_PORT)
             .set(voicePort);
+        cfg.get("voice", "serverMode", DEFAULT_SERVER_MODE)
+            .set(serverMode);
+        cfg.get("agent", "backendId", DEFAULT_AGENT_BACKEND_ID)
+            .set(agentBackendId);
+        cfg.get("agent", "gatewayHost", DEFAULT_AGENT_GATEWAY_HOST)
+            .set(agentGatewayHost);
+        cfg.get("agent", "gatewayPort", DEFAULT_AGENT_GATEWAY_PORT)
+            .set(agentGatewayPort);
+        cfg.get("agent", "pskBase64", DEFAULT_AGENT_PSK_BASE64)
+            .set(agentPskBase64);
         cfg.get("voice", "voiceRadius", DEFAULT_VOICE_RADIUS)
             .set(voiceRadius);
         cfg.get("voice", "opusBitrate", DEFAULT_OPUS_BITRATE)
@@ -205,11 +264,37 @@ public final class AkashicVoiceConfig {
             .set(firstRunComplete);
         cfg.get("client", "showSpeakerIndicators", DEFAULT_SHOW_SPEAKER_INDICATORS)
             .set(showSpeakerIndicators);
+        cfg.get("client", "environmentalAcoustics", DEFAULT_ENVIRONMENTAL_ACOUSTICS)
+            .set(environmentalAcoustics);
         cfg.save();
     }
 
     public static int voicePort() {
         return voicePort;
+    }
+
+    public static boolean agentMode() {
+        return "agent".equals(serverMode);
+    }
+
+    public static String serverMode() {
+        return serverMode;
+    }
+
+    public static String agentBackendId() {
+        return agentBackendId;
+    }
+
+    public static String agentGatewayHost() {
+        return agentGatewayHost;
+    }
+
+    public static int agentGatewayPort() {
+        return agentGatewayPort;
+    }
+
+    public static String agentPskBase64() {
+        return agentPskBase64;
     }
 
     public static int voiceRadius() {
@@ -218,6 +303,19 @@ public final class AkashicVoiceConfig {
 
     public static int opusBitrate() {
         return opusBitrate;
+    }
+
+    public static synchronized void setOpusBitrate(int bitrate) {
+        opusBitrate = VoiceQualityPreset.requireValidBitrate(bitrate);
+    }
+
+    public static void setVoiceQuality(VoiceQualityPreset preset) {
+        if (preset == null) throw new IllegalArgumentException("Missing quality preset");
+        setOpusBitrate(preset.bitrate());
+    }
+
+    public static VoiceQualityPreset voiceQuality() {
+        return VoiceQualityPreset.fromBitrate(opusBitrate);
     }
 
     public static String opusBackend() {
@@ -334,6 +432,14 @@ public final class AkashicVoiceConfig {
 
     public static void setShowSpeakerIndicators(boolean v) {
         showSpeakerIndicators = v;
+    }
+
+    public static boolean environmentalAcoustics() {
+        return environmentalAcoustics;
+    }
+
+    public static void setEnvironmentalAcoustics(boolean value) {
+        environmentalAcoustics = value;
     }
 
     public static double thresholdRms() {

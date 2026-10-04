@@ -12,6 +12,7 @@ import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.net.AkashicVoiceChannel;
 import dev.akashic.voice.voice.server.SecretRegistry;
 import dev.akashic.voice.voice.server.VoiceServerHolder;
+import dev.akashic.voice.voice.server.agent.LegacyGatewayAgentHolder;
 import dev.akashic.voice.voice.server.groups.GroupRegistryHolder;
 
 public class CommonProxy {
@@ -19,8 +20,11 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         AkashicVoiceConfig.load(event.getSuggestedConfigurationFile());
         AkashicVoiceChannel.init();
-        AkashicVoice.LOG
-            .info("Akashic Voice preInit (version {}, voicePort={})", Tags.VERSION, AkashicVoiceConfig.voicePort());
+        AkashicVoice.LOG.info(
+            "Akashic Voice preInit (version {}, serverMode={}, voicePort={})",
+            Tags.VERSION,
+            AkashicVoiceConfig.serverMode(),
+            AkashicVoiceConfig.voicePort());
     }
 
     public void init(FMLInitializationEvent event) {
@@ -33,7 +37,13 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new AvDebugCommand());
-        VoiceServerHolder.start(AkashicVoiceConfig.voicePort());
+        if (AkashicVoiceConfig.agentMode()) {
+            VoiceServerHolder.stop();
+            LegacyGatewayAgentHolder.startConfigured();
+        } else {
+            LegacyGatewayAgentHolder.stop();
+            VoiceServerHolder.start(AkashicVoiceConfig.voicePort());
+        }
     }
 
     public void serverStarted(FMLServerStartedEvent event) {
@@ -43,6 +53,7 @@ public class CommonProxy {
 
     public void serverStopping(FMLServerStoppingEvent event) {
         VoiceServerHolder.stop();
+        LegacyGatewayAgentHolder.stop();
         SecretRegistry.clear();
         GroupRegistryHolder.clear();
     }

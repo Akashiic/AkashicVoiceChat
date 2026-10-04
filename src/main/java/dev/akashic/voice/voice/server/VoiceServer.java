@@ -19,6 +19,7 @@ import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.KeepAlivePacket;
 import dev.akashic.voice.voice.common.MicFramePacket;
+import dev.akashic.voice.voice.common.SessionHandshakePackets;
 import dev.akashic.voice.voice.common.SoundFramePacket;
 import dev.akashic.voice.voice.common.WirePacketType;
 import dev.akashic.voice.voice.common.WireProtocol;
@@ -40,6 +41,7 @@ public final class VoiceServer {
     private final Map<UUID, VoiceConnection> connections = new ConcurrentHashMap<>();
     private final Map<SocketAddress, UUID> connectionsByAddress = new ConcurrentHashMap<>();
     private final Map<SocketAddress, PendingHandshake> pendingHandshakes = new HashMap<>();
+    private final VoiceServerTelemetry telemetry = new VoiceServerTelemetry();
 
     private final DatagramPacket outboundPacket = new DatagramPacket(new byte[0], 0);
     private final ByteBuffer handshakeSendBuffer = ByteBuffer.allocate(128);
@@ -82,7 +84,7 @@ public final class VoiceServer {
         if (sweeperThread != null) sweeperThread.interrupt();
         for (VoiceConnection connection : connections.values()) {
             try {
-                connection.close();
+                closeConnection(connection, false);
             } catch (RuntimeException ignored) {
                 // best-effort shutdown
             }
@@ -102,11 +104,22 @@ public final class VoiceServer {
         return connections.size();
     }
 
+    public VoiceServerMetricsSnapshot metricsSnapshot() {
+        int pending;
+        synchronized (pendingLock) {
+            pending = pendingHandshakes.size();
+        }
+        DatagramSocket current = socket;
+        int boundPort = current != null && !current.isClosed() && current.getLocalPort() >= 0 ? current.getLocalPort()
+            : port;
+        return telemetry.snapshot(running, boundPort, connections.size(), pending);
+    }
+
     public void disconnectPlayer(UUID playerId) {
         VoiceConnection connection = connections.remove(playerId);
         if (connection != null) {
             connectionsByAddress.remove(connection.remoteAddress, playerId);
-            connection.close();
+            closeConnection(connection, false);
         }
         synchronized (pendingLock) {
             java.util.Iterator<Map.Entry<SocketAddress, PendingHandshake>> it = pendingHandshakes.entrySet()
@@ -127,6 +140,7 @@ public final class VoiceServer {
         while (running) {
             try {
                 socket.receive(packet);
+                telemetry.received(packet.getLength());
                 handleDatagram(packet);
             } catch (SocketException e) {
                 if (running) AkashicVoice.LOG.warn("Voice socket error", e);
@@ -149,7 +163,7 @@ public final class VoiceServer {
                 if (!connection.isIdle(IDLE_TIMEOUT_MILLIS)) continue;
                 if (!connections.remove(playerId, connection)) continue;
                 connectionsByAddress.remove(connection.remoteAddress, playerId);
-                connection.close();
+                closeConnection(connection, true);
                 AkashicVoice.LOG.info("Voice connection for {} timed out", playerId);
             }
             sweepPendingHandshakes(System.currentTimeMillis());
@@ -172,36 +186,78 @@ public final class VoiceServer {
     }
 
     private void handleDatagram(DatagramPacket packet) {
+        if (!WireProtocol.isNormalDatagramLength(packet.getLength())) return;
         ByteBuffer datagram = ByteBuffer.wrap(packet.getData(), packet.getOffset(), packet.getLength());
         byte outerType = WireProtocol.peekHeader(datagram);
         SocketAddress remote = packet.getSocketAddress();
 
+        if (outerType == WireProtocol.OUTER_SESSION_HELLO) {
+            if (datagram.remaining() != SessionHandshakePackets.HELLO_BYTES) {
+                telemetry.handshakeRejected();
+                return;
+            }
+            if (!handshakeRateLimiter.allow(remote)) {
+                telemetry.helloRateLimited();
+                return;
+            }
+            SessionHandshakePackets.Hello hello = SessionHandshakePackets.readHello(datagram);
+            if (hello != null) handleSessionHello(hello, remote);
+            else telemetry.handshakeRejected();
+            return;
+        }
         if (outerType == WireProtocol.OUTER_HELLO) {
-            if (datagram.remaining() != HandshakePackets.HELLO_BYTES) return;
-            if (!handshakeRateLimiter.allow(remote)) return;
+            if (datagram.remaining() != HandshakePackets.HELLO_BYTES) {
+                telemetry.handshakeRejected();
+                return;
+            }
+            if (!handshakeRateLimiter.allow(remote)) {
+                telemetry.helloRateLimited();
+                return;
+            }
             HandshakePackets.Hello hello = HandshakePackets.readHello(datagram);
             if (hello != null) handleHello(hello, remote);
+            else telemetry.handshakeRejected();
+            return;
+        }
+        if (outerType == WireProtocol.OUTER_SESSION_AUTH_RESPONSE) {
+            SessionHandshakePackets.AuthResponse response = SessionHandshakePackets.readAuthResponse(datagram);
+            if (response != null) handleSessionAuthResponse(response, remote);
+            else telemetry.handshakeRejected();
             return;
         }
         if (outerType == WireProtocol.OUTER_AUTH_RESPONSE) {
             HandshakePackets.AuthResponse response = HandshakePackets.readAuthResponse(datagram);
             if (response != null) handleAuthResponse(response, remote);
+            else telemetry.handshakeRejected();
             return;
         }
-        if (outerType != WireProtocol.OUTER_ENCRYPTED) return;
+        if (outerType != WireProtocol.OUTER_ENCRYPTED && outerType != WireProtocol.OUTER_SESSION_ENCRYPTED) return;
 
         UUID playerId = connectionsByAddress.get(remote);
-        if (playerId == null) return;
+        if (playerId == null) {
+            telemetry.encryptedRejected();
+            return;
+        }
         VoiceConnection connection = connections.get(playerId);
-        if (connection == null || !remote.equals(connection.remoteAddress)) return;
-        if (!connection.allowInboundDatagram(packet.getLength())) return;
+        if (connection == null || !remote.equals(connection.remoteAddress)) {
+            telemetry.encryptedRejected();
+            return;
+        }
+        if (!connection.allowInboundDatagram(packet.getLength())) {
+            telemetry.mediaRateLimited();
+            return;
+        }
         boolean opened;
         try {
             opened = connection.crypto.open(datagram, plainReceiveBuffer);
         } catch (IllegalStateException ignored) {
+            telemetry.encryptedRejected();
             return;
         }
-        if (!opened) return;
+        if (!opened) {
+            telemetry.encryptedRejected();
+            return;
+        }
         connection.touch();
         handleInner(plainReceiveBuffer, connection);
     }
@@ -217,7 +273,10 @@ public final class VoiceServer {
             }
             case WirePacketType.MIC_FRAME: {
                 MicFramePacket mic = MicFramePacket.read(buf);
-                if (mic != null) handleMicFrame(mic, connection);
+                if (mic != null) {
+                    telemetry.micAccepted(mic.opusLength);
+                    handleMicFrame(mic, connection);
+                }
                 break;
             }
             case WirePacketType.DISCONNECT:
@@ -231,6 +290,7 @@ public final class VoiceServer {
     private void handleHello(HandshakePackets.Hello hello, SocketAddress remote) {
         byte[] masterSecret = SecretRegistry.get(hello.playerId);
         if (masterSecret == null) {
+            telemetry.handshakeRejected();
             Arrays.fill(hello.clientNonce, (byte) 0);
             return;
         }
@@ -248,7 +308,10 @@ public final class VoiceServer {
                     pendingHandshakes.remove(remote);
                     existing.close();
                 }
-                if (pendingHandshakes.size() >= MAX_PENDING_HANDSHAKES) return;
+                if (pendingHandshakes.size() >= MAX_PENDING_HANDSHAKES) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
 
                 PendingHandshake pending = PendingHandshake
                     .create(hello.playerId, remote, masterSecret, hello.clientNonce, random);
@@ -261,9 +324,53 @@ public final class VoiceServer {
         }
     }
 
+    private void handleSessionHello(SessionHandshakePackets.Hello hello, SocketAddress remote) {
+        try (SecretRegistry.Material material = SecretRegistry.getMaterial(hello.playerId)) {
+            if (material == null || !material.sessionId()
+                .equals(hello.sessionId)) {
+                telemetry.handshakeRejected();
+                return;
+            }
+            byte[] masterSecret = material.secretCopy();
+            try {
+                long nowMillis = System.currentTimeMillis();
+                sweepPendingHandshakes(nowMillis);
+                synchronized (pendingLock) {
+                    PendingHandshake existing = pendingHandshakes.get(remote);
+                    if (existing != null && !existing.isExpired(nowMillis)
+                        && existing.matches(hello.playerId, hello.sessionId, hello.clientNonce)) {
+                        sendChallenge(existing);
+                        return;
+                    }
+                    if (existing != null) {
+                        pendingHandshakes.remove(remote);
+                        existing.close();
+                    }
+                    if (pendingHandshakes.size() >= MAX_PENDING_HANDSHAKES) {
+                        telemetry.handshakeRejected();
+                        return;
+                    }
+                    PendingHandshake pending = PendingHandshake
+                        .create(hello.playerId, hello.sessionId, remote, masterSecret, hello.clientNonce, random);
+                    pendingHandshakes.put(remote, pending);
+                    sendChallenge(pending);
+                }
+            } finally {
+                Arrays.fill(masterSecret, (byte) 0);
+            }
+        } finally {
+            Arrays.fill(hello.clientNonce, (byte) 0);
+        }
+    }
+
     private void sendChallenge(PendingHandshake pending) {
         handshakeSendBuffer.clear();
-        HandshakePackets.writeChallenge(handshakeSendBuffer, pending.serverNonce, pending.serverProof);
+        if (pending.sessionId != null) {
+            SessionHandshakePackets
+                .writeChallenge(handshakeSendBuffer, pending.sessionId, pending.serverNonce, pending.serverProof);
+        } else {
+            HandshakePackets.writeChallenge(handshakeSendBuffer, pending.serverNonce, pending.serverProof);
+        }
         sendRaw(handshakeSendBuffer, pending.remoteAddress);
     }
 
@@ -271,13 +378,24 @@ public final class VoiceServer {
         try {
             synchronized (pendingLock) {
                 PendingHandshake pending = pendingHandshakes.get(remote);
-                if (pending == null) return;
+                if (pending == null) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
+                if (pending.sessionId != null) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
                 if (pending.isExpired(System.currentTimeMillis())) {
                     pendingHandshakes.remove(remote);
                     pending.close();
+                    telemetry.handshakeRejected();
                     return;
                 }
-                if (!pending.verifyClientProof(response.clientProof)) return;
+                if (!pending.verifyClientProof(response.clientProof)) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
                 if (pending.isActivated()) {
                     UUID playerId = connectionsByAddress.get(remote);
                     VoiceConnection connection = playerId != null ? connections.get(playerId) : null;
@@ -291,6 +409,45 @@ public final class VoiceServer {
                 if (sessionCrypto == null) return;
                 VoiceConnection connection = new VoiceConnection(pending.playerId, remote, sessionCrypto);
                 installConnection(connection);
+                telemetry.sessionOpened();
+                sendAuthAck(connection);
+                AkashicVoice.LOG
+                    .info("Secure voice auth ok for {}; active connections: {}", pending.playerId, connections.size());
+            }
+        } finally {
+            Arrays.fill(response.clientProof, (byte) 0);
+        }
+    }
+
+    private void handleSessionAuthResponse(SessionHandshakePackets.AuthResponse response, SocketAddress remote) {
+        try {
+            synchronized (pendingLock) {
+                PendingHandshake pending = pendingHandshakes.get(remote);
+                if (pending == null || pending.sessionId == null || !pending.sessionId.equals(response.sessionId)) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
+                if (pending.isExpired(System.currentTimeMillis())) {
+                    pendingHandshakes.remove(remote);
+                    pending.close();
+                    telemetry.handshakeRejected();
+                    return;
+                }
+                if (!pending.verifyClientProof(response.clientProof)) {
+                    telemetry.handshakeRejected();
+                    return;
+                }
+                if (pending.isActivated()) {
+                    UUID playerId = connectionsByAddress.get(remote);
+                    VoiceConnection connection = playerId != null ? connections.get(playerId) : null;
+                    if (connection != null && pending.playerId.equals(connection.playerId)) sendAuthAck(connection);
+                    return;
+                }
+                SessionCrypto sessionCrypto = pending.activate();
+                if (sessionCrypto == null) return;
+                VoiceConnection connection = new VoiceConnection(pending.playerId, remote, sessionCrypto);
+                installConnection(connection);
+                telemetry.sessionOpened();
                 sendAuthAck(connection);
                 AkashicVoice.LOG
                     .info("Secure voice auth ok for {}; active connections: {}", pending.playerId, connections.size());
@@ -305,13 +462,13 @@ public final class VoiceServer {
         if (displacedId != null && !displacedId.equals(connection.playerId)) {
             connectionsByAddress.remove(connection.remoteAddress, displacedId);
             VoiceConnection displaced = connections.remove(displacedId);
-            if (displaced != null) displaced.close();
+            if (displaced != null) closeConnection(displaced, false);
         }
 
         VoiceConnection previous = connections.put(connection.playerId, connection);
         if (previous != null && previous != connection) {
             connectionsByAddress.remove(previous.remoteAddress, connection.playerId);
-            previous.close();
+            closeConnection(previous, false);
         }
         connectionsByAddress.put(connection.remoteAddress, connection.playerId);
     }
@@ -363,7 +520,7 @@ public final class VoiceServer {
                     serialize(nonSpatialOut, nonSpatialInnerBuffer);
                     nonSpatialReady = true;
                 }
-                sendEncrypted(receiverConnection, nonSpatialInnerBuffer);
+                if (sendEncrypted(receiverConnection, nonSpatialInnerBuffer)) telemetry.selfEchoDelivery();
                 continue;
             }
 
@@ -372,7 +529,7 @@ public final class VoiceServer {
                     serialize(nonSpatialOut, nonSpatialInnerBuffer);
                     nonSpatialReady = true;
                 }
-                sendEncrypted(receiverConnection, nonSpatialInnerBuffer);
+                if (sendEncrypted(receiverConnection, nonSpatialInnerBuffer)) telemetry.groupDelivery();
                 continue;
             }
 
@@ -387,14 +544,21 @@ public final class VoiceServer {
                 serialize(spatialOut, spatialInnerBuffer);
                 spatialReady = true;
             }
-            sendEncrypted(receiverConnection, spatialInnerBuffer);
+            if (sendEncrypted(receiverConnection, spatialInnerBuffer)) telemetry.spatialDelivery();
         }
+    }
+
+    private void closeConnection(VoiceConnection connection, boolean timedOut) {
+        if (connection == null) return;
+        connection.close();
+        telemetry.sessionClosed();
+        if (timedOut) telemetry.sessionTimedOut();
     }
 
     private void handleDisconnect(VoiceConnection connection) {
         if (!connections.remove(connection.playerId, connection)) return;
         connectionsByAddress.remove(connection.remoteAddress, connection.playerId);
-        connection.close();
+        closeConnection(connection, false);
         AkashicVoice.LOG.info("Voice client {} disconnected", connection.playerId);
     }
 
@@ -418,22 +582,26 @@ public final class VoiceServer {
     private boolean sendEncrypted(VoiceConnection connection, ByteBuffer plaintext) {
         try {
             if (!connection.crypto.seal(plaintext, encryptedSendBuffer)) return false;
-            sendRaw(encryptedSendBuffer, connection.remoteAddress);
-            return true;
+            return sendRaw(encryptedSendBuffer, connection.remoteAddress);
         } catch (IllegalStateException ignored) {
             return false;
         }
     }
 
-    private void sendRaw(ByteBuffer buf, SocketAddress remote) {
+    private boolean sendRaw(ByteBuffer buf, SocketAddress remote) {
         DatagramSocket currentSocket = socket;
-        if (currentSocket == null || currentSocket.isClosed()) return;
+        int length = buf.position();
+        if (currentSocket == null || currentSocket.isClosed() || !WireProtocol.isNormalDatagramLength(length))
+            return false;
         try {
-            outboundPacket.setData(buf.array(), 0, buf.position());
+            outboundPacket.setData(buf.array(), 0, length);
             outboundPacket.setSocketAddress(remote);
             currentSocket.send(outboundPacket);
+            telemetry.sent(length);
+            return true;
         } catch (IOException e) {
             if (running) AkashicVoice.LOG.debug("UDP send to {} failed", remote, e);
+            return false;
         }
     }
 }

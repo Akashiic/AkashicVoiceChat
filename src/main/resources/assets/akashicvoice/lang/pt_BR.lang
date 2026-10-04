@@ -1,0 +1,62 @@
+# Controles individuais, válidos apenas para a sessão atual de voz
+akashicvoice.gui.hub.players=Vozes individuais
+akashicvoice.gui.speakers.title=Vozes individuais
+akashicvoice.gui.speakers.session=Volume relativo da voz; só nesta sessão
+akashicvoice.gui.speakers.search=Buscar por nome ou UUID
+akashicvoice.gui.speakers.empty=Nenhum falante ouvido nesta lista
+akashicvoice.gui.speakers.offline=Reprodução de voz indisponível
+akashicvoice.gui.speakers.select=Selecione um falante para ajustar
+akashicvoice.gui.speakers.page=%s / %s  |  %s falantes
+akashicvoice.gui.speakers.mute=Silenciar
+akashicvoice.gui.speakers.unmute=Reativar
+akashicvoice.gui.speakers.muted=[mudo]
+akashicvoice.gui.speakers.reset=Padrão
+akashicvoice.gui.speakers.small=Aumente o tamanho da janela do jogo
+
+# Presets locais; o valor numérico voice.opusBitrate continua sendo a referência.
+akashicvoice.gui.quality.title=Qualidade de voz
+akashicvoice.gui.quality.economy=Econômico
+akashicvoice.gui.quality.balanced=Equilibrado
+akashicvoice.gui.quality.hd=HD
+akashicvoice.gui.quality.detail=Detalhado
+akashicvoice.gui.quality.custom=Personalizado
+akashicvoice.gui.quality.current=Alvo: %s | %s bit/s
+akashicvoice.gui.quality.apply=Aplica no próximo quadro de voz codificado
+akashicvoice.gui.quality.format=48 kHz mono | 20 ms | taxa variável
+akashicvoice.gui.quality.filter=Filtro passa-altas
+akashicvoice.gui.quality.filterHelp=Reduz DC e ruído de baixa frequência
+akashicvoice.gui.quality.notDenoiser=Não remove ruído em geral; não é RNNoise
+akashicvoice.gui.quality.saveFailed=Alterado em memória; falha ao salvar
+akashicvoice.gui.quality.small=Aumente a janela ou reduza a escala da GUI
+akashicvoice.gui.set.noise=Filtro passa-altas
+
+# Superfície de segurar para falar em mouse/toque
+akashicvoice.gui.touch.title=Segurar para falar
+akashicvoice.gui.touch.hold=SEGURE PARA FALAR
+akashicvoice.gui.touch.talking=FALANDO - SOLTE PARA PARAR
+akashicvoice.gui.touch.enablePtt=Ativar modo Push-to-Talk
+akashicvoice.gui.touch.pttEnabled=Modo Push-to-Talk ativado
+akashicvoice.gui.touch.ready=Pronto - pressione e segure
+akashicvoice.gui.touch.muted=O microfone está silenciado
+akashicvoice.gui.touch.needsPtt=Ative o modo Push-to-Talk primeiro
+akashicvoice.gui.touch.offline=A conexão de voz está offline
+akashicvoice.gui.touch.connecting=A conexão de voz está autenticando
+akashicvoice.gui.touch.unfocused=Retorne o foco para a janela do jogo
+akashicvoice.gui.touch.holdHint=Sair do botão, soltar, perder foco ou trocar de servidor encerra o toque
+akashicvoice.gui.touch.keyboardHint=O Push-to-Talk físico continua independente
+akashicvoice.gui.touch.saveFailed=Modo alterado em memória; falha ao salvar
+akashicvoice.gui.touch.small=Aumente a janela ou reduza a escala da GUI
+
+# Diagnóstico agregado do transporte no cliente
+akashicvoice.gui.hub.status.offline=Voz: offline
+akashicvoice.gui.hub.status.connecting=Voz: conectando | rx %s | streams %s/%s | descartes %s
+akashicvoice.gui.hub.status.refreshing=Voz: renovando sessão | rx %s | streams %s/%s | descartes %s
+akashicvoice.gui.hub.status.online=Voz: online | rx %s | streams %s/%s | descartes %s
+
+# Saída de áudio: segue o dispositivo padrão e recupera hot-plug
+akashicvoice.gui.set.selectSpeaker=Saída de áudio
+akashicvoice.gui.set.speakerNote1=A voz segue automaticamente a saída padrão atual do sistema.
+akashicvoice.gui.set.speakerNote2=Desconectar, reconectar ou trocar a saída padrão inicia recuperação.
+akashicvoice.gui.set.speakerDevice=Saída atual: %s
+akashicvoice.gui.set.speakerUnknown=Padrão do sistema
+akashicvoice.gui.set.speakerRecovering=Recuperando a saída de voz...

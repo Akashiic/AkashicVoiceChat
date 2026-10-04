@@ -25,9 +25,9 @@ import dev.akashic.voice.voice.client.VoiceClientHolder;
  */
 public final class MicHudOverlay {
 
-    private static final long ACTIVE_WINDOW_MILLIS = 250L;
+    private static final long ACTIVE_WINDOW_MILLIS = 120L;
     private static final long CONNECT_GRACE_MILLIS = 5_000L;
-    private static final int ICON_SIZE = 24;
+    private static final int ICON_SIZE = 28;
     private static final int MARGIN = 8;
     private static final int GAP = 4;
 
@@ -48,7 +48,8 @@ public final class MicHudOverlay {
 
         boolean muted = MicGate.isMuted();
         long sinceTx = now - MicGate.lastTransmitMillis();
-        boolean transmitting = !muted && sinceTx < ACTIVE_WINDOW_MILLIS;
+        boolean transmitting = !muted
+            && (MicGate.mode() == MicGate.Mode.PTT ? MicGate.isPttEngaged() : sinceTx < ACTIVE_WINDOW_MILLIS);
         boolean showMic = muted || transmitting;
 
         VoiceClient vc = VoiceClientHolder.get();
