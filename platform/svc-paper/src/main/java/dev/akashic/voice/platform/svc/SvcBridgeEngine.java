@@ -130,9 +130,11 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
     private void onSvcPacket(UUID proxyRecipientId, UUID localRecipientId, SoundPacket packet) {
         if (!gateway.isConnected()) return;
         UUID senderId = packet.getSender();
-        if (identities.isSameManagedPlayer(proxyRecipientId, senderId)) return;
+        UUID managedSender = identities.proxyForLocal(senderId);
+        if (proxyRecipientId.equals(managedSender)) return;
+        UUID bridgedSender = managedSender != null ? managedSender : senderId;
 
-        BridgeStreamReset reset = SvcPacketMapper.mapReset(proxyRecipientId, packet);
+        BridgeStreamReset reset = SvcPacketMapper.mapReset(proxyRecipientId, bridgedSender, packet);
         if (reset != null) {
             gateway.publishSvcReset(reset);
             return;
@@ -144,7 +146,7 @@ final class SvcBridgeEngine implements GatewayLink.Listener, AutoCloseable {
             entityPosition = positions.get(entity.getEntityUuid());
         }
         BridgeDelivery delivery = SvcPacketMapper.mapFrame(
-            proxyRecipientId, packet, recipientPosition, entityPosition);
+            proxyRecipientId, bridgedSender, packet, recipientPosition, entityPosition);
         if (delivery != null) gateway.publishSvcDelivery(delivery);
     }
 

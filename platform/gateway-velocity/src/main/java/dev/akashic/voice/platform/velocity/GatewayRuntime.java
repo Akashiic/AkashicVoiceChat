@@ -3,6 +3,8 @@ package dev.akashic.voice.platform.velocity;
 import dev.akashic.voice.platform.bridge.AkashicSpeakerFrame;
 import dev.akashic.voice.platform.bridge.BridgeDelivery;
 import dev.akashic.voice.platform.bridge.BridgeStreamReset;
+import dev.akashic.voice.platform.bridge.FederatedGroup;
+import dev.akashic.voice.platform.bridge.FederatedGroupDirectory;
 import dev.akashic.voice.platform.bridge.ManagedPlayer;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
 
     private final BootstrapSessionRegistry bootstrapSessions;
     private final BackendRouteRegistry routes = new BackendRouteRegistry();
+    private final FederatedGroupDirectory groups = new FederatedGroupDirectory();
     private final GatewayUdpServer udp;
     private final AgentHub agents;
     private final Listener listener;
@@ -70,6 +73,10 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
         return agents.localPort();
     }
 
+    FederatedGroupDirectory groupDirectory() {
+        return groups;
+    }
+
     GatewayStatusSnapshot statusSnapshot() {
         GatewayUdpSnapshot metrics = udp.snapshot();
         TreeMap<String, Boolean> backendRoutes = new TreeMap<>();
@@ -80,8 +87,9 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
             running, udp.localPort(), agents.localPort(),
             metrics.activeSessions(), metrics.pendingHandshakes(), backendRoutes,
             metrics.helloRateLimited(), metrics.mediaRateLimited(), metrics.encryptedRejected(),
-            metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.soundResetsSent(),
+            metrics.micFramesAccepted(), metrics.soundFramesSent(), metrics.groupFramesSent(), metrics.soundResetsSent(),
             agents.droppedMediaFrames(), agents.queuedMediaMessages(), agents.queuedControlMessages(),
+            groups.groupCount(), groups.memberCount(),
             metrics.sessionsOpened(), metrics.sessionsClosed());
     }
 
@@ -115,8 +123,16 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
     public void onMicFrame(UUID proxyPlayerId, String backendName, UUID voiceIdentity,
                            long sequence, byte[] opus) {
         BackendRouteRegistry.Route route = routes.readyRoute(backendName);
-        if (route == null) return;
-        route.sendFrame(new AkashicSpeakerFrame(proxyPlayerId, sequence, false, opus));
+        if (route != null) {
+            route.sendFrame(new AkashicSpeakerFrame(proxyPlayerId, sequence, false, opus));
+        }
+        FederatedGroup group = groups.groupFor(proxyPlayerId).orElse(null);
+        if (group == null) return;
+        for (UUID memberId : group.members()) {
+            if (!memberId.equals(proxyPlayerId)) {
+                udp.sendGroupFrame(memberId, proxyPlayerId, sequence, opus);
+            }
+        }
     }
 
     @Override
@@ -143,6 +159,7 @@ final class GatewayRuntime implements GatewayUdpServer.Listener, AgentHub.Listen
 
     @Override
     public void onSvcDelivery(String backendName, BridgeDelivery delivery) {
+        if (groups.haveCommonGroup(delivery.senderId(), delivery.recipientId())) return;
         udp.sendBridgeDelivery(backendName, delivery);
     }
 

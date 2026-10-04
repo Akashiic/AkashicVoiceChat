@@ -59,6 +59,7 @@ final class GatewayUdpServer implements AutoCloseable {
     private final AtomicLong encryptedRejected = new AtomicLong();
     private final AtomicLong micFramesAccepted = new AtomicLong();
     private final AtomicLong soundFramesSent = new AtomicLong();
+    private final AtomicLong groupFramesSent = new AtomicLong();
     private final AtomicLong soundResetsSent = new AtomicLong();
     private final AtomicLong sessionsOpened = new AtomicLong();
     private final AtomicLong sessionsClosed = new AtomicLong();
@@ -104,7 +105,7 @@ final class GatewayUdpServer implements AutoCloseable {
         return new GatewayUdpSnapshot(
             byVoiceIdentity.size(), pending,
             helloRateLimited.get(), mediaRateLimited.get(), encryptedRejected.get(),
-            micFramesAccepted.get(), soundFramesSent.get(), soundResetsSent.get(),
+            micFramesAccepted.get(), soundFramesSent.get(), groupFramesSent.get(), soundResetsSent.get(),
             sessionsOpened.get(), sessionsClosed.get());
     }
 
@@ -401,6 +402,17 @@ final class GatewayUdpServer implements AutoCloseable {
             delivery.opusUnsafe());
         boolean sent = connection.sendSoundV2(socket, packet);
         if (sent) soundFramesSent.incrementAndGet();
+        return sent;
+    }
+
+    boolean sendGroupFrame(UUID recipientId, UUID senderId, long sequence, byte[] opus) {
+        if (recipientId == null || senderId == null || opus == null || recipientId.equals(senderId)) return false;
+        GatewayVoiceConnection connection = byProxyPlayer.get(recipientId);
+        if (connection == null) return false;
+        SoundFramePacket packet = new SoundFramePacket(
+            senderId, false, 0F, 0F, 0F, (int) sequence, opus);
+        boolean sent = connection.sendSound(socket, packet);
+        if (sent) groupFramesSent.incrementAndGet();
         return sent;
     }
 

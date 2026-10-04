@@ -8,6 +8,7 @@ record GatewayUdpSnapshot(
     long encryptedRejected,
     long micFramesAccepted,
     long soundFramesSent,
+    long groupFramesSent,
     long soundResetsSent,
     long sessionsOpened,
     long sessionsClosed

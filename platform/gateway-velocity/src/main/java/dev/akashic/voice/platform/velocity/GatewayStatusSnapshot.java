@@ -14,10 +14,13 @@ record GatewayStatusSnapshot(
     long encryptedRejected,
     long micFramesAccepted,
     long soundFramesSent,
+    long groupFramesSent,
     long soundResetsSent,
     long agentMediaDropped,
     int agentMediaQueued,
     int agentControlQueued,
+    int federatedGroups,
+    int federatedMembers,
     long sessionsOpened,
     long sessionsClosed
 ) {

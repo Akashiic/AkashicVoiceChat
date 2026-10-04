@@ -17,11 +17,21 @@ final class SvcPacketMapper {
     }
 
     static BridgeStreamReset mapReset(UUID recipientId, SoundPacket packet) {
+        return mapReset(recipientId, packet.getSender(), packet);
+    }
+
+    static BridgeStreamReset mapReset(UUID recipientId, UUID senderId, SoundPacket packet) {
         if (packet.getOpusEncodedData().length != 0) return null;
-        return new BridgeStreamReset(recipientId, packet.getSender(), packet.getChannelId());
+        return new BridgeStreamReset(recipientId, senderId, packet.getChannelId());
     }
 
     static BridgeDelivery mapFrame(UUID recipientId, SoundPacket packet,
+                                   PositionSnapshot recipientPosition,
+                                   PositionSnapshot entityPosition) {
+        return mapFrame(recipientId, packet.getSender(), packet, recipientPosition, entityPosition);
+    }
+
+    static BridgeDelivery mapFrame(UUID recipientId, UUID senderId, SoundPacket packet,
                                    PositionSnapshot recipientPosition,
                                    PositionSnapshot entityPosition) {
         byte[] opus = packet.getOpusEncodedData();
@@ -54,7 +64,7 @@ final class SvcPacketMapper {
 
         return new BridgeDelivery(
             recipientId,
-            packet.getSender(),
+            senderId,
             packet.getChannelId(),
             packet.getSequenceNumber(),
             kind,

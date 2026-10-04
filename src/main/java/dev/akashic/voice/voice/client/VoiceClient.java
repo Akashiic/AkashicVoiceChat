@@ -64,6 +64,8 @@ public final class VoiceClient {
     private final DatagramPacket outboundPacket = new DatagramPacket(new byte[0], 0);
     private final Map<UUID, DecoderStream> decoderStreams = new ConcurrentHashMap<>();
     private final AtomicLong receivedFrames = new AtomicLong();
+    // Guarded by sendLock. Capture restarts must not rewind a live remote stream.
+    private int nextMicSequence;
 
     private DatagramSocket socket;
     private SocketAddress serverAddress;
@@ -391,7 +393,7 @@ public final class VoiceClient {
             created.start();
             micCapture = created;
             micFailureLogged = false;
-        } catch (AudioCaptureException e) {
+        } catch (AudioCaptureException | RuntimeException e) {
             micCapture = null;
             if (!micFailureLogged) {
                 micFailureLogged = true;
@@ -408,13 +410,13 @@ public final class VoiceClient {
         if (capture != null) capture.stop();
     }
 
-    private void onMicFrame(int sequence, byte[] opusPayload, int payloadLength) {
+    private void onMicFrame(int ignoredCaptureSequence, byte[] opusPayload, int payloadLength) {
         if (!authenticated) return;
         synchronized (sendLock) {
             SessionCrypto currentCrypto = crypto;
             if (currentCrypto == null || !authenticated) return;
             innerSendBuffer.clear();
-            MicFramePacket.write(innerSendBuffer, sequence, opusPayload, payloadLength);
+            MicFramePacket.write(innerSendBuffer, nextMicSequence++, opusPayload, payloadLength);
             sealAndSendLocked(currentCrypto);
         }
     }

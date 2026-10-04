@@ -5,6 +5,7 @@ import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureBackends;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureDevice;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureException;
+import dev.akashic.voice.voice.client.audio.capture.MicCaptureSession;
 import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 import dev.akashic.voice.voice.common.codec.OpusCodecFactory;
 import dev.akashic.voice.voice.common.codec.OpusEncoder;
@@ -18,14 +19,8 @@ public final class MicCapture {
 
     private final FrameSink sink;
     private final String deviceId;
-    private AudioCaptureDevice capture;
-    private OpusEncoder encoder;
+    private volatile MicCaptureSession session;
     private Thread thread;
-    private volatile boolean running;
-
-    // Single-pole high-pass state for the basic noise gate.
-    private double hpPrevX;
-    private double hpPrevY;
 
     public MicCapture(FrameSink sink) {
         this(sink, "");
@@ -37,100 +32,111 @@ public final class MicCapture {
     }
 
     public synchronized void start() throws AudioCaptureException {
-        if (running) return;
+        if (isRunning()) return;
         AudioCaptureDevice opened = AudioCaptureBackends.get()
             .open(deviceId);
+        final OpusEncoder created;
         try {
-            encoder = OpusCodecFactory.createEncoder();
-        } catch (RuntimeException e) {
-            opened.close();
-            throw e;
+            created = OpusCodecFactory.createEncoder();
+        } catch (RuntimeException failure) {
+            try {
+                opened.close();
+            } catch (RuntimeException closeFailure) {
+                failure.addSuppressed(closeFailure);
+            }
+            throw failure;
         }
-        capture = opened;
-        running = true;
-        thread = new Thread(this::loop, "AkashicVoice-Mic");
-        thread.setDaemon(true);
-        thread.start();
+        final MicCaptureSession started = new MicCaptureSession(opened, created);
+        Thread worker = new Thread(() -> loop(started), "AkashicVoice-Mic");
+        worker.setDaemon(true);
+        session = started;
+        thread = worker;
+        try {
+            worker.start();
+        } catch (RuntimeException | Error failure) {
+            session = null;
+            thread = null;
+            try {
+                started.finish();
+            } catch (RuntimeException closeFailure) {
+                failure.addSuppressed(closeFailure);
+            }
+            throw failure;
+        }
         AkashicVoice.LOG.info(
             "Microphone capture started ({} Hz, {}-sample frames, backend={}, device={})",
             AudioFormatSpec.SAMPLE_RATE,
             AudioFormatSpec.FRAME_SAMPLES,
-            capture.backendName(),
-            capture.description());
+            opened.backendName(),
+            opened.description());
     }
 
     public boolean isRunning() {
-        return running;
+        MicCaptureSession current = session;
+        return current != null && current.isRunning();
     }
 
     public synchronized void stop() {
-        boolean hadResources = running || capture != null || encoder != null;
-        running = false;
-        if (thread != null && thread != Thread.currentThread()) thread.interrupt();
+        MicCaptureSession current = session;
+        session = null;
+        Thread worker = thread;
         thread = null;
-        if (capture != null) {
-            try {
-                capture.close();
-            } catch (RuntimeException e) {
-                AkashicVoice.LOG.debug("Microphone backend close failed", e);
-            }
-            capture = null;
+        if (current == null) return;
+        if (worker != null && worker != Thread.currentThread()) worker.interrupt();
+        try {
+            current.requestStop();
+        } catch (RuntimeException failure) {
+            AkashicVoice.LOG.debug("Microphone backend close failed", failure);
         }
-        if (encoder != null) {
-            encoder.close();
-            encoder = null;
-        }
-        if (hadResources) AkashicVoice.LOG.info("Microphone capture stopped");
+        AkashicVoice.LOG.info("Microphone capture stopped");
     }
 
-    private void loop() {
-        byte[] pcmBytes = new byte[AudioFormatSpec.FRAME_BYTES_PCM_S16];
-        short[] pcm = new short[AudioFormatSpec.FRAME_SAMPLES];
-        byte[] opusOut = new byte[AudioFormatSpec.MAX_OPUS_PAYLOAD];
-        int sequence = 0;
-
-        while (running) {
-            int read = 0;
-            while (read < pcmBytes.length && running) {
-                int n;
-                try {
-                    n = capture.read(pcmBytes, read, pcmBytes.length - read);
-                } catch (RuntimeException e) {
-                    if (running) AkashicVoice.LOG.warn("Microphone capture backend failed", e);
-                    stop();
-                    return;
+    private void loop(MicCaptureSession current) {
+        try {
+            byte[] pcmBytes = new byte[AudioFormatSpec.FRAME_BYTES_PCM_S16];
+            short[] pcm = new short[AudioFormatSpec.FRAME_SAMPLES];
+            byte[] opusOut = new byte[AudioFormatSpec.MAX_OPUS_PAYLOAD];
+            double[] highPassState = new double[2];
+            int sequence = 0;
+            while (current.isRunning()) {
+                int read = 0;
+                while (read < pcmBytes.length && current.isRunning()) {
+                    int remaining = pcmBytes.length - read;
+                    int n = current.read(pcmBytes, read, remaining);
+                    if (n < 0) return;
+                    if (n > remaining) throw new IllegalStateException("Invalid microphone read length");
+                    if (n == 0) {
+                        Thread.sleep(2L);
+                        continue;
+                    }
+                    read += n;
                 }
-                if (n < 0) {
-                    stop();
-                    return;
+                if (!current.isRunning()) return;
+                for (int i = 0; i < AudioFormatSpec.FRAME_SAMPLES; i++) {
+                    int lo = pcmBytes[i * 2] & 0xFF;
+                    int hi = pcmBytes[i * 2 + 1];
+                    pcm[i] = (short) ((hi << 8) | lo);
                 }
-                if (n == 0) {
-                    Thread.yield();
-                    continue;
-                }
-                read += n;
-            }
-            if (!running) return;
-
-            for (int i = 0; i < AudioFormatSpec.FRAME_SAMPLES; i++) {
-                int lo = pcmBytes[i * 2] & 0xFF;
-                int hi = pcmBytes[i * 2 + 1];
-                pcm[i] = (short) ((hi << 8) | lo);
-            }
-
-            applyAmplification(pcm, AkashicVoiceConfig.micAmplification());
-            if (AkashicVoiceConfig.noiseSuppression()) {
-                applyHighPass(pcm);
-            }
-
-            if (!MicGate.shouldTransmit(pcm)) continue;
-
-            try {
-                int len = encoder.encode(pcm, opusOut);
-                sink.onFrame(sequence++, opusOut, len);
+                applyAmplification(pcm, AkashicVoiceConfig.micAmplification());
+                if (AkashicVoiceConfig.noiseSuppression()) applyHighPass(pcm, highPassState);
+                if (!MicGate.shouldTransmit(pcm)) continue;
+                int length = current.encode(pcm, opusOut);
+                if (!current.isRunning()) return;
+                sink.onFrame(sequence++, opusOut, length);
                 MicGate.markTransmitted();
-            } catch (RuntimeException e) {
-                AkashicVoice.LOG.warn("Mic frame encode failed", e);
+            }
+        } catch (InterruptedException expected) {
+            Thread.currentThread()
+                .interrupt();
+        } catch (RuntimeException failure) {
+            if (current.isRunning()) {
+                AkashicVoice.LOG.warn("Microphone capture/encode failed; recovery will reopen it", failure);
+            }
+        } finally {
+            try {
+                current.finish();
+            } catch (RuntimeException failure) {
+                AkashicVoice.LOG.debug("Microphone resource cleanup failed", failure);
             }
         }
     }
@@ -149,13 +155,13 @@ public final class MicCapture {
      * Single-pole high-pass at ~120 Hz. Removes DC bias and low-frequency rumble — the
      * cheap-but-noticeable kind of "noise suppression". Not RNNoise.
      */
-    private void applyHighPass(short[] pcm) {
+    private static void applyHighPass(short[] pcm, double[] state) {
         final double a = 0.985;
         for (int i = 0; i < pcm.length; i++) {
             double x = pcm[i];
-            double y = a * (hpPrevY + x - hpPrevX);
-            hpPrevX = x;
-            hpPrevY = y;
+            double y = a * (state[1] + x - state[0]);
+            state[0] = x;
+            state[1] = y;
             int iy = (int) Math.round(y);
             if (iy > Short.MAX_VALUE) iy = Short.MAX_VALUE;
             else if (iy < Short.MIN_VALUE) iy = Short.MIN_VALUE;

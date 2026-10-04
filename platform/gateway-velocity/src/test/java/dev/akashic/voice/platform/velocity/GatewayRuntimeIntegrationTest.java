@@ -10,6 +10,7 @@ import dev.akashic.voice.platform.bridge.SpatialKind;
 import dev.akashic.voice.voice.common.AuthAckPacket;
 import dev.akashic.voice.voice.common.HandshakePackets;
 import dev.akashic.voice.voice.common.MicFramePacket;
+import dev.akashic.voice.voice.common.SoundFramePacket;
 import dev.akashic.voice.voice.common.SoundFrameV2Packet;
 import dev.akashic.voice.voice.common.SoundResetPacket;
 import dev.akashic.voice.voice.common.WirePacketType;

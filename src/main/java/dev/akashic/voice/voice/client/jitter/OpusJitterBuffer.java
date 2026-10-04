@@ -14,6 +14,13 @@ public final class OpusJitterBuffer {
     public static final int DEFAULT_TARGET_DELAY_FRAMES = 2;
     public static final long DEFAULT_FLUSH_DELAY_NANOS = 40_000_000L;
 
+    private static final long FRAME_DURATION_NANOS = AudioFormatSpec.FRAME_DURATION_MS * 1_000_000L;
+    private static final long MAX_CONTINUOUS_ARRIVAL_GAP_NANOS = 100_000_000L;
+    private static final long TARGET_THREE_JITTER_NANOS = 7_000_000L;
+    private static final long TARGET_FOUR_JITTER_NANOS = 18_000_000L;
+    private static final long STABLE_VARIATION_NANOS = 4_000_000L;
+    private static final int STABLE_SAMPLES_TO_LOWER = 50;
+
     public static final class Slot {
 
         final byte[] payload = new byte[AudioFormatSpec.MAX_OPUS_PAYLOAD];
@@ -66,9 +73,17 @@ public final class OpusJitterBuffer {
 
     private final Slot[] slots;
     private final int mask;
-    private final int targetDelayFrames;
+    private final int baseTargetDelayFrames;
+    private final int maxTargetDelayFrames;
     private final long flushDelayNanos;
+    private final boolean adaptive;
+    private int targetDelayFrames;
     private boolean initialized;
+    private boolean haveTimingSample;
+    private int lastTimingSequence;
+    private long lastTimingArrivalNanos;
+    private long jitterEstimateNanos;
+    private int stableTimingSamples;
     private int expectedSequence;
     private int highestSequence;
     private long lastOfferNanos;
@@ -78,10 +93,14 @@ public final class OpusJitterBuffer {
     private long resyncCount;
 
     public OpusJitterBuffer() {
-        this(DEFAULT_SLOT_COUNT, DEFAULT_TARGET_DELAY_FRAMES, DEFAULT_FLUSH_DELAY_NANOS);
+        this(DEFAULT_SLOT_COUNT, DEFAULT_TARGET_DELAY_FRAMES, DEFAULT_FLUSH_DELAY_NANOS, true);
     }
 
     public OpusJitterBuffer(int slotCount, int targetDelayFrames, long flushDelayNanos) {
+        this(slotCount, targetDelayFrames, flushDelayNanos, false);
+    }
+
+    public OpusJitterBuffer(int slotCount, int targetDelayFrames, long flushDelayNanos, boolean adaptive) {
         if (slotCount < 4 || (slotCount & (slotCount - 1)) != 0) {
             throw new IllegalArgumentException("slotCount must be a power of two >= 4");
         }
@@ -94,8 +113,12 @@ public final class OpusJitterBuffer {
             slots[i] = new Slot();
         }
         this.mask = slotCount - 1;
+        this.baseTargetDelayFrames = targetDelayFrames;
+        this.maxTargetDelayFrames = adaptive ? Math.max(targetDelayFrames, Math.min(4, slotCount - 1))
+            : targetDelayFrames;
         this.targetDelayFrames = targetDelayFrames;
         this.flushDelayNanos = flushDelayNanos;
+        this.adaptive = adaptive;
     }
 
     public synchronized boolean offer(int sequence, boolean spatial, float x, float y, float z, byte[] payload,
@@ -118,6 +141,7 @@ public final class OpusJitterBuffer {
             int fromExpected = sequence - expectedSequence;
             if (fromExpected < 0) {
                 lateCount++;
+                raiseTargetForLatePacket();
                 return false;
             }
             if (fromExpected >= slots.length) {
@@ -149,6 +173,7 @@ public final class OpusJitterBuffer {
         slot.occupied = true;
         if (sequence - highestSequence > 0) highestSequence = sequence;
         lastOfferNanos = nowNanos;
+        observeArrival(sequence, nowNanos);
         return true;
     }
 
@@ -157,7 +182,8 @@ public final class OpusJitterBuffer {
         int ahead = highestSequence - expectedSequence;
         if (ahead < 0) return ReadyKind.NONE;
         boolean depthReady = ahead >= targetDelayFrames;
-        boolean timeoutReady = nowNanos - lastOfferNanos >= flushDelayNanos;
+        long effectiveFlushDelay = Math.max(flushDelayNanos, (long) targetDelayFrames * FRAME_DURATION_NANOS);
+        boolean timeoutReady = nowNanos - lastOfferNanos >= effectiveFlushDelay;
         if (!depthReady && !timeoutReady) return ReadyKind.NONE;
 
         Slot slot = slots[expectedSequence & mask];
@@ -205,12 +231,106 @@ public final class OpusJitterBuffer {
         return resyncCount;
     }
 
+    public synchronized int targetDelayFrames() {
+        return targetDelayFrames;
+    }
+
+    public synchronized long jitterEstimateNanos() {
+        return jitterEstimateNanos;
+    }
+
+    public synchronized boolean isAdaptive() {
+        return adaptive;
+    }
+
     public synchronized void reset() {
         clearSlots();
         initialized = false;
         expectedSequence = 0;
         highestSequence = 0;
         lastOfferNanos = 0L;
+        haveTimingSample = false;
+        lastTimingSequence = 0;
+        lastTimingArrivalNanos = 0L;
+        jitterEstimateNanos = 0L;
+        stableTimingSamples = 0;
+        targetDelayFrames = baseTargetDelayFrames;
+    }
+
+    private void observeArrival(int sequence, long nowNanos) {
+        if (!adaptive) return;
+        if (!haveTimingSample) {
+            haveTimingSample = true;
+            lastTimingSequence = sequence;
+            lastTimingArrivalNanos = nowNanos;
+            return;
+        }
+
+        int sequenceDelta = sequence - lastTimingSequence;
+        if (sequenceDelta <= 0) return;
+        long arrivalDelta = nowNanos - lastTimingArrivalNanos;
+        lastTimingSequence = sequence;
+        lastTimingArrivalNanos = nowNanos;
+
+        if (sequenceDelta != 1 || arrivalDelta < 0L || arrivalDelta > MAX_CONTINUOUS_ARRIVAL_GAP_NANOS) {
+            stableTimingSamples = 0;
+            return;
+        }
+
+        long variation = arrivalDelta >= FRAME_DURATION_NANOS ? arrivalDelta - FRAME_DURATION_NANOS
+            : FRAME_DURATION_NANOS - arrivalDelta;
+        updateJitterEstimate(variation);
+        adaptTarget(variation);
+    }
+
+    private void updateJitterEstimate(long variation) {
+        if (variation > jitterEstimateNanos) {
+            long delta = variation - jitterEstimateNanos;
+            jitterEstimateNanos += Math.max(1L, (delta + 3L) / 4L);
+        } else if (variation < jitterEstimateNanos) {
+            long delta = jitterEstimateNanos - variation;
+            jitterEstimateNanos -= Math.max(1L, delta / 16L);
+            if (jitterEstimateNanos < 0L) jitterEstimateNanos = 0L;
+        }
+    }
+
+    private void adaptTarget(long variation) {
+        int desired = desiredTargetDelayFrames();
+        if (desired > targetDelayFrames) {
+            targetDelayFrames = desired;
+            stableTimingSamples = 0;
+            return;
+        }
+        if (desired < targetDelayFrames) {
+            if (variation <= STABLE_VARIATION_NANOS) {
+                stableTimingSamples++;
+                if (stableTimingSamples >= STABLE_SAMPLES_TO_LOWER) {
+                    targetDelayFrames--;
+                    stableTimingSamples = 0;
+                }
+            } else {
+                stableTimingSamples = 0;
+            }
+            return;
+        }
+        stableTimingSamples = 0;
+    }
+
+    private int desiredTargetDelayFrames() {
+        int desired = baseTargetDelayFrames;
+        if (jitterEstimateNanos >= TARGET_THREE_JITTER_NANOS) {
+            desired = Math.max(desired, 3);
+        }
+        if (jitterEstimateNanos >= TARGET_FOUR_JITTER_NANOS) {
+            desired = Math.max(desired, 4);
+        }
+        return Math.min(maxTargetDelayFrames, desired);
+    }
+
+    private void raiseTargetForLatePacket() {
+        if (!adaptive || targetDelayFrames >= maxTargetDelayFrames) return;
+        targetDelayFrames++;
+        stableTimingSamples = 0;
     }
 
     private void resyncAround(int sequence) {

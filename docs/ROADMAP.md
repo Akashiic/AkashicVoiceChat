@@ -1,5 +1,7 @@
 # Akashic Voice — Delivery Roadmap
 
+> **Status note (2026-09-17):** this file is the historical delivery plan. For current evidence-backed status, use `docs/ROADMAP_STATUS_20260917.md`. Do not treat older PARTIAL/PENDING wording below as the current implementation state.
+
 The project advances by evidence gates, not by feature count.
 
 ## Phase A — Foundation / 0.1.x

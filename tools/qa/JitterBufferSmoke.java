@@ -71,6 +71,48 @@ public final class JitterBufferSmoke {
         require(metadataSlot.maxDistance() == 17.5F, "metadata distance");
         require(metadataSlot.isWhispering(), "metadata whisper");
 
+        OpusJitterBuffer adaptive = new OpusJitterBuffer(256, 2, 40_000_000L, true);
+        long adaptiveTime = t;
+        require(adaptive.offer(1000, true, 0F, 0F, 0F, P, 0, P.length, adaptiveTime), "adaptive first");
+        for (int i = 1; i <= 4; i++) {
+            adaptiveTime += 50_000_000L;
+            require(adaptive.offer(1000 + i, true, 0F, 0F, 0F, P, 0, P.length, adaptiveTime),
+                "adaptive jitter offer " + i);
+        }
+        require(adaptive.targetDelayFrames() == 4, "adaptive target must rise to 4");
+        require(adaptive.jitterEstimateNanos() >= 18_000_000L, "adaptive jitter estimate must rise");
+        for (int i = 1; i <= 120; i++) {
+            adaptiveTime += 20_000_000L;
+            require(adaptive.offer(1004 + i, true, 0F, 0F, 0F, P, 0, P.length, adaptiveTime),
+                "adaptive stable offer " + i);
+        }
+        require(adaptive.targetDelayFrames() == 2, "adaptive target must decay back to 2");
+
+        OpusJitterBuffer silence = new OpusJitterBuffer(16, 2, 40_000_000L, true);
+        require(silence.offer(1, true, 0F, 0F, 0F, P, 0, P.length, t), "silence first");
+        require(silence.offer(2, true, 0F, 0F, 0F, P, 0, P.length, t + 500_000_000L), "silence gap");
+        require(silence.offer(3, true, 0F, 0F, 0F, P, 0, P.length, t + 520_000_000L), "silence resume");
+        require(silence.targetDelayFrames() == 2, "silence must not inflate target");
+        require(silence.jitterEstimateNanos() == 0L, "silence must not inflate jitter estimate");
+
+        OpusJitterBuffer lateAdaptive = new OpusJitterBuffer(8, 2, 40_000_000L, true);
+        require(lateAdaptive.offer(10, true, 0F, 0F, 0F, P, 0, P.length, t), "late 10");
+        require(lateAdaptive.offer(11, true, 0F, 0F, 0F, P, 0, P.length, t + 20_000_000L), "late 11");
+        require(lateAdaptive.offer(12, true, 0F, 0F, 0F, P, 0, P.length, t + 40_000_000L), "late 12");
+        require(lateAdaptive.next(t + 40_000_000L) == ReadyKind.PACKET, "late ready 10");
+        lateAdaptive.consumeExpected();
+        require(lateAdaptive.offer(13, true, 0F, 0F, 0F, P, 0, P.length, t + 60_000_000L), "late 13");
+        require(lateAdaptive.next(t + 60_000_000L) == ReadyKind.PACKET, "late ready 11");
+        lateAdaptive.consumeExpected();
+        require(!lateAdaptive.offer(10, true, 0F, 0F, 0F, P, 0, P.length, t + 61_000_000L),
+            "late old packet rejected");
+        require(lateAdaptive.targetDelayFrames() == 3, "late packet must raise target");
+
+        OpusJitterBuffer fixedFour = new OpusJitterBuffer(8, 4, 40_000_000L);
+        require(fixedFour.offer(7, true, 0F, 0F, 0F, P, 0, P.length, t), "fixed4 offer");
+        require(fixedFour.next(t + 79_000_000L) == ReadyKind.NONE, "fixed4 flush too early");
+        require(fixedFour.next(t + 81_000_000L) == ReadyKind.PACKET, "fixed4 flush at 80ms");
+
         System.out.println("jitter-buffer-smoke-ok");
     }
 }
