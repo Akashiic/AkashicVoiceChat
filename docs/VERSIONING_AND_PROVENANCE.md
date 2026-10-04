@@ -55,7 +55,7 @@ Consequence: until this repository was assembled, `git log` described a build ro
 | `26023d4` | Import of `integrated-client58-premium-hardening-rc7` (RC7 source, 394 files verified byte-identical, CRLF-normalised) |
 | later | Documentation and evidence archive |
 
-Existing tags `0.1.0-alpha.1`…`0.1.0-alpha.5` are preserved (annotated tags pointing at `77e9094`, `812c24d`, `378f622`, `7cdfa6d`, `60fb120`). ProxyChat's own tags (`0.1.0`–`0.3.1`) are intentionally not carried over to avoid confusion with this project's versions. They map to upstream commits `18b3a42`, `133395d`, `a71b625`, `5d55c7d`, `ed178c5`, `2701792`, `cd9464c`.
+Existing tags `0.1.0-alpha.1`…`0.1.0-alpha.5` are preserved (alpha.1-alpha.3 annotated, alpha.4-alpha.5 lightweight; pointing at `77e9094`, `812c24d`, `378f622`, `7cdfa6d`, `60fb120`). ProxyChat's own tags (`0.1.0`–`0.3.1`) are intentionally not carried over to avoid confusion with this project's versions. They map to upstream commits `18b3a42`, `133395d`, `a71b625`, `5d55c7d`, `ed178c5`, `2701792`, `cd9464c`.
 
 ## 4. Open provenance questions
 
