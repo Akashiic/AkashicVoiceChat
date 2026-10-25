@@ -31,6 +31,16 @@ Legend - Evidence: LO = LIVE-OBSERVED, ST = STATIC, AU = AUTOMATED, none = no ev
 - **H2** (#4): the client could rebootstrap on transfer instead of waiting for the timeout.
 - **H3** (#17): each health poll leaks LWJGL 3 `MemoryStack` space until exhaustion.
 
+## Changes after the initial set
+
+- 2026-10-25 (#3, #5, #14): AkashicMixer's analysis of four owner crash reports (Bluetooth headset off and on) found
+  that overlapping Minecraft sound reloads (ArchaicFix's device checker, this mod's output recovery, Refresh Sounds)
+  make the second engine's `AL.create` fail with `IllegalStateException` and leave a library without a context; that
+  is one concrete path to H1's unlinked stubs. Evidence (STATIC + AUTOMATED dev client, Linux):
+  AkashicMixer `docs/evidence/2026-10-25-audio-device-loss.md`. This repository now lets AkashicMixer restart the
+  engine on device loss instead of reloading every sound itself (`CHANGELOG.md`, *Unreleased*). No issue changes
+  state: nothing was observed in game.
+
 ## Suggested triage order
 
 #2 -> #16 -> #15 (identity and reproducibility), then #3, #17, #18, #4, #5, #7, #6, then #8, then the gates in numeric order, with G6 (#14) only after #3 and #5.

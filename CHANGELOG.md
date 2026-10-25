@@ -8,6 +8,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). No stable releas
 - Repository consolidation (2026-10-04): upstream ProxyChat history completed, uncommitted active tree snapshotted (`ee8920f`), RC7 source imported (`26023d4`), evidence archive (`docs/evidence/`), operator tooling (`tools/homologation/rc7-v3.8/`), project documentation, issue register.
 - [`docs/FIELD_EVIDENCE_2026-10.md`](docs/FIELD_EVIDENCE_2026-10.md): first analysis of real client logs.
 
+### Changed
+- Voice output recovery after a lost device (2026-10-25, AUTHORED + BUILD, not run in game): when AkashicMixer reports
+  that it restarts Minecraft's sound engine itself (`AkashicMixerApi.recoversSoundEngine()`, looked up by reflection,
+  no compile-time dependency), a `DISCONNECTED`/`UNAVAILABLE` recovery waits for the shared context instead of issuing
+  `SoundHandler.onResourceManagerReload`. That full resource reload repeated every 5 s while the device was missing,
+  froze large packs and overlapped with ArchaicFix's reload; overlapping reloads are what leave Minecraft's OpenAL
+  library without a context (AkashicMixer `docs/evidence/2026-10-25-audio-device-loss.md`). `DEFAULT_CHANGED` and
+  clients without AkashicMixer keep the controlled reload. Related: #3, #5, G6 (#14).
+
 ### Known issues (open, see GitHub issues)
 - OpenAL natives unlinked after a Minecraft sound-system reload: mic thread, per-frame playback and EFX probe fail (#3).
 - Voice-server timeouts around backend transfers in direct mode (#4); hot-plug recovery events in ordinary sessions (#5).

@@ -44,6 +44,7 @@ public final class ClientVoiceBootstrap {
     private int acousticSampleTicks = 4;
     private final AcousticProfileTracker acousticTracker = new AcousticProfileTracker();
     private static volatile boolean rebootstrapRequested;
+    private boolean mixerRecoveryLogged;
 
     private ClientVoiceBootstrap() {}
 
@@ -232,14 +233,25 @@ public final class ClientVoiceBootstrap {
         AudioPlayback p = AudioPlayback.get();
         if (p == null) return;
         if (p.claimSharedOutputReload()) {
-            try {
-                mc.getSoundHandler()
-                    .onResourceManagerReload(mc.getResourceManager());
+            if (isDeviceLoss(p.outputRecoveryReason()) && MixerSoundEngine.recoversSoundEngine()) {
+                // AkashicMixer restarts Minecraft's sound engine once a device is back; wait for the shared context.
+                // A default-device change (DEFAULT_CHANGED) still takes the controlled reload below.
                 p.sharedOutputReloadIssued();
-                AkashicVoice.LOG.info("Minecraft sound system reload issued for voice output recovery");
-            } catch (Throwable failure) {
-                p.sharedOutputReloadFailed();
-                AkashicVoice.LOG.warn("Minecraft sound system reload failed during voice output recovery", failure);
+                if (!mixerRecoveryLogged) {
+                    mixerRecoveryLogged = true;
+                    AkashicVoice.LOG
+                        .info("Voice output recovery: waiting for AkashicMixer to restart the sound engine");
+                }
+            } else {
+                try {
+                    mc.getSoundHandler()
+                        .onResourceManagerReload(mc.getResourceManager());
+                    p.sharedOutputReloadIssued();
+                    AkashicVoice.LOG.info("Minecraft sound system reload issued for voice output recovery");
+                } catch (Throwable failure) {
+                    p.sharedOutputReloadFailed();
+                    AkashicVoice.LOG.warn("Minecraft sound system reload failed during voice output recovery", failure);
+                }
             }
         }
         p.setMaxDistance(AkashicVoiceConfig.voiceRadius());
@@ -259,6 +271,10 @@ public final class ClientVoiceBootstrap {
         float pitchRad = (float) Math.toRadians(player.rotationPitch);
         float yawRad = (float) Math.toRadians(player.rotationYaw);
         p.updateListener((float) player.posX, (float) player.posY, (float) player.posZ, pitchRad, yawRad);
+    }
+
+    private static boolean isDeviceLoss(String recoveryReason) {
+        return "DISCONNECTED".equals(recoveryReason) || "UNAVAILABLE".equals(recoveryReason);
     }
 
     private static boolean isKeyDown(net.minecraft.client.settings.KeyBinding kb) {
