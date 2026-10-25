@@ -40,6 +40,11 @@ Legend - Evidence: LO = LIVE-OBSERVED, ST = STATIC, AU = AUTOMATED, none = no ev
   AkashicMixer `docs/evidence/2026-10-25-audio-device-loss.md`. This repository now lets AkashicMixer restart the
   engine on device loss instead of reloading every sound itself (`CHANGELOG.md`, *Unreleased*). No issue changes
   state: nothing was observed in game.
+- 2026-10-25 (#5, #14): with OpenAL Soft 1.15.1 (LWJGL 2.9.1), `ALC_DEVICE_SPECIFIER` is the constant "OpenAL Soft"
+  and the device list behind `ALC_DEFAULT_ALL_DEVICES_SPECIFIER` is cached, so `OpenAlOutputHealth` could never report
+  `DEFAULT_CHANGED` in the field (STATIC; AkashicMixer `docs/evidence/2026-10-25-follow-default-device.md`).
+  AkashicMixer now follows Windows' default device and re-enumerates the list; this repository waits for it on
+  `DEFAULT_CHANGED` instead of reloading every sound (`CHANGELOG.md`, *Unreleased*). No state change.
 
 ## Suggested triage order
 

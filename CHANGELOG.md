@@ -16,6 +16,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). No stable releas
   froze large packs and overlapped with ArchaicFix's reload; overlapping reloads are what leave Minecraft's OpenAL
   library without a context (AkashicMixer `docs/evidence/2026-10-25-audio-device-loss.md`). `DEFAULT_CHANGED` and
   clients without AkashicMixer keep the controlled reload. Related: #3, #5, G6 (#14).
+- Windows default-device change (2026-10-25, AUTHORED + BUILD, not run in game): when AkashicMixer follows Windows'
+  default output (`AkashicMixerApi.followsDefaultDevice()`), a `DEFAULT_CHANGED` recovery also waits for its engine
+  restart. With OpenAL Soft 1.15.1 nothing re-enumerated the device list before, so `DEFAULT_CHANGED` never fired;
+  AkashicMixer's device check now does, and without this each switch would trigger the full resource reload.
 
 ### Known issues (open, see GitHub issues)
 - OpenAL natives unlinked after a Minecraft sound-system reload: mic thread, per-frame playback and EFX probe fail (#3).

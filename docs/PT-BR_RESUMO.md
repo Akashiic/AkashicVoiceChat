@@ -25,7 +25,7 @@ O rótulo `0.1.0-alpha.5-akashic-voice.11+022dc1f922-dirty` **não identifica um
 3. **Android (aparelho real):** o mod carrega e autentica uma sessão local, mas **nenhum backend de captura abriu o microfone (10 de 10 sessões)** (issue #18); numa execução a thread de áudio morreu por `OutOfMemoryError: Out of stack space`, associado ao poll de saúde de saída do RC7 em ambiente LWJGL 3; a causa exata (hipótese H3, vazamento de `MemoryStack`) ainda não foi provada (issue #17).
 4. Menores: `modern_fonts.json` ausente (#6); assinatura de OOM na thread de áudio (#7).
 
-**Atualização 2026-10-25:** quando o AkashicMixer está instalado, o Voice não recarrega mais todos os sons do jogo a cada 5 s quando o fone/caixa some; ele espera o AkashicMixer reiniciar o motor de som (que agora faz isso sozinho e sem congelar). A troca de dispositivo padrão do Windows continua usando o recarregamento antigo. Só compilado (BUILD), não testado no jogo. Detalhes: `ISSUES_REGISTER.md` e a evidência no AkashicMixer.
+**Atualização 2026-10-25:** quando o AkashicMixer está instalado, o Voice não recarrega mais todos os sons do jogo a cada 5 s quando o fone/caixa some; ele espera o AkashicMixer reiniciar o motor de som (que agora faz isso sozinho e sem congelar). Quando o AkashicMixer segue o dispositivo padrão do Windows, a troca de dispositivo padrão também passa a esperar o Mixer (antes essa detecção nunca disparava no pack, porque o OpenAL da versão usada não atualizava a lista de dispositivos). Só compilado (BUILD), não testado no jogo. Detalhes: `ISSUES_REGISTER.md` e a evidência no AkashicMixer.
 
 Os testes automatizados usam áudio falso/loopback e por isso não enxergaram nada disso. Análise completa: [`FIELD_EVIDENCE_2026-10.md`](FIELD_EVIDENCE_2026-10.md).
 

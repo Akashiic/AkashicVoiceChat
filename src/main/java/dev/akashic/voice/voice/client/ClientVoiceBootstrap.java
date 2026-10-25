@@ -233,9 +233,9 @@ public final class ClientVoiceBootstrap {
         AudioPlayback p = AudioPlayback.get();
         if (p == null) return;
         if (p.claimSharedOutputReload()) {
-            if (isDeviceLoss(p.outputRecoveryReason()) && MixerSoundEngine.recoversSoundEngine()) {
-                // AkashicMixer restarts Minecraft's sound engine once a device is back; wait for the shared context.
-                // A default-device change (DEFAULT_CHANGED) still takes the controlled reload below.
+            if (mixerHandles(p.outputRecoveryReason())) {
+                // AkashicMixer restarts Minecraft's sound engine (device back, or on Windows' new default device);
+                // wait for the shared context instead of reloading every sound resource.
                 p.sharedOutputReloadIssued();
                 if (!mixerRecoveryLogged) {
                     mixerRecoveryLogged = true;
@@ -273,8 +273,11 @@ public final class ClientVoiceBootstrap {
         p.updateListener((float) player.posX, (float) player.posY, (float) player.posZ, pitchRad, yawRad);
     }
 
-    private static boolean isDeviceLoss(String recoveryReason) {
-        return "DISCONNECTED".equals(recoveryReason) || "UNAVAILABLE".equals(recoveryReason);
+    private static boolean mixerHandles(String recoveryReason) {
+        if ("DISCONNECTED".equals(recoveryReason) || "UNAVAILABLE".equals(recoveryReason)) {
+            return MixerSoundEngine.recoversSoundEngine();
+        }
+        return "DEFAULT_CHANGED".equals(recoveryReason) && MixerSoundEngine.followsDefaultDevice();
     }
 
     private static boolean isKeyDown(net.minecraft.client.settings.KeyBinding kb) {

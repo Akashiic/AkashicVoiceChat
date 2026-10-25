@@ -78,7 +78,7 @@ Live gates (each has a tracking issue):
 
 Findings from this assembly (new): see `ISSUES_REGISTER.md` #2–#7 and #17–#18 — version-label ambiguity, OpenAL unlinked natives after sound reload, handshake timeouts after transfers, hot-plug event frequency, missing `modern_fonts.json`, audio-thread OOM signature, RC7 health poll killing the playback thread on LWJGL 3, no microphone capture on device.
 
-2026-10-25: with AkashicMixer present, output recovery after a lost device waits for AkashicMixer's engine restart instead of a full resource reload (AUTHORED + BUILD; see `ISSUES_REGISTER.md`, *Changes after the initial set*). Gate 6 is unchanged.
+2026-10-25: with AkashicMixer present, output recovery after a lost device waits for AkashicMixer's engine restart instead of a full resource reload, and so does a Windows default-device change when AkashicMixer follows the default device (AUTHORED + BUILD; see `ISSUES_REGISTER.md`, *Changes after the initial set*). Gate 6 is unchanged.
 
 Carried-over items from `CONTINUITY.md` that should be re-verified rather than assumed closed: total encoded group-control message-size budget; invitation limits/expiry; persistent group authority; permission/moderation parity; native OpenAL lifecycle.
 
