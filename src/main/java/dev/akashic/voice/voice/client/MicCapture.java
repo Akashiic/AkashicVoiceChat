@@ -1,6 +1,7 @@
 package dev.akashic.voice.voice.client;
 
 import dev.akashic.voice.AkashicVoice;
+import dev.akashic.voice.api.AkashicVoiceClientHooks;
 import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureBackends;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureDevice;
@@ -127,7 +128,9 @@ public final class MicCapture {
                 }
                 applyAmplification(pcm, AkashicVoiceConfig.micAmplification());
                 if (AkashicVoiceConfig.noiseSuppression()) applyHighPass(pcm, highPassState);
-                if (!MicGate.shouldTransmit(pcm, authorization)) continue;
+                boolean shouldTransmit = MicGate.shouldTransmit(pcm, authorization);
+                AkashicVoiceClientHooks.dispatchMicFrame(pcm, AudioFormatSpec.SAMPLE_RATE, shouldTransmit);
+                if (!shouldTransmit) continue;
                 int length = current.encode(pcm, opusOut);
                 if (!current.isRunning()) return;
                 if (sink.sendAuthorizedFrame(sequence, opusOut, length, authorization)) {
