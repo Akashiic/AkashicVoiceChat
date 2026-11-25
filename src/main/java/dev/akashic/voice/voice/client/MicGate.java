@@ -3,6 +3,7 @@ package dev.akashic.voice.voice.client;
 import java.util.Objects;
 import java.util.function.LongSupplier;
 
+import dev.akashic.voice.api.AkashicVoiceClientHooks;
 import dev.akashic.voice.config.AkashicVoiceConfig;
 import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 
@@ -161,6 +162,7 @@ public final class MicGate {
 
     public static boolean shouldTransmit(short[] pcm, TransmissionState expected) {
         if (!permitsTransmission(expected)) return false;
+        if (!AkashicVoiceClientHooks.isTransmissionAllowed()) return false;
         return expected.mode != Mode.VOICE || computeRms(pcm) >= AkashicVoiceConfig.thresholdRms();
     }
 
