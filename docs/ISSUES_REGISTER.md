@@ -25,9 +25,24 @@ Legend - Evidence: LO = LIVE-OBSERVED, ST = STATIC, AU = AUTOMATED, none = no ev
 | 17 | RC7 output-health poll kills playback thread on LWJGL 3 | defect | high | LO (device, once) | F7 (H3) | blocks #12 |
 | 18 | No audio capture backend opens a microphone on device | defect | high | LO (device, 10/10) | F6 | blocks #12 |
 
+## Status update — 2026-11-27 (commit `bb2e6aa`, evidence [`evidence/rebuild-20261127/`](evidence/rebuild-20261127/README.md))
+
+All issues stay **open**: the fixes below are AUTHORED + AUTOMATED only and still need the live confirmation named in each row.
+
+| # | Change | Evidence | Still needed to close |
+|---:|---|---|---|
+| 3 | Binding loss handled as a recovery event in playback, EFX probe and mic capture | AUTOMATED: `OpenAlReloadReproSmoke` with real natives (baseline reproduces the field signature 30×; fixed tree recovers in ~1 s), `OpenAlBindingLossSmoke` 10/10 | Desktop client run with a sound reload (ArchaicFix device checker), then the F1 log scan showing zero AkashicVoice `UnsatisfiedLinkError` headers |
+| 4 | Client requests a fresh bootstrap on a backend transfer (new player entity id) | AUTOMATED: `BackendTransferDetectorSmoke` (logic only) | Live transfer through the proxy in direct mode: no 6–11 s voice gap |
+| 7 | Recycle pool clamped to the per-source maximum | BUILD + matrix PASS | Field scan without audio-thread OOM |
+| 15 | Forge + platform rebuilt from committed source; Java 8 matrix re-run (57 mains) | BUILD + AUTOMATED; Paper bridge and Addon API byte-identical to RC7 | Same procedure on the Windows workstation; class-by-class comparison of the Forge JAR with RC7 |
+| 17 | String-keyed ALC queries cached per device; health-poll failures can no longer kill playback | AUTOMATED: `OpenAlBindingLossSmoke` (`health_poll_failure_never_escapes_loop_guard`), real-native reproducer | Long session on an LWJGL 3 device runtime |
+| 2 | Observation: the Gradle label reads `-dirty` whenever untracked files exist, even with a clean tracked tree | BUILD | Label design decision |
+
+Not changed: #5 (needs a controlled physical hot-plug test), #6 (needs NecroTempus' `modern_fonts.json` schema before shipping a file), #8, #16, #18 and the gates #9–#14. PR #19 (client addon hooks) was merged without tests or docs; both were added and the hooks hardened (privacy gate) in `bb2e6aa`.
+
 ## Hypotheses carried by the issues (all unverified)
 
-- **H1** (#3): LWJGL 2.9.1 `AL.destroy()` resets AL/ALC/EFX native stubs, so calls between destroy and the next `AL.create()` raise `UnsatisfiedLinkError`.
+- **H1** (#3): LWJGL 2.9.1 `AL.destroy()` resets AL/ALC/EFX native stubs, so calls between destroy and the next `AL.create()` raise `UnsatisfiedLinkError`. *2026-11-27: reproduced with real LWJGL 2.9.4-nightly natives outside Minecraft (AUTOMATED); not yet observed against the field client's 2.9.1.*
 - **H2** (#4): the client could rebootstrap on transfer instead of waiting for the timeout.
 - **H3** (#17): each health poll leaks LWJGL 3 `MemoryStack` space until exhaustion.
 

@@ -1,6 +1,6 @@
 # Akashic Voice — Project state
 
-**As of:** 2026-10-04 · **Baseline reviewed:** RC7 (`AV-PREMIUM-HARDENING-RC7-20260917-58`) · **Stable release:** not approved · **Production deployed:** no
+**As of:** 2026-11-27 (fix commit `bb2e6aa`; first edition 2026-10-04) · **Baseline reviewed:** RC7 (`AV-PREMIUM-HARDENING-RC7-20260917-58`) · **Stable release:** not approved · **Production deployed:** no
 
 This is the single source of truth for continuation decisions. Where it disagrees with an older document (`ROADMAP.md`, `PROGRESS_REVIEW_*`, `CONTINUITY.md`), this file and the evidence receipts under `docs/evidence/` win; the older files remain as history.
 
@@ -79,6 +79,16 @@ Live gates (each has a tracking issue):
 Findings from this assembly (new): see `ISSUES_REGISTER.md` #2–#7 and #17–#18 — version-label ambiguity, OpenAL unlinked natives after sound reload, handshake timeouts after transfers, hot-plug event frequency, missing `modern_fonts.json`, audio-thread OOM signature, RC7 health poll killing the playback thread on LWJGL 3, no microphone capture on device.
 
 Carried-over items from `CONTINUITY.md` that should be re-verified rather than assumed closed: total encoded group-control message-size budget; invitation limits/expiry; persistent group authority; permission/moderation parity; native OpenAL lifecycle.
+
+## 5a. Update 2026-11-27 — rebuild and field-defect fixes
+
+Evidence: [`evidence/rebuild-20261127/README.md`](evidence/rebuild-20261127/README.md). Grade: BUILD + AUTOMATED (Linux container, one assistant).
+
+- **Rebuilt from committed source (#15):** Forge build PASS; platform 43 suites / 186 tests / 0 failures; Java 8 smoke matrix PASS (57 mains, real JDK 8). Paper bridge and Addon API are byte-identical to RC7. This is the first time the repository itself has been built; earlier BUILD/AUTOMATED rows above are still transcribed RC7 results.
+- **Fixed in code, awaiting live confirmation:** #3 (OpenAL binding loss after a sound reload), #17 (health poll killing playback), #4 (transfer → immediate rebootstrap), #7 (recycle pool bound); Gateway in-JVM restart could not rebind its UDP port (found by the platform tests on Linux).
+- **H1 reproduced** with real OpenAL natives outside Minecraft: the pre-fix tree shows the exact field signature (`AL11.nalSource3i`, 30 consecutive frame failures, no recovery); the fixed tree recovers in about 1 s with EFX restored.
+- **PR #19** (client addon hooks, external contributor) is in the tree, now documented in `ADDON_API.md`, covered by a smoke and restricted to audio the player's controls authorize.
+- The capability matrix in §3 is unchanged: no row moves to LIVE-OBSERVED/APPROVED on this evidence. The candidate built from `bb2e6aa` is **not** installed anywhere and has no RC label.
 
 ## 6. Not claimed
 

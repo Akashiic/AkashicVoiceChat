@@ -1,8 +1,16 @@
 # Akashic Voice — resumo em português
 
-**Data:** 2026-10-04 · **Estado:** release candidate **RC7**, sem versão estável, sem deploy de produção aprovado.
+**Data:** 2026-11-27 (primeira edição 2026-10-04) · **Estado:** release candidate **RC7**, sem versão estável, sem deploy de produção aprovado.
 
 Este é um resumo para o dono do projeto (Gabriel / `Akashiic`). Os documentos técnicos completos estão em inglês e são a referência: [`PROJECT_STATE.md`](PROJECT_STATE.md), [`HANDOFF.md`](HANDOFF.md), [`HOMOLOGATION.md`](HOMOLOGATION.md).
+
+## Atualização de 2026-11-27
+
+- **Primeira compilação do próprio repositório** (commit `bb2e6aa`, container Linux): build do mod Forge OK, plataforma com 43 suítes / 186 testes / 0 falhas, matriz de testes Java 8 com 57 testes OK. O Paper bridge e a Addon API saíram **idênticos byte a byte** ao RC7.
+- **Correções no código** (ainda sem teste ao vivo): #3 (OpenAL "desligado" depois de recarregar o som), #17 (verificação de saída matando a reprodução), #4 (troca de servidor passa a pedir nova conexão de voz na hora), #7 (limite na lista de buffers) e um defeito do Gateway (não conseguia reabrir a porta UDP num reinício dentro do mesmo processo).
+- **O #3 foi reproduzido com o OpenAL real** fora do Minecraft: o código antigo mostra exatamente o erro dos seus logs (`AL11.nalSource3i`, 30 falhas seguidas, sem recuperação); o código novo se recupera em cerca de 1 s.
+- **PR #19** (ganchos de addon no cliente) ganhou teste, documentação e uma proteção de privacidade: addons só recebem o áudio quando você não está mutado e, no modo push-to-talk, quando a tecla está apertada.
+- Tudo isso é **AUTOMATED**, não ao vivo. As issues continuam abertas até o teste no jogo. Evidência: [`evidence/rebuild-20261127/README.md`](evidence/rebuild-20261127/README.md).
 
 ## O que é
 

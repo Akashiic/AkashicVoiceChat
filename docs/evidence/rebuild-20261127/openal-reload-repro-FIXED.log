@@ -1,0 +1,6 @@
+[11:32:21] [AkashicVoice-Audio/INFO]: OpenAL already initialized; reusing existing context
+[11:32:21] [AkashicVoice-Audio/INFO]: OpenAL EFX enabled for environmental voice acoustics
+[11:32:21] [AkashicVoice-Audio/WARN]: Voice output lost its OpenAL native binding (sound-system reload?); playback paused until the context returns (ownsOpenAL=false, cause=java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V)
+[11:32:22] [AkashicVoice-Audio/INFO]: OpenAL EFX enabled for environmental voice acoustics
+[11:32:22] [AkashicVoice-Audio/INFO]: Shared OpenAL output recovered after Minecraft sound reload
+OPENAL_RELOAD_REPRO_OK recoveries=1 reason=UNLINKED droppedAfterRecovery=0

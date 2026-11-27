@@ -1,0 +1,60 @@
+[11:32:38] [AkashicVoice-Audio/INFO]: OpenAL already initialized; reusing existing context
+[11:32:38] [AkashicVoice-Audio/INFO]: OpenAL EFX enabled for environmental voice acoustics
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at dev.akashic.voice.voice.client.playback.PlaybackChannel.setEnvironmentEffects(PlaybackChannel.java:128) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.applyEnvironmentRoute(AudioPlayback.java:711) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.processFrame(AudioPlayback.java:739) ~[baseclasses/:?]
+	at dev.akashic.voice.voice.client.playback.AudioPlayback.loop(AudioPlayback.java:596) ~[baseclasses/:?]
+	at java.lang.Thread.run(Thread.java:750) [?:1.8.0_514]
+[11:32:39] [AkashicVoice-Audio/WARN]: Audio frame failed
+java.lang.UnsatisfiedLinkError: org.lwjgl.openal.AL11.nalSource3i(IIIII)V
+	at org.lwjgl.openal.AL11.nalSource3i(Native Method) ~[lwjgl-2.9.4-nightly-20150209.jar:?]
+	at org.lwjgl.openal.AL11.alSource3i(AL11.java:104) ~[lwjgl-2.9.4-nightly-20150209.jar:?]

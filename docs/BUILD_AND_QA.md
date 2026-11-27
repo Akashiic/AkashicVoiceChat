@@ -1,5 +1,7 @@
 # Build and QA
 
+> **Update (2026-11-27).** Both builds and the Java 8 smoke matrix were executed from committed source (`bb2e6aa`) in a Linux container — all PASS. Receipt, toolchain, Linux-specific setup (`ALSOFT_DRIVERS=null`, `LD_LIBRARY_PATH=run/natives/lwjgl2`, Azul Zulu 8 toolchain) and hashes: [`evidence/rebuild-20261127/README.md`](evidence/rebuild-20261127/README.md). The note below still applies to the RC7 results in section 4.
+>
 > **Verification note (2026-10-04).** The commands and results below are taken from the project's build files, `AGENTS.md` and the RC7 receipts under `docs/evidence/`. **None of them was re-executed while this repository was assembled.** Treat every "PASS" here as a *recorded* result about the RC7 candidate tree, not about this checkout. Re-running them is task #15 in [`ISSUES_REGISTER.md`](ISSUES_REGISTER.md).
 
 ## 1. Toolchain

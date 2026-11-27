@@ -1,0 +1,375 @@
+{
+  "state": "PASS",
+  "runner_pid": 7042,
+  "java_home": "/usr/lib/jvm/java-8-openjdk-amd64",
+  "source_sha256": {
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClient.java": "112fe13e5722eb3577ab233d35f539c6ca790831d73e607193a53009b382bc8c",
+    "src/main/java/dev/akashic/voice/voice/client/MicCapture.java": "aff607e0401e50ab1a008dc5ad20aba622ee4ab479f0d17d323be09b26f027d5",
+    "src/main/java/dev/akashic/voice/voice/client/jitter/OpusJitterBuffer.java": "2163f6905f9a3024f300512e7d26e59253848d0c3f5ad84f6e4f24d4c97f3c87",
+    "tools/qa/MicSequenceRecoverySmoke.java": "691cfe6743e54948f4a58db6d76f24854b41bb5609ed047b9ff5d60120c85a67",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/MicCaptureSession.java": "370dce910fc774e57cdfdc608ea94f8f6d0b0ad9a946da6764a6740f49b1fc2c",
+    "tools/qa/MicCaptureSessionSmoke.java": "15cbdb304323c651706464096aed816cc785603ca8a5cc4b39cc2be115d9ea5d",
+    "src/main/java/dev/akashic/voice/AkashicVoice.java": "28b85364bc877e51ccc1df5677e939d2c9e41ffb4974f6c727e1465acf02dbcc",
+    "src/main/java/dev/akashic/voice/ClientEvents.java": "f89219a2a24c82f1773c3c645e5a8e5936f2067cf6aa798a26bf7d8a67652e36",
+    "src/main/java/dev/akashic/voice/ClientProxy.java": "b235a8850bfcb5ca58119b5d1c48f841cc3e466195470468a8158c8d5aa0e361",
+    "src/main/java/dev/akashic/voice/CommonEvents.java": "dc4d2151aa4e30a88d8a29066f796e663ce89849777f488a58a11a36854aca05",
+    "src/main/java/dev/akashic/voice/CommonProxy.java": "7f8978fb8756e033fb8c67c36a332938045f5f7d0644865ec175dff8d3c28ea1",
+    "src/main/java/dev/akashic/voice/api/AkashicVoiceClientHooks.java": "04acacee0d85f78ac41352ac450be0ac88fb00a638569a7f009a31c5ed9c7b6e",
+    "src/main/java/dev/akashic/voice/api/ClientMicFrameListener.java": "1fc2d37d4d5d27e3b42129f6a23e077494b7bdf6f870d60bf13f925443e0ca43",
+    "src/main/java/dev/akashic/voice/api/ClientMicTransmissionFilter.java": "7e638fe426167630ec879f6f1295da224abb81b27ac757d00f4db6b84bd5077d",
+    "src/main/java/dev/akashic/voice/client/gui/GuiGroup.java": "e20f3c99dbfdd906373569c3a48ad4d4ade4a3a32bbddee9f9a43b04d9533528",
+    "src/main/java/dev/akashic/voice/client/gui/GuiGroupInviteBanner.java": "f93db4caa42b5af1ca4a58fda3003080e8df135f77f2e0d9fd9be02fb90ceae4",
+    "src/main/java/dev/akashic/voice/client/gui/GuiInvitePlayers.java": "54996ebad26115d590f971db4fff94c7fa723cec05a3dde9c4c097f3575ff1bd",
+    "src/main/java/dev/akashic/voice/client/gui/GuiSelectMicrophone.java": "c936b355d525cd58fe2b232b3a0d8a89d7d1072956a5d6b4723026883a3ca398",
+    "src/main/java/dev/akashic/voice/client/gui/GuiSelectSpeaker.java": "cc835192c578f698cf3110b83d1a10f50d4fc7c20cdf75621db5672e91d02c57",
+    "src/main/java/dev/akashic/voice/client/gui/GuiSetupWizard.java": "524a40dc66df2119006ee2a02bd5c4d0305723134b96c7e989873f2e510f4571",
+    "src/main/java/dev/akashic/voice/client/gui/GuiSpeakerControls.java": "57fed8ee0333a78f3a25e1f29031ade20712995ea0f66c2e0787e26adf2e26e0",
+    "src/main/java/dev/akashic/voice/client/gui/GuiTouchTalk.java": "a52d2892d97af83a3aef7ecb0bf11ea61fc73c74c3017c578187553b89f68b69",
+    "src/main/java/dev/akashic/voice/client/gui/GuiVoiceChatHub.java": "3b20685f345794f2fc4f70597b92098000c2a465cb464ef96fd85011f3413b83",
+    "src/main/java/dev/akashic/voice/client/gui/GuiVoiceChatSettings.java": "62b81dfeba7a4e49024d9782d5b27eeb5058f6802dfa915081e09ce5c73857da",
+    "src/main/java/dev/akashic/voice/client/gui/GuiVoiceQuality.java": "3792a5db564b102e5812bd201fc1ad05a827cf7774aa99cdd650c4ae8531cfbf",
+    "src/main/java/dev/akashic/voice/client/gui/SpeakerPanelModel.java": "c269049a5b415e1c3f4f5602245c01f2e68f1de67cf8538b08a1f418b4ced245",
+    "src/main/java/dev/akashic/voice/client/gui/widget/IconButton.java": "c61ca8dfa1b420caef992e5cfa747bc89ae88c2a3db8e624d5534fb161ad16b9",
+    "src/main/java/dev/akashic/voice/client/gui/widget/IconRenderer.java": "95a21b16c40869d8c53ff8559c39224c2711716f39e89d5a38cf2cc3c0c6eb97",
+    "src/main/java/dev/akashic/voice/client/gui/widget/LevelMeterWidget.java": "d9c7531b93b49ec9da6174b7bb809678290fb21f18aa69a3bdd13e39dc8e99b3",
+    "src/main/java/dev/akashic/voice/client/gui/widget/PercentSlider.java": "38874ecf940f97247a8ee36e235350bbd2622b23a3527de37da1c26ff5e001ef",
+    "src/main/java/dev/akashic/voice/client/gui/widget/PlayerHead.java": "5b793fc51c8695040545e5f225c38e0af0da8c6c59f78b8b61e3d346d6dfe458",
+    "src/main/java/dev/akashic/voice/client/gui/widget/ThresholdSlider.java": "a52c324569d49fe1036ee7416dbec698eb992bc91e1312414d3539b7770c8004",
+    "src/main/java/dev/akashic/voice/command/AvDebugCommand.java": "13f1fc4666a4b365ed6377344c9f86fb07ba4a188967dfa6a32d8b498006aa80",
+    "src/main/java/dev/akashic/voice/config/AkashicVoiceConfig.java": "5493290f69fb56b6aa011a140fb5c528d9cf85094c2b9935577dcdae1d64b8b9",
+    "src/main/java/dev/akashic/voice/config/VoiceQualityPreset.java": "f8144d6f9c87d10d6c6ab6a412f236ebe203547c85f99b07726edf438bf2777b",
+    "src/main/java/dev/akashic/voice/net/AkashicVoiceChannel.java": "1ac457fa488a9fef374ee0111711a85bacfac373f5fab864460f0098e1e13efc",
+    "src/main/java/dev/akashic/voice/net/PacketCreateGroup.java": "172739ceaead95ec703f654c3a263709c47c4ad547bc14e48b83ee9e978acf53",
+    "src/main/java/dev/akashic/voice/net/PacketGroupStateSync.java": "68532a4ff7f04a927a2beee087fe41bee369ccf9843900f55b4f2a865bbb45c2",
+    "src/main/java/dev/akashic/voice/net/PacketInviteNotify.java": "5f0b94c47a52a2388a8f3205159da9c7a01f849358a272893d3e8de8a5a0b697",
+    "src/main/java/dev/akashic/voice/net/PacketInviteResponse.java": "dca459a4b517ca2571378906dc511d3181974ef83a31261b40ff46986ec88230",
+    "src/main/java/dev/akashic/voice/net/PacketInviteToGroup.java": "20bc59a2eabee8f7a5c190eb7000b2b7e98a3857ebb9039b309d1dfb2cfa4f25",
+    "src/main/java/dev/akashic/voice/net/PacketLeaveGroup.java": "bef46f6cd955ef02b4c85691bf7d0e00dfd0b9a93e0c89711579398876d205c4",
+    "src/main/java/dev/akashic/voice/net/PacketRebootstrap.java": "75a3186a7c536f8f70ddf871901ee84a19ab4e2c7ff48a069915359d9168f72f",
+    "src/main/java/dev/akashic/voice/net/PacketRequestSecret.java": "353b185189bd94e4cc6b41390e3ae599281c9019e3b4904ed7ef4c8fb468e975",
+    "src/main/java/dev/akashic/voice/net/PacketRosterSync.java": "6772217d5ce48ff70ba1adf7af56c50a3a1229e6e2908418ac1cccb39f206df1",
+    "src/main/java/dev/akashic/voice/net/PacketSecret.java": "551955e7f81ac227e804291e3cd7549b002f360421a11c216ef8ee69eb29da24",
+    "src/main/java/dev/akashic/voice/voice/client/BackendTransferDetector.java": "15e7ae7c6754534b06ad5eedbf67a9fa6037020fe70fc72e711d95c96c19c6b4",
+    "src/main/java/dev/akashic/voice/voice/client/ClientSecretCache.java": "8cbe1c83f13096a7333972066b0edfb1da5ef9c4ecafb1799b4077e7a9f17ad8",
+    "src/main/java/dev/akashic/voice/voice/client/ClientVoiceBootstrap.java": "0d4462b7a0e9252ed0df40b51592b62d31fe65a11b0a6fcdd60b9a39dd1e0708",
+    "src/main/java/dev/akashic/voice/voice/client/MicGate.java": "56f326036c2c220917a7d8530996a47f0fd119c111ab281939922c71e3d58656",
+    "src/main/java/dev/akashic/voice/voice/client/TouchPttLease.java": "cee07754a0291ac4ee2f0a9e299d64c544cb5de27b3301774b19f9a70fd5555b",
+    "src/main/java/dev/akashic/voice/voice/client/TouchTalkSession.java": "10f55107a20adfcfe2d385ec9bd779afadb6db32b0241148fb18274ce3a14574",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClientHolder.java": "9d6b34fb025627f9c3a8c77e4ce3cf466c4c1edf4c4487c2130007bbc76d1ac8",
+    "src/main/java/dev/akashic/voice/voice/client/VoiceClientStatusSnapshot.java": "0a9a3aca682e9a9fbdcba0856e5b2a50d01139e78eb6ad76147d2146f228904c",
+    "src/main/java/dev/akashic/voice/voice/client/acoustics/AcousticClassifier.java": "36406da727061e77db126dcc954593edc1ea7a3fb060031f6d7f2cfc285ffd57",
+    "src/main/java/dev/akashic/voice/voice/client/acoustics/AcousticEnvironmentSampler.java": "83dd9378a1ffded0e28c8dfd01444c8e9a1d98f8b2beb6133eeee8130ee5ef27",
+    "src/main/java/dev/akashic/voice/voice/client/acoustics/AcousticProfile.java": "8bb69ea878e7f101ff3992441e67a18afe61622bf2c9966d394872e09fe2da56",
+    "src/main/java/dev/akashic/voice/voice/client/acoustics/AcousticProfileTracker.java": "12d5ed4b46bc4f5909bbbd5ee5d80acb5f8491d9df572285af6dfead8abf5e6f",
+    "src/main/java/dev/akashic/voice/voice/client/acoustics/AcousticRoutingPolicy.java": "b45042788b3ab9e6e624713a794a921299af40c373c59960dadd7dedcd51e914",
+    "src/main/java/dev/akashic/voice/voice/client/audio/MicLevelMonitor.java": "2dafd4d7872be8f4566ca05296348570a57d270af33d7c88e47db0eeff6246dc",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AudioCaptureBackend.java": "1923f980a7ac64d5b85de6c9b2f9db5a8df203ab7dca2ca31455776e66b159ea",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AudioCaptureBackends.java": "6ef64e110dd81ab68d8d1b908fd772e9abc54ab3a365f8238aa7f71b0874a934",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AudioCaptureDevice.java": "f326355e20579bc3106b88b9a1d1bd950e3c5487cb41fa4e060a235f81dc0736",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AudioCaptureDeviceInfo.java": "abb8894d70f28bdb3750afcbc6a5289d06555fac4af1a15e691b00c3153b1f17",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AudioCaptureException.java": "2eb35d8fc1276951091a136f7efa039e6b73a17958956c79d98502fb07ac277b",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/AutoCaptureBackend.java": "f2d9bc2766d7bcd8bcae1ed1dc1a2ff01049e99eae8211d79879b0c5a64110ca",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/JavaSoundCaptureBackend.java": "1fd58bac23a7d6351d51f7a6525f5f8f184f906881b1565cfe7489bbd1678a3a",
+    "src/main/java/dev/akashic/voice/voice/client/audio/capture/OpenALCaptureBackend.java": "38d11b401462a9f113b05f37e9ec07d1ce5da8eda74266b014076abc7d5569b2",
+    "src/main/java/dev/akashic/voice/voice/client/groups/ClientGroupCache.java": "e47ed91a399a7bdb514e4d3b13efecc40bf5a606a79ef6ebd7167edddabe5023",
+    "src/main/java/dev/akashic/voice/voice/client/groups/ClientPlayerRoster.java": "65696f99b9962535f1591adb49822f0d8316479d4de4723aa5b0032964fb12fe",
+    "src/main/java/dev/akashic/voice/voice/client/groups/PendingInviteQueue.java": "cb8488eee16cb7dc52a51934febf465f945d0d90e405e8d9ea2303128658b0ac",
+    "src/main/java/dev/akashic/voice/voice/client/jitter/DecoderStream.java": "9cf739aff2917f6194f533e946566210e5b5bfcb6f650880c8ed380e22ab8354",
+    "src/main/java/dev/akashic/voice/voice/client/keybinds/AkashicVoiceKeybinds.java": "6d3c3f1bd03f04a65d0e45e19604ed49b34a3bdab0939d2dfe3c62292acad4bd",
+    "src/main/java/dev/akashic/voice/voice/client/keybinds/PttInputBridge.java": "0677acc3d8e0cb7b7aae817fe48718a3ded484c4d0c8331eb2ff987626319e30",
+    "src/main/java/dev/akashic/voice/voice/client/playback/AudioPlayback.java": "c77ca6aa08799b426711224c8485f7dfe4fcfe076219b8af6de98ef6edfa810d",
+    "src/main/java/dev/akashic/voice/voice/client/playback/OpenAlOutputHealth.java": "0eb7b532769f7143e8ce0aea23c1b322a8343fb912244f31576878447e9260a6",
+    "src/main/java/dev/akashic/voice/voice/client/playback/OutputRecoveryController.java": "efcc078df3864d0bc4a6bd23dbb5c6e390252d0fc986ec64002300d34b81b553",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackChannel.java": "fc5e5ee5b5ed546bc82709b401440cd8c1e1ecb1c02037947999e2dc9aa347fa",
+    "src/main/java/dev/akashic/voice/voice/client/playback/PlaybackFrame.java": "7cf23f89b8c1c8800b2868af3cd36ba0e35d4deebf3605996df52449537e4950",
+    "src/main/java/dev/akashic/voice/voice/client/playback/SpeakerControls.java": "1b054091c0dacefcb1df4384187250a03fa73ee87d5428220e284118ea1612d3",
+    "src/main/java/dev/akashic/voice/voice/client/playback/VoiceEnvironmentEffects.java": "4b65f3545a9b2ba5c4cc026d8f6ee1c05309ac59549ea59c73f2eaee83728249",
+    "src/main/java/dev/akashic/voice/voice/client/playback/VoiceGain.java": "a0bb09a05dc749c7194728d41f2d275315b241a7c2512557d9a237667186f793",
+    "src/main/java/dev/akashic/voice/voice/client/render/MicHudOverlay.java": "49dafb3a730749f998e5d8fc90282d97c05502d0d1080d9b7489bdc4a44a7a76",
+    "src/main/java/dev/akashic/voice/voice/client/render/SpeakerOverlay.java": "bbd7a8f4b53c8e9494942713755e4c7908979cd32f30ed7a9dc4eb403f70f7cf",
+    "src/main/java/dev/akashic/voice/voice/client/talk/TalkCache.java": "9607273685f9681486bc1dad3b7d792e77f7b960e2b76d9af148469bfa21e7d2",
+    "src/main/java/dev/akashic/voice/voice/common/codec/ConcentusOpusDecoder.java": "713c32ceabf58fabc536afdc4684d7e174c2e56d3b9dcc8dc8b167973f7441d9",
+    "src/main/java/dev/akashic/voice/voice/common/codec/ConcentusOpusEncoder.java": "71855200d241a4a937eba3642853b3ff66ef82bce7984ad00e4997684b35fabf",
+    "src/main/java/dev/akashic/voice/voice/common/codec/LiveBitrateEncoder.java": "3a6d6732ff24610de5fd294a21b34407d52d60b91ae6bd4778ee85a849870460",
+    "src/main/java/dev/akashic/voice/voice/common/codec/NativeOpusDecoder.java": "562bfb594599958c12afcc2fbb7c2856c96285875f49b210f0d512ec99d0e60c",
+    "src/main/java/dev/akashic/voice/voice/common/codec/NativeOpusEncoder.java": "0d6a03b62a92af6cbcc27900cd22978c6fa6b63e30b9eaaa4e2de0253ea24158",
+    "src/main/java/dev/akashic/voice/voice/common/codec/OpusCodecFactory.java": "58200f5f27863167018a7f54ef8e0330019986117c56bf2769b6a06804307744",
+    "src/main/java/dev/akashic/voice/voice/common/codec/OpusDecoder.java": "3b32ef77916461c1bba087735b2712ef66ff9ea37e57b22f5937f820d44083b2",
+    "src/main/java/dev/akashic/voice/voice/common/codec/OpusEncoder.java": "6f61d0e1092eab73140753b75f153d7c5a29432d68b012f0548504b04a90149b",
+    "src/main/java/dev/akashic/voice/voice/common/groups/GroupSnapshot.java": "40d188798f0e03e69aa122f3b03fdb009dedda870c71a0087853c8929a0cb032",
+    "src/main/java/dev/akashic/voice/voice/common/groups/RosterEntry.java": "69a1e8207df93bf6c79e03e63228911955f6aa42d957005ddf62361318e881bc",
+    "src/main/java/dev/akashic/voice/voice/server/HandshakeRateLimiter.java": "cc783fdad2fdcf3962f47b21307a68c21fd4f92b022af7d32ec8e6568b95a505",
+    "src/main/java/dev/akashic/voice/voice/server/MediaRateLimiter.java": "5b698e2e9a748aea0095dd588072de76bf0918773daa722a70949975303c45ea",
+    "src/main/java/dev/akashic/voice/voice/server/PendingHandshake.java": "f96e2571b39783132bb35cfbe62df7517f1ebe5f00e78453d77956bb456f36ee",
+    "src/main/java/dev/akashic/voice/voice/server/PlayerStateRegistry.java": "cd55ba9118562294599d0275c379831cf28e5b72348f13284bc5bab1e9678830",
+    "src/main/java/dev/akashic/voice/voice/server/SecretRegistry.java": "c1f536891a449f0e6657c97f55699ba41bd2702b44328263ce6a5d43c085fabe",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceConnection.java": "b6cf6c9b94d2e317b78371935db1b7efc3520932081bc780e29e7dd34ff0b5e9",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServer.java": "fe03425c2a28779266ca044b7215e44863873e89b350e1ef74bdbcf3baf12b6e",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServerHolder.java": "1372b15182503039530242908e35e7ac05c85cbc43c58752240b3ccb7d8863fc",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServerMetricsSnapshot.java": "31e26838127e8bc358e87aa6f4296dc62a39325279273f900d5e2f75173a92e6",
+    "src/main/java/dev/akashic/voice/voice/server/VoiceServerTelemetry.java": "f71a4205737d5a4760f29a5f2f6d76274fefcf205c9fb09bf019cf027c4f750b",
+    "src/main/java/dev/akashic/voice/voice/server/agent/LegacyAgentChannel.java": "bff3e018d02f7b79dc84f4ce3c785d4a80542338aafd0930ef3f59713b5f96e7",
+    "src/main/java/dev/akashic/voice/voice/server/agent/LegacyAgentWire.java": "5465421c7f9cea5da698878df1973a351290cf7e18d2258898e8ad4980e39254",
+    "src/main/java/dev/akashic/voice/voice/server/agent/LegacyGatewayAgent.java": "2f8b9aa703102322110582a2ddf41db965c50add2d68dc46a9a10c1663200bf8",
+    "src/main/java/dev/akashic/voice/voice/server/agent/LegacyGatewayAgentHolder.java": "014e647c69ef9122f3c44993d282d6244b720772573136b65b29af9429d22350",
+    "src/main/java/dev/akashic/voice/voice/server/groups/Group.java": "996651c90989f164697c8f16e0557fa66d7824a234bd8a9403ef93b97169f5e6",
+    "src/main/java/dev/akashic/voice/voice/server/groups/GroupRegistry.java": "f53d10b487f57be0e66775b27921c2b56a40b11309b1b103edf1fd5f22c52263",
+    "src/main/java/dev/akashic/voice/voice/server/groups/GroupRegistryHolder.java": "cff3540771db264f3239222aaaf625397e6030246ce0b42eae0d27e45d957c29",
+    "src/main/java/dev/akashic/voice/voice/server/groups/GroupSavedData.java": "bf28ff080ca6b4fab38b3c37573e3ecce0d450c5e73546b6266189b8f834f895",
+    "src/main/java/dev/akashic/voice/voice/server/groups/LegacyGroupInviteBook.java": "741a06553ba4ead1db4d94641fba368204ec404c6a1a4f1f2086019d693b1d35",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/AuthAckPacket.java": "ee45a2318d69e868dd365d891bba96afc15d6580bbde104e07b1dfeeca0b72d0",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/HandshakePackets.java": "1d4a8e66347ebb098d876acfe46e50fb9f1ad378155a2eb379dfc5e20256f91c",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/KeepAlivePacket.java": "bf97bf3d01619692aab92b11354a8c73b93d910fc06ea996445c7ad073234f5f",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/MicFramePacket.java": "88eb9b5a6dad015910c06adec9bdb24c2c8230b01f15b8e6aaf67cc781008c6c",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SessionHandshakePackets.java": "9aed6a133bd9c256ab27a8a6490140cdb0658d7090722a43fc0a5b543abbde5a",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFramePacket.java": "907e8ecf9b037dc5a8db97fcbfe8b2de1a1d317d9e082520292a93fd03f0e7e8",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFrameV2Packet.java": "2cc17d1e2932d232a708e3b63097cbee40d957c68b83a0b71835ff5e5c72382b",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundFrameV3Packet.java": "eab6a11386ce4a7e51c7895eb445e3ff7cab8eba04dc5e2791ac0035099d0063",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundResetPacket.java": "8883d9a507fa940f3d5d053cc8d7f6ce399f49a1ca43754b421d8ba6b24e67ae",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/SoundResetV3Packet.java": "936b6224f12aae82089e27ed25914a5aed64a912e82f95733b0361b49ae80e72",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/StreamEpochTracker.java": "231eaf822a91afca93d93c8cd4bc5cadfcf7cbcb8a52fa758c48cb7b942b45ff",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/VoiceCapabilities.java": "d894e990828f47a68dbce7352e87b98222eca288de652fc0d188339736fb9b5d",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WirePacketType.java": "6998218dd139fb0f7f5dd67bb1cad62b5295260c2391d0cd3b0c52cc5364efc2",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/WireProtocol.java": "edcf0c15a08d9ba565286c2e5fb884954168ab9720f14c2441b6a6a0d071109e",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/codec/AudioFormatSpec.java": "03eb7ad63552bdfd6ed143feaf46d8d4e07efe36613dae536352b603727c3d31",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/HandshakeProof.java": "f0102a612b9d96882d861665b4a51521a1f11c3fa3d904fcbea23b811ece308e",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/HkdfSha256.java": "e159a332bdc41a283c968bfc52802d1989faa4d1f3a399435fc07bebc01f4215",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/ReplayWindow.java": "33b4f1782663e83e4fa4feca9c1a13a60ed8c3dd98606a771c64963d87e663f0",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionCrypto.java": "493fc0b24c00cd8bdf201c64985d97000811d61e83e16d007ebb5f280c95919e",
+    "shared/client-protocol/src/main/java/dev/akashic/voice/voice/common/crypto/SessionKeys.java": "58edb012ca6e014fe588b4f64e0b63702971033151a1103bef2fb69f906b7efd",
+    "tools/qa/AcousticProfileContractSmoke.java": "6cbff7679fc87ca93b49fb1832738463ef1f98d80716afa986e97ea1d6be08b9",
+    "tools/qa/AcousticRoutingPolicySmoke.java": "cb5cf8ac54fa9e27fcb0498c76df3d54157068714f4b58ee9b604f951c520c79",
+    "tools/qa/BackendTransferDetectorSmoke.java": "97d11110eadc00e267ef7bb528bd6961190cf56f5c64ec7851b41747fbbbac6d",
+    "tools/qa/BufferedMuteBoundarySmoke.java": "4edddb242896343aed5cc7d0b83d771acb77d50318b0bea809c6f03e41252357",
+    "tools/qa/CaptureAuthorizationSmoke.java": "03cccb6a54ff45c6083fd975ca8fb1dcbf7dc97959e7f82ecbc5f5320c0f5552",
+    "tools/qa/CaptureBackendSmoke.java": "b17535d325302b0a6b41ba1e6cab015e3c2d35bbedece5d57b221e27d0c9b32d",
+    "tools/qa/Client57VisualAcousticsSmoke.java": "0830326c908fd52c159212d9b30e32a0f28c2f909fabd6740824c6bb3d66a1d8",
+    "tools/qa/Client58PremiumCompletionSmoke.java": "c940302c8d3904532f77fc82e6feef172608cee234b04ef3eaa8379f668fedaf",
+    "tools/qa/Client58SourceContractSmoke.java": "d7275ab69de9c1c0d967901913f5e6f023f4162a4d472ebf8563b755fe53cd6e",
+    "tools/qa/ClientAddonHooksSmoke.java": "8f08673976cc2d31ac2ce694a29c138dda9bd357db3b2b48290f7af2093f7f73",
+    "tools/qa/ClientDiagnosticsSmoke.java": "92de05c5e4c831e30e47af78ca1519ac2c1e62ad11f4b0eb1d029b585f0e16c3",
+    "tools/qa/CodecBackendSmoke.java": "9dccde9259ea595a9ce9df4322b9675ff4d824d4046b7fbe27fb5bd3d98f249e",
+    "tools/qa/CodecBackendStrictSmoke.java": "d5c191b880bb7d32ef217e04e6069680bb7dac75c211adcefed3a71b40d1196c",
+    "tools/qa/CodecInteropSmoke.java": "cd88f478dd963221601368c577087a638885635d384400498937e9661e6d26b7",
+    "tools/qa/CodecSmoke.java": "9a3d28bb78cf10af5048b6450d48741bd6f439174d4eb21dadff8e33c56e4db5",
+    "tools/qa/CryptoConcurrencySmoke.java": "ead165b3948b39359c35d4e26d6e33a08422e73a7cfdde2fabb25494bd0979d7",
+    "tools/qa/CryptoPrimitiveSmoke.java": "0284df03fd4c0b797fdae9270fc2d0743625207dd8e163953647f1280c2c0032",
+    "tools/qa/CryptoSessionSmoke.java": "f4e2d4afbe3632490bb63aefac68a416820838e4ad2d56c9b99112d0e2234aec",
+    "tools/qa/DecoderStreamCapacitySmoke.java": "736ce3565e860eaaa4388da1e2b08a85c604aa9fc821901f4c39435ef1cd836f",
+    "tools/qa/DecoderStreamNetworkCapacitySmoke.java": "50aca64240baa150cbf054e6bf052d7a381d9ceddc41ef281fd44c5ae8b48217",
+    "tools/qa/EpochBoundarySmoke.java": "e36847c8afaf42def55ed13c3e50da83dd9a21d954623ebc10756855cac6de27",
+    "tools/qa/EpochClientFlowSmoke.java": "44cd44426aa66f723793211bcdab448cba0ea898ae544917e4192707ada767d2",
+    "tools/qa/EpochProtocolSmoke.java": "61ce1b01bd6b2736bb98049bbaf5e558b151a2903e8880e941127226f6f50c02",
+    "tools/qa/HandshakeProtocolSmoke.java": "d197b5f215ddacbfdcf9830f32191131c2a45db081ce751eb37c7e5d3afa0c00",
+    "tools/qa/HandshakeRateLimiterSmoke.java": "3476455ee46f7e60e74af959fdea9f2fcb38e53970301090391080ce7cc7a235",
+    "tools/qa/IntegratedListeningSmoke.java": "1a6a9a5479c2fafaa75d4d2d125b88356279a59769a91d84baea6da3cec843a1",
+    "tools/qa/JitterBufferSmoke.java": "1e713a782edee200bb46458799b08753468477f6ededb5236e4204870577188f",
+    "tools/qa/LegacyAgentConfigSmoke.java": "dcf1eb16ffb53bf05bb216536006ce73633dda8e6b36620838394885cba4c599",
+    "tools/qa/LegacyAgentDropCounterSmoke.java": "6cecdd30592647c3c5d46ed3d90c44b845515c1d89095d89c61b2e8680112a09",
+    "tools/qa/LegacyAgentIntegrationSmoke.java": "dc40979675ae8d776512e467648723fe1d61e13404ab1449315e75807d4759d9",
+    "tools/qa/LegacyGroupInviteBookSmoke.java": "f1d6cb160319fbfa3119383e9284c235db3f6144b3581640e170a880ae250822",
+    "tools/qa/MediaRateLimiterSmoke.java": "714fe3aa3232b77c65f85932cd5129d9c84ca1d7552fd2f317432ca5a72bb683",
+    "tools/qa/MtuBudgetSmoke.java": "fa1963d2e2c96369eda5f7d8b707d74d7aad64c80eb59fdf8026e55f5edad6ae",
+    "tools/qa/NativeDecoderCacheSmoke.java": "fde6bd5fea782de18c28ca11306b15f6a5f2bbac1c80bc2abadb79132a50dbdf",
+    "tools/qa/OpenAlBindingLossSmoke.java": "b99e1e0fcc7bb01f390d31afad3157569aa84b2d431676d083e5d39227e339ce",
+    "tools/qa/OpenAlEfxSmoke.java": "fe952997b61ce6ac407b9a33da02567d622354a637ba3d9828e8f93d26e3ebac",
+    "tools/qa/OpenAlOutputHealthSmoke.java": "d1c67cca28fe727f50444f4650c74169e448347f69bfd2585cef746beaffc1ee",
+    "tools/qa/OpenAlReloadReproSmoke.java": "74667eba6cb0d47b54ba8478f4130035be7b6e6c32cf29596d0490122ede6a97",
+    "tools/qa/PlaybackCleanupSmoke.java": "d1a8ad8bd81d7e2c5a3e2ce8994af3417828be592a3f99514c79480981c33e80",
+    "tools/qa/QualityCaptureFlowSmoke.java": "5c394f1268695af32fd6714dfc68e715b64635ebbd34eeb3cbca7b16694e5a86",
+    "tools/qa/SecureHandshakeFlowSmoke.java": "cfcf7709b2b73b613b1c9d2b3e842dcc34d4b66bb698c74cec509be98fd6ae9b",
+    "tools/qa/SessionBootstrapSmoke.java": "36db099656fb679b22937a372fa29a51e7159eabf1167aee53b1e0d2aaa90d8f",
+    "tools/qa/SessionIdentitySmoke.java": "1d88514be627ced2c085256c0f7fba25bbc935095ff251128e5335760baa3135",
+    "tools/qa/SessionVoiceServerIntegrationSmoke.java": "8667790ba4b4d31bb2c47786de59ccbe3fde9d864d5ad77c9e0a37230283bf35",
+    "tools/qa/SpeakerControlsSmoke.java": "cc6a48d5eea8f2f0787375ae1159ae5ed3a9a408dbf68296e569c533ad8256b6",
+    "tools/qa/SpeakerPanelSmoke.java": "90327d5fc95197e6bde9fb137945a996f1ac55dcc6727a143e0a522d21a052fa",
+    "tools/qa/TalkCacheBoundedSmoke.java": "a5e7162d9497c85aa316dae3ae12b035b16ad6c58dbcda2dfd1a105dd1d285aa",
+    "tools/qa/TouchPttDesktopSmoke.java": "ccd578da01f70264febf230a40e887f34a11bb8e5f526f542cb2dc8e0425c7f9",
+    "tools/qa/TransmitBoundarySmoke.java": "38a44c33dd428b3f5c36bbc51d461bfb0ee44a659bc1fcf8da03b67f902a96f0",
+    "tools/qa/VoiceQualitySmoke.java": "15c9775365865611557c75fcb6040a4cfc4cd12c755f07cb71274ad557d6f53d",
+    "tools/qa/VoiceServerMetricsIntegrationSmoke.java": "702416872ac78f1857c5347061f62b04b1a2f439fb3970f90f88117db764537d",
+    "tools/qa/VoiceServerTelemetrySmoke.java": "24d6747f76cf2d1006319e936ed19463d68628e53d001c24ae1ce98e13a4e323",
+    "tools/qa/WireFuzzSmoke.java": "b276291f9ced4585f293823b58d89d18f1c7a9832c110eeb95a28dcb6c188003",
+    "tools/qa/WireParserSmoke.java": "591c3c5b103817bb4b764569a48aa8afae1a650bfd34bb805d070f193dbff3c1",
+    "tools/qa/QualityTestEnvironment.java": "dfc3cc6008e6d2e87ed3bb7fa28a7df8a07b4adf00a0e99339b89ea748527cc9"
+  },
+  "compile_source_count": 189,
+  "test_mains": [
+    [
+      "dev.akashic.voice.voice.client.MicSequenceRecoverySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.audio.capture.MicCaptureSessionSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.acoustics.AcousticProfileContractSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.acoustics.AcousticRoutingPolicySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.BackendTransferDetectorSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.BufferedMuteBoundarySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.CaptureAuthorizationSmoke"
+    ],
+    [
+      "CaptureBackendSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.acoustics.Client57VisualAcousticsSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.Client58PremiumCompletionSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.Client58SourceContractSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.ClientAddonHooksSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.ClientDiagnosticsSmoke"
+    ],
+    [
+      "CodecBackendSmoke"
+    ],
+    [
+      "CodecBackendStrictSmoke"
+    ],
+    [
+      "CodecInteropSmoke"
+    ],
+    [
+      "CodecSmoke"
+    ],
+    [
+      "CryptoConcurrencySmoke"
+    ],
+    [
+      "CryptoPrimitiveSmoke"
+    ],
+    [
+      "CryptoSessionSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.DecoderStreamCapacitySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.DecoderStreamNetworkCapacitySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.EpochBoundarySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.EpochClientFlowSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.common.EpochProtocolSmoke"
+    ],
+    [
+      "HandshakeProtocolSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.HandshakeRateLimiterSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.IntegratedListeningSmoke"
+    ],
+    [
+      "JitterBufferSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.agent.LegacyAgentConfigSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.agent.LegacyAgentDropCounterSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.agent.LegacyAgentIntegrationSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.groups.LegacyGroupInviteBookSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.MediaRateLimiterSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.common.MtuBudgetSmoke"
+    ],
+    [
+      "NativeDecoderCacheSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.OpenAlBindingLossSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.OpenAlEfxSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.OpenAlOutputHealthSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.OpenAlReloadReproSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.PlaybackCleanupSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.QualityCaptureFlowSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.SecureHandshakeFlowSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.common.SessionBootstrapSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.common.SessionIdentitySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.SessionVoiceServerIntegrationSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.SpeakerControlsSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.playback.SpeakerPanelSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.talk.TalkCacheBoundedSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.TouchPttDesktopSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.client.TransmitBoundarySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.common.codec.VoiceQualitySmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.VoiceServerMetricsIntegrationSmoke"
+    ],
+    [
+      "dev.akashic.voice.voice.server.VoiceServerTelemetrySmoke"
+    ],
+    [
+      "WireFuzzSmoke"
+    ],
+    [
+      "WireParserSmoke"
+    ],
+    [
+      "CodecBackendSmoke",
+      "java",
+      "java-concentus"
+    ]
+  ],
+  "step": 57,
+  "executable": "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+  "exit_code": 0
+}

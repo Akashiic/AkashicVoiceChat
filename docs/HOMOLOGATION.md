@@ -48,7 +48,7 @@ CLIENT59's own receipt is explicit: `wan_remote_peer_proven: false`, `remote_voi
 1. A gate is PASS only with recorded primitive observations (command, source identity, process identity, log path, exit status). The V3 evaluators derive PASS/HOLD from observations and **fail closed** on missing or non-numeric counters, contradictory baseline/final state, or any Agent drop delta in a normal canary.
 2. `READY_FOR_STABLE_REVIEW` from an evaluator still requires a human review; it is not a deployment approval.
 3. A synthetic result never substitutes for a live observation.
-4. Defects found in the field reopen the affected gates. As of this document, issues #3–#5 (OpenAL natives after sound reload; handshake timeouts after transfer; hot-plug event frequency) should be triaged **before** the live premium acceptance in §5 is attempted, otherwise the acceptance would test a path that is known to misbehave.
+4. Defects found in the field reopen the affected gates. (2026-11-27: #3, #4 and #17 have AUTOMATED fixes in `bb2e6aa`, see [`evidence/rebuild-20261127/`](evidence/rebuild-20261127/README.md); the gates stay OPEN and must be run on a build containing them.) As of this document, issues #3–#5 (OpenAL natives after sound reload; handshake timeouts after transfer; hot-plug event frequency) should be triaged **before** the live premium acceptance in §5 is attempted, otherwise the acceptance would test a path that is known to misbehave.
 
 ## 5. Gate status
 

@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). No stable releas
 ### Added
 - Repository consolidation (2026-10-04): upstream ProxyChat history completed, uncommitted active tree snapshotted (`ee8920f`), RC7 source imported (`26023d4`), evidence archive (`docs/evidence/`), operator tooling (`tools/homologation/rc7-v3.8/`), project documentation, issue register.
 - [`docs/FIELD_EVIDENCE_2026-10.md`](docs/FIELD_EVIDENCE_2026-10.md): first analysis of real client logs.
+- [`docs/evidence/rebuild-20261127/`](docs/evidence/rebuild-20261127/README.md): first build and QA run of this repository from committed source (BUILD + AUTOMATED), with the issue #3 real-native reproducer results; state documents updated accordingly.
 - Client addon hooks (`AkashicVoiceClientHooks`: microphone PCM frame listeners and transmission filters), contributed in PR #19. Documented in [`docs/ADDON_API.md`](docs/ADDON_API.md); regression smoke `tools/qa/ClientAddonHooksSmoke.java`.
 - Client-side backend-transfer detection: a new player entity id while staying in a world requests a fresh voice bootstrap immediately instead of waiting for the voice timeout (#4). Smoke `tools/qa/BackendTransferDetectorSmoke.java`.
 
