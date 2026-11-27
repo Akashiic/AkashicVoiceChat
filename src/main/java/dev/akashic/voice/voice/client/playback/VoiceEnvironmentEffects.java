@@ -13,6 +13,7 @@ import dev.akashic.voice.voice.client.acoustics.AcousticProfile;
 final class VoiceEnvironmentEffects {
 
     private final boolean supported;
+    private volatile boolean retryable;
     private final int effectId;
     private final int slotId;
     private final int filterId;
@@ -56,9 +57,23 @@ final class VoiceEnvironmentEffects {
                 throw failure;
             }
         } catch (RuntimeException | LinkageError failure) {
+            if (AudioPlayback.isNativeBindingLoss(failure)) {
+                // Natives are mid-reload; the playback loop re-probes instead of disabling EFX for the session.
+                AkashicVoice.LOG.warn(
+                    "OpenAL EFX probe hit an unlinked native binding; will re-probe ({})",
+                    String.valueOf(failure));
+                VoiceEnvironmentEffects pending = new VoiceEnvironmentEffects(false, 0, 0, 0);
+                pending.retryable = true;
+                return pending;
+            }
             AkashicVoice.LOG.warn("OpenAL EFX probe failed; environmental voice acoustics disabled", failure);
             return new VoiceEnvironmentEffects(false, 0, 0, 0);
         }
+    }
+
+    /** True when the probe failed only because OpenAL natives were temporarily unlinked. */
+    boolean retryable() {
+        return retryable;
     }
 
     boolean supported() {

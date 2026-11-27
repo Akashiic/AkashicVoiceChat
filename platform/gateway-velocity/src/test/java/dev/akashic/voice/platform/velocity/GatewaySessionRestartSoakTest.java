@@ -31,11 +31,13 @@ import static org.junit.jupiter.api.Assertions.*;
 final class GatewaySessionRestartSoakTest {
     @RepeatedTest(6)
     void restartRejectsOldSessionAndResumesSpeakingWithFreshBootstrap() throws Exception {
-        int udpPort = freeUdpPort();
+        // Bind the client first: on Linux the ephemeral port handed to an unbound socket can be the very
+        // port freeUdpPort() just released, which then makes the Gateway bind fail.
+        DatagramSocket client = new DatagramSocket();
+        int udpPort = freeUdpPortExcept(client.getLocalPort());
         byte[] psk = new byte[32];
         new SecureRandom().nextBytes(psk);
         UUID proxyPlayerId = UUID.randomUUID();
-        DatagramSocket client = new DatagramSocket();
         client.connect(InetAddress.getLoopbackAddress(), udpPort);
         client.setSoTimeout(2_000);
 
@@ -368,6 +370,14 @@ final class GatewaySessionRestartSoakTest {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         return ByteBuffer.wrap(Arrays.copyOf(packet.getData(), packet.getLength()));
+    }
+
+    private static int freeUdpPortExcept(int taken) throws Exception {
+        for (int attempt = 0; attempt < 32; attempt++) {
+            int port = freeUdpPort();
+            if (port != taken) return port;
+        }
+        throw new IllegalStateException("no free UDP port distinct from " + taken);
     }
 
     private static int freeUdpPort() throws Exception {

@@ -68,6 +68,8 @@ final class GatewayUdpServer implements AutoCloseable {
     private final AtomicLong sessionsOpened = new AtomicLong();
     private final AtomicLong sessionsClosed = new AtomicLong();
 
+    private static final long CLOSE_JOIN_MILLIS = 2_000L;
+
     private DatagramSocket socket;
     private Thread receiveThread;
     private Thread sweeperThread;
@@ -654,7 +656,20 @@ final class GatewayUdpServer implements AutoCloseable {
             }
             pendingHandshakes.clear();
         }
+        // On NIO-backed DatagramSocket (JDK 13+) the descriptor, and therefore the UDP port, is only released
+        // once the thread blocked in receive() has left it. Wait briefly so an in-JVM restart can rebind.
+        awaitExit(receiveThread);
+        awaitExit(sweeperThread);
         receiveThread = null;
         sweeperThread = null;
+    }
+
+    private static void awaitExit(Thread worker) {
+        if (worker == null || worker == Thread.currentThread()) return;
+        try {
+            worker.join(CLOSE_JOIN_MILLIS);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

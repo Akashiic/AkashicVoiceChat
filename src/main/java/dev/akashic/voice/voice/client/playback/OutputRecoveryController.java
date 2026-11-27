@@ -27,6 +27,26 @@ final class OutputRecoveryController {
         return true;
     }
 
+    /**
+     * The OpenAL natives were lost under us (for example Minecraft destroyed and is re-creating the shared
+     * context). An owner restarts its own context; a shared user must not issue another reload while the
+     * external one is in flight, so it waits for the context directly and only falls back to requesting a
+     * reload after {@link #SHARED_RETRY_NANOS}.
+     */
+    synchronized boolean requestAfterBindingLoss(boolean ownsOpenAl, long nowNanos) {
+        if (state != State.READY) return false;
+        if (ownsOpenAl) {
+            state = State.OWNED_PENDING;
+            notBeforeNanos = nowNanos + CONTEXT_SETTLE_NANOS;
+            retryNanos = notBeforeNanos;
+        } else {
+            state = State.WAITING_CONTEXT;
+            notBeforeNanos = nowNanos + CONTEXT_SETTLE_NANOS;
+            retryNanos = nowNanos + SHARED_RETRY_NANOS;
+        }
+        return true;
+    }
+
     synchronized boolean claimSharedReload() {
         if (state != State.SHARED_REQUESTED) return false;
         state = State.SHARED_RELOADING;

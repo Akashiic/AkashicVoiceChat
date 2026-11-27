@@ -16,7 +16,14 @@ import dev.akashic.voice.voice.client.talk.TalkCache;
  *
  * <p>
  * Fast-paths with zero allocations when no listeners or filters are registered.
- * All addon callbacks are failure-isolated so a misbehaving addon cannot interrupt voice capture.
+ * All addon callbacks are failure-isolated so a misbehaving addon cannot interrupt voice capture:
+ * {@link RuntimeException}s and {@link LinkageError}s (for example an addon compiled against a different
+ * API revision) are logged with throttling and ignored. {@link VirtualMachineError}s are not swallowed.
+ *
+ * <p>
+ * Privacy contract: microphone frames are delivered only while the player's own controls authorize
+ * transmission (not muted; push-to-talk held in PTT mode). Frames captured while the player is muted or
+ * not holding push-to-talk are never handed to addons.
  */
 public final class AkashicVoiceClientHooks {
 
@@ -79,7 +86,7 @@ public final class AkashicVoiceClientHooks {
         for (ClientMicTransmissionFilter filter : TRANSMISSION_FILTERS) {
             try {
                 if (!filter.allowTransmission()) return false;
-            } catch (RuntimeException failure) {
+            } catch (RuntimeException | LinkageError failure) {
                 logFailureThrottled("ClientMicTransmissionFilter failed; ignoring filter", failure);
             }
         }
@@ -88,6 +95,7 @@ public final class AkashicVoiceClientHooks {
 
     /**
      * Dispatches a processed PCM frame to registered listeners. Zero allocation when no listeners exist.
+     * The caller must invoke this only for frames the player's controls authorize (see class javadoc).
      */
     public static void dispatchMicFrame(short[] pcm, int sampleRate, boolean transmitting) {
         if (MIC_FRAME_LISTENERS.isEmpty() || pcm == null) return;
@@ -95,7 +103,7 @@ public final class AkashicVoiceClientHooks {
         for (ClientMicFrameListener listener : MIC_FRAME_LISTENERS) {
             try {
                 listener.onMicFrame(Arrays.copyOf(pcm, pcm.length), sampleRate, rms, transmitting);
-            } catch (RuntimeException failure) {
+            } catch (RuntimeException | LinkageError failure) {
                 logFailureThrottled("ClientMicFrameListener failed; isolating listener error", failure);
             }
         }
@@ -125,7 +133,7 @@ public final class AkashicVoiceClientHooks {
         return pcm == null ? 0.0 : MicGate.computeRms(pcm);
     }
 
-    private static void logFailureThrottled(String message, RuntimeException failure) {
+    private static void logFailureThrottled(String message, Throwable failure) {
         long now = System.nanoTime();
         long prev = LAST_FAILURE_LOG_NANOS.get();
         if (prev == 0L || now - prev >= FAILURE_LOG_INTERVAL_NANOS) {

@@ -7,6 +7,11 @@ package dev.akashic.voice.api;
  * Invoked on the microphone capture thread at ~50 Hz. Implementations MUST be non-blocking
  * (copy/enqueue audio to a dedicated worker thread for heavy work such as speech recognition).
  * Exceptions thrown by a listener are isolated and will not interrupt voice capture.
+ *
+ * <p>
+ * Frames are delivered only while the player's controls authorize transmission (not muted, push-to-talk
+ * held in PTT mode). In voice-activation mode, frames below the threshold are delivered with
+ * {@code transmitting == false}.
  */
 @FunctionalInterface
 public interface ClientMicFrameListener {

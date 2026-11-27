@@ -31,3 +31,32 @@ The API is deactivated and clears retained listeners/sessions when Gateway initi
 API v1 deliberately omits raw frame callbacks and arbitrary media injection. Cross-server radio/media injection
 requires a separate authority/backpressure contract and should be added as a future compatible extension rather
 than making the existing 50 Hz media path invoke arbitrary third-party code.
+
+## Client-side hooks (Forge 1.7.10 mod) — `AkashicVoiceClientHooks`, API version 1
+
+Contributed in PR #19 (external contributor), hardened afterwards. These hooks live in the Forge mod
+(`dev.akashic.voice.api`, Java 8) and are separate from the Gateway API above. Unlike the Gateway API they
+*do* run per frame (about 50 Hz) on the microphone capture thread, so the rules below are strict.
+
+| Entry point | Purpose |
+|---|---|
+| `addMicFrameListener(ClientMicFrameListener)` | Receives a defensive copy of each processed 20 ms mono S16 frame (960 samples, 48 kHz), its RMS level and whether it will be transmitted |
+| `addTransmissionFilter(ClientMicTransmissionFilter)` | Returning `false` suppresses transmission of the current frame (for example a roleplay "silenced" state) |
+| `isMuted()`, `isDeafened()`, `isPttEngaged()`, `lastTransmitMillis()`, `isPlayerSpeaking(UUID)`, `computeRms(short[])` | Read-only state queries |
+
+Both `add…` methods return an idempotently closeable handle.
+
+Contract:
+
+- **Privacy.** Frames reach listeners only while the player's own controls authorize transmission: not muted
+  and, in push-to-talk mode, the key held. Audio captured while muted or with push-to-talk released is never
+  handed to addons. In voice-activation mode, frames below the threshold are delivered with
+  `transmitting == false`.
+- **Non-blocking.** Callbacks run on the capture thread; copy or enqueue work to your own thread.
+- **Failure isolation.** `RuntimeException` and `LinkageError` thrown by a callback are logged (throttled) and
+  ignored; a failing filter fails *open* so a broken addon cannot permanently mute the player.
+  `VirtualMachineError`s are not swallowed.
+- **No injection.** The hooks cannot inject or replace audio and expose no transport, session or crypto state.
+
+Evidence: AUTOMATED — `tools/qa/ClientAddonHooksSmoke.java` (privacy gate, isolation, defensive copy,
+registration lifecycle). No addon has been exercised in a live client.

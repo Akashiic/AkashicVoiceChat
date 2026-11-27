@@ -7,6 +7,7 @@ import dev.akashic.voice.voice.client.audio.capture.AudioCaptureBackends;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureDevice;
 import dev.akashic.voice.voice.client.audio.capture.AudioCaptureException;
 import dev.akashic.voice.voice.client.audio.capture.MicCaptureSession;
+import dev.akashic.voice.voice.client.audio.capture.OpenALCaptureBackend;
 import dev.akashic.voice.voice.common.codec.AudioFormatSpec;
 import dev.akashic.voice.voice.common.codec.OpusCodecFactory;
 import dev.akashic.voice.voice.common.codec.OpusEncoder;
@@ -129,7 +130,10 @@ public final class MicCapture {
                 applyAmplification(pcm, AkashicVoiceConfig.micAmplification());
                 if (AkashicVoiceConfig.noiseSuppression()) applyHighPass(pcm, highPassState);
                 boolean shouldTransmit = MicGate.shouldTransmit(pcm, authorization);
-                AkashicVoiceClientHooks.dispatchMicFrame(pcm, AudioFormatSpec.SAMPLE_RATE, shouldTransmit);
+                // Privacy: addons only see audio the player's own controls authorize (not muted, PTT held).
+                if (MicGate.permitsTransmission(authorization)) {
+                    AkashicVoiceClientHooks.dispatchMicFrame(pcm, AudioFormatSpec.SAMPLE_RATE, shouldTransmit);
+                }
                 if (!shouldTransmit) continue;
                 int length = current.encode(pcm, opusOut);
                 if (!current.isRunning()) return;
@@ -141,14 +145,19 @@ public final class MicCapture {
         } catch (InterruptedException expected) {
             Thread.currentThread()
                 .interrupt();
-        } catch (RuntimeException failure) {
+        } catch (OpenALCaptureBackend.NativeBindingLostException unlinked) {
+            // Expected during a Minecraft sound-system reload: one concise line, no stack trace (issue #3).
+            if (current.isRunning()) {
+                AkashicVoice.LOG.warn("{}; recovery will reopen the microphone", unlinked.getMessage());
+            }
+        } catch (RuntimeException | LinkageError failure) {
             if (current.isRunning()) {
                 AkashicVoice.LOG.warn("Microphone capture/encode failed; recovery will reopen it", failure);
             }
         } finally {
             try {
                 current.finish();
-            } catch (RuntimeException failure) {
+            } catch (RuntimeException | LinkageError failure) {
                 AkashicVoice.LOG.debug("Microphone resource cleanup failed", failure);
             }
         }

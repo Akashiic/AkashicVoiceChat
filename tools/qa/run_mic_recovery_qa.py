@@ -40,6 +40,8 @@ if args.all_smokes:
     for base in (root / 'src/main/java', root / 'shared/client-protocol/src/main/java'):
         sources += [path.relative_to(root).as_posix() for path in sorted(base.rglob('*.java'))]
     sources += [path.relative_to(root).as_posix() for path in sorted((root / 'tools/qa').glob('*Smoke.java'))]
+    # Shared test helper used by several smokes (not itself a smoke).
+    sources += ['tools/qa/QualityTestEnvironment.java']
     sources = list(dict.fromkeys(sources))
 status.update(java_home=str(java_home), source_sha256={})
 inputs = []
@@ -65,7 +67,8 @@ if (root / 'tools/qa/MicCaptureSessionSmoke.java').is_file():
 if args.all_smokes:
     for name in sources:
         path = root / name
-        if not name.startswith('tools/qa/') or path.name in ('MicSequenceRecoverySmoke.java', 'MicCaptureSessionSmoke.java'):
+        if not name.startswith('tools/qa/') or not path.stem.endswith('Smoke') \
+                or path.name in ('MicSequenceRecoverySmoke.java', 'MicCaptureSessionSmoke.java'):
             continue
         text = path.read_text(encoding='utf-8')
         package = re.search(r'^package ([\w.]+);', text, re.MULTILINE)

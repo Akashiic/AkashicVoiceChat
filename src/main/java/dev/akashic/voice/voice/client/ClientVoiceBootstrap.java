@@ -43,6 +43,7 @@ public final class ClientVoiceBootstrap {
     private volatile long unauthenticatedSinceNanos;
     private int acousticSampleTicks = 4;
     private final AcousticProfileTracker acousticTracker = new AcousticProfileTracker();
+    private final BackendTransferDetector transferDetector = new BackendTransferDetector();
     private static volatile boolean rebootstrapRequested;
 
     private ClientVoiceBootstrap() {}
@@ -110,7 +111,13 @@ public final class ClientVoiceBootstrap {
             unauthenticatedSinceNanos = 0L;
             acousticSampleTicks = 4;
             acousticTracker.reset();
+            transferDetector.reset();
             return;
+        }
+
+        if (transferDetector.observe(player.getEntityId()) && secretRequested) {
+            AkashicVoice.LOG.info("Backend transfer detected (new player entity); requesting a fresh voice bootstrap");
+            rebootstrapRequested = true;
         }
 
         if (rebootstrapRequested) {

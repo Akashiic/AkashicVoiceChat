@@ -119,6 +119,16 @@ public final class OpenALCaptureBackend implements AudioCaptureBackend {
         }
     }
 
+    /** Capture stopped because the OpenAL natives were unlinked; recovery reopens a fresh device. */
+    public static final class NativeBindingLostException extends IllegalStateException {
+
+        private static final long serialVersionUID = 1L;
+
+        NativeBindingLostException(LinkageError cause) {
+            super("OpenAL capture lost its native binding (sound-system reload?): " + cause, cause);
+        }
+    }
+
     private static final class Device implements AudioCaptureDevice {
 
         private final Object lock = new Object();
@@ -127,6 +137,12 @@ public final class OpenALCaptureBackend implements AudioCaptureBackend {
         private final IntBuffer availableScratch = BufferUtils.createIntBuffer(1);
         private final ByteBuffer captureScratch = BufferUtils.createByteBuffer(AudioFormatSpec.FRAME_BYTES_PCM_S16);
         private volatile boolean closed;
+        /**
+         * Set when an ALC call raised {@link LinkageError}: the OpenAL natives were reset (LWJGL 2
+         * {@code AL.destroy()} during a Minecraft sound reload). The handle belongs to the unloaded library, so
+         * it must never be passed to a later (re-linked) library instance; it is abandoned instead of closed.
+         */
+        private volatile boolean nativeBindingLost;
 
         private Device(ALCdevice device, String description) {
             this.device = device;
@@ -144,17 +160,22 @@ public final class OpenALCaptureBackend implements AudioCaptureBackend {
             while (!closed) {
                 synchronized (lock) {
                     if (closed) return -1;
-                    int available = availableSamples();
-                    if (available > 0) {
-                        int samples = Math.min(available, Math.min(length / 2, AudioFormatSpec.FRAME_SAMPLES));
-                        int bytes = samples * 2;
-                        captureScratch.clear();
-                        captureScratch.limit(bytes);
-                        ALC11.alcCaptureSamples(device, captureScratch, samples);
-                        captureScratch.position(0);
-                        captureScratch.limit(bytes);
-                        captureScratch.get(buffer, offset, bytes);
-                        return bytes;
+                    try {
+                        int available = availableSamples();
+                        if (available > 0) {
+                            int samples = Math.min(available, Math.min(length / 2, AudioFormatSpec.FRAME_SAMPLES));
+                            int bytes = samples * 2;
+                            captureScratch.clear();
+                            captureScratch.limit(bytes);
+                            ALC11.alcCaptureSamples(device, captureScratch, samples);
+                            captureScratch.position(0);
+                            captureScratch.limit(bytes);
+                            captureScratch.get(buffer, offset, bytes);
+                            return bytes;
+                        }
+                    } catch (LinkageError unlinked) {
+                        nativeBindingLost = true;
+                        throw new NativeBindingLostException(unlinked);
                     }
                 }
                 if (Thread.currentThread()
@@ -186,7 +207,7 @@ public final class OpenALCaptureBackend implements AudioCaptureBackend {
             if (closed) return;
             closed = true;
             synchronized (lock) {
-                safeClose(device);
+                if (!nativeBindingLost) safeClose(device);
             }
         }
     }

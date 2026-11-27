@@ -224,8 +224,10 @@ public final class PlaybackChannel implements AudioPlayback.Channel {
     }
 
     private void recycleProcessed() {
-        int processed = AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_PROCESSED);
-        for (int i = 0; i < processed; i++) {
+        // A source never owns more than MAX_QUEUED_BUFFERS buffers. Clamp what a broken or reloading
+        // context reports so the recycle pool cannot grow without bound (issue #7).
+        int processed = Math.min(AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_PROCESSED), MAX_QUEUED_BUFFERS);
+        for (int i = 0; i < processed && recycledBuffers.size() < MAX_QUEUED_BUFFERS; i++) {
             idScratch.clear();
             AL10.alSourceUnqueueBuffers(sourceId, idScratch);
             recycledBuffers.add(idScratch.get(0));

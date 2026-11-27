@@ -55,6 +55,7 @@ public final class AudioPlayback {
     private static final int FRAME_POOL_SIZE = 128;
     private static final long OUTPUT_HEALTH_POLL_NANOS = 500_000_000L;
     private static final int OUTPUT_UNAVAILABLE_CONFIRMATIONS = 3;
+    private static final long EFFECTS_REPROBE_NANOS = 2_000_000_000L;
 
     private static volatile AudioPlayback instance;
 
@@ -94,6 +95,7 @@ public final class AudioPlayback {
     private VoiceEnvironmentEffects environmentEffects;
     private OpenAlOutputHealth outputHealth;
     private long nextOutputHealthPollNanos;
+    private long nextEffectsReprobeNanos;
     private int outputUnavailablePolls;
     private volatile boolean weCreatedAl;
     private volatile boolean outputQuiesced;
@@ -574,12 +576,13 @@ public final class AudioPlayback {
 
         try {
             while (running) {
-                if (serviceOutputRecovery()) {
+                if (guardedServiceOutputRecovery()) {
                     Thread.sleep(10L);
                     continue;
                 }
-                pollOutputHealth();
+                guardedPollOutputHealth();
                 if (outputRecovery.recovering()) continue;
+                reprobeEnvironmentEffectsIfDue();
                 reconcileListeningState();
                 Runnable task;
                 int taskBudget = MAX_PENDING_TASKS;
@@ -595,7 +598,8 @@ public final class AudioPlayback {
                 try {
                     processFrame(frame);
                 } catch (Throwable t) {
-                    AkashicVoice.LOG.warn("Audio frame failed", t);
+                    if (isNativeBindingLoss(t)) beginBindingLossRecovery(t, System.nanoTime());
+                    else AkashicVoice.LOG.warn("Audio frame failed", t);
                 } finally {
                     releaseFrame(frame);
                 }
@@ -604,6 +608,82 @@ public final class AudioPlayback {
             // shutting down
         } finally {
             shutdownOpenAl();
+        }
+    }
+
+    /**
+     * Native OpenAL bindings were reset (LWJGL 2 {@code AL.destroy()} during a Minecraft sound-system reload),
+     * so every AL/ALC/EFX entry point raises {@link UnsatisfiedLinkError} until the context is re-created.
+     */
+    static boolean isNativeBindingLoss(Throwable failure) {
+        Throwable t = failure;
+        for (int depth = 0; t != null && depth < 16; depth++, t = t.getCause()) {
+            if (t instanceof UnsatisfiedLinkError) return true;
+        }
+        return false;
+    }
+
+    /** The output health monitor must never terminate the playback loop (issue #17). */
+    private void guardedPollOutputHealth() {
+        try {
+            pollOutputHealth();
+        } catch (Throwable failure) {
+            if (failure instanceof ThreadDeath) throw (ThreadDeath) failure;
+            if (isNativeBindingLoss(failure)) {
+                beginBindingLossRecovery(failure, System.nanoTime());
+                return;
+            }
+            // Disable the monitor for this context; playback continues without hot-plug detection.
+            outputHealth = null;
+            AkashicVoice.LOG.warn(
+                "Voice output health check failed; output monitoring disabled until the next " + "OpenAL context",
+                failure);
+        }
+    }
+
+    private boolean guardedServiceOutputRecovery() {
+        try {
+            return serviceOutputRecovery();
+        } catch (Throwable failure) {
+            if (failure instanceof ThreadDeath) throw (ThreadDeath) failure;
+            AkashicVoice.LOG.warn("Voice output recovery step failed; retrying", failure);
+            return outputRecovery.recovering();
+        }
+    }
+
+    private void beginBindingLossRecovery(Throwable cause, long now) {
+        if (!outputRecovery.requestAfterBindingLoss(weCreatedAl, now)) return;
+        outputQuiesced = false;
+        outputRecoveryReason = "UNLINKED";
+        outputRecoveries.incrementAndGet();
+        // The old context is already gone: native deletes could hit object ids of the new context.
+        abandonVoiceOutput();
+        outputQuiesced = true;
+        AkashicVoice.LOG.warn(
+            "Voice output lost its OpenAL native binding (sound-system reload?); playback paused "
+                + "until the context returns (ownsOpenAL={}, cause={})",
+            weCreatedAl,
+            String.valueOf(cause));
+    }
+
+    private void reprobeEnvironmentEffectsIfDue() {
+        VoiceEnvironmentEffects effects = environmentEffects;
+        if (effects == null || !effects.retryable()) return;
+        long now = System.nanoTime();
+        if (now < nextEffectsReprobeNanos) return;
+        nextEffectsReprobeNanos = now + EFFECTS_REPROBE_NANOS;
+        try {
+            if (!AL.isCreated()) return;
+            VoiceEnvironmentEffects created = VoiceEnvironmentEffects.create();
+            environmentEffects = created;
+            if (created.supported()) {
+                created.apply(acousticProfile);
+                appliedAcousticProfile = null;
+                appliedSpatial = !spatial;
+            }
+        } catch (Throwable failure) {
+            if (failure instanceof ThreadDeath) throw (ThreadDeath) failure;
+            AkashicVoice.LOG.debug("OpenAL EFX re-probe failed; retrying", failure);
         }
     }
 
@@ -674,6 +754,21 @@ public final class AudioPlayback {
         }
         outputRecovery.retrySharedIfDue(now);
         return true;
+    }
+
+    /** Drops voice output state without native calls; used when the OpenAL context already vanished. */
+    private void abandonVoiceOutput() {
+        channels.clear();
+        channelEpochs.clear();
+        channelSpeakerTokens.clear();
+        sourceSpatial.clear();
+        PlaybackFrame pending;
+        while ((pending = pendingFrames.poll()) != null) freeFrames.offer(pending);
+        environmentEffects = null;
+        appliedListenerGain = Float.NaN;
+        appliedSpatial = !spatial;
+        appliedPoseKnown = false;
+        appliedAcousticProfile = null;
     }
 
     private void quiesceVoiceOutput() {

@@ -7,6 +7,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). No stable releas
 ### Added
 - Repository consolidation (2026-10-04): upstream ProxyChat history completed, uncommitted active tree snapshotted (`ee8920f`), RC7 source imported (`26023d4`), evidence archive (`docs/evidence/`), operator tooling (`tools/homologation/rc7-v3.8/`), project documentation, issue register.
 - [`docs/FIELD_EVIDENCE_2026-10.md`](docs/FIELD_EVIDENCE_2026-10.md): first analysis of real client logs.
+- Client addon hooks (`AkashicVoiceClientHooks`: microphone PCM frame listeners and transmission filters), contributed in PR #19. Documented in [`docs/ADDON_API.md`](docs/ADDON_API.md); regression smoke `tools/qa/ClientAddonHooksSmoke.java`.
+- Client-side backend-transfer detection: a new player entity id while staying in a world requests a fresh voice bootstrap immediately instead of waiting for the voice timeout (#4). Smoke `tools/qa/BackendTransferDetectorSmoke.java`.
+
+### Changed
+- Client addon hooks hardened after merge: microphone frames reach addons only while the player's own controls authorize transmission (not muted, push-to-talk held); `LinkageError` from an addon is isolated like `RuntimeException`.
+
+### Fixed (AUTHORED + AUTOMATED only; no live confirmation yet)
+- #17: the output-health poll can no longer terminate the playback thread. String-keyed ALC queries are resolved once per device instead of twice a second (LWJGL 3 `MemoryStack` pressure), and any failure of the poll disables monitoring for that context instead of killing playback.
+- #3: OpenAL native binding loss (`UnsatisfiedLinkError` after a Minecraft sound-system reload) is now handled as a recovery event: playback abandons the vanished context without native deletes and waits for it to return (no extra reload request); a failed EFX probe on unlinked natives is re-probed instead of disabling acoustics for the session; microphone capture ends with one concise log line and never passes a stale capture handle to a re-linked library. Smoke `tools/qa/OpenAlBindingLossSmoke.java`.
+- #7: `PlaybackChannel.recycleProcessed` clamps the processed-buffer count and the recycle pool to the per-source maximum.
+- Gateway: `GatewayUdpServer.close()` now waits (bounded, 2 s) for its worker threads, so the UDP port is really released before `close()` returns and an in-JVM restart can rebind it (NIO-backed `DatagramSocket` keeps the port until the blocked receiver leaves). Found because `GatewaySessionRestartSoakTest` failed 2–3 of 6 repetitions on Linux.
+- QA: `GatewaySessionRestartSoakTest` binds its client before choosing the Gateway port (ephemeral-port collision on Linux); `run_mic_recovery_qa.py --all-smokes` compiles the shared `QualityTestEnvironment` helper and runs only `*Smoke` mains.
+- QA: new real-native reproducer `tools/qa/OpenAlReloadReproSmoke.java` performs `AL.destroy()`/`AL.create()` under live voice frames (needs LWJGL 2 natives; `ALSOFT_DRIVERS=null` works without audio hardware).
 
 ### Known issues (open, see GitHub issues)
 - OpenAL natives unlinked after a Minecraft sound-system reload: mic thread, per-frame playback and EFX probe fail (#3).
